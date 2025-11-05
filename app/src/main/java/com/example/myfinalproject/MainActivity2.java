@@ -5,7 +5,7 @@ import android.view.View;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class ActivityMain2 extends AppCompatActivity {
+public class MainActivity2 extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +25,7 @@ public class ActivityMain2 extends AppCompatActivity {
         );
     }
 
-    // פונקציה לכפתור חזור
+
     public void finishActivity(View view) {
         finish();
     }

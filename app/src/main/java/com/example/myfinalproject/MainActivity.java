@@ -33,6 +33,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Intent intent = new Intent(MainActivity.this, MainActivity2.class);
             startActivity(intent);
         }
-        // כאן ניתן להוסיף לוגיקה להרשמה וכניסה
+
     }
 }
