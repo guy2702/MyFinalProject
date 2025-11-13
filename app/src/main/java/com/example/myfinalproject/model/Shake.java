@@ -1,78 +1,84 @@
 package com.example.myfinalproject.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-
 
 public class Shake {
-    protected List<Ingredient> fruits = new ArrayList<>();
-    protected List<Ingredient> vegetables = new ArrayList<>();
-    protected List<Ingredient> proteins = new ArrayList<>();
-    protected List<Ingredient> liquids = new ArrayList<>();
-    protected List<Ingredient> fats = new ArrayList<>();
-    protected List<Ingredient> sweeteners = new ArrayList<>();
 
-    protected String goal; // "bulk" או "cutting"
+    private ArrayList<Item> items;
 
-    public Shake(String goal) {
-        this.goal = goal;
+    // בנאי – יוצר שייק ריק בהתחלה
+    public Shake() {
+        items = new ArrayList<>();
     }
 
 
-    public void addFruit(Ingredient fruit) { fruits.add(fruit); }
-    public void addVegetable(Ingredient veg) { vegetables.add(veg); }
-    public void addProtein(Ingredient protein) { proteins.add(protein); }
-    public void addLiquid(Ingredient liquid) { liquids.add(liquid); }
-    public void addFat(Ingredient fat) { fats.add(fat); }
-    public void addSweetener(Ingredient sweetener) { sweeteners.add(sweetener); }
+    public void addItem(Item item) {
+        items.add(item);
+    }
 
+    //
+    public void removeItem(Item item) {
+        items.remove(item);
+    }
 
-    public int getTotalCalories() {
-        int total = 0;
-        List<List<Ingredient>> allLists = Arrays.asList(fruits, vegetables, proteins, liquids, fats, sweeteners);
-        for (List<Ingredient> list : allLists) {
-            for (Ingredient ing : list) {
-                total += ing.getCalories();
-            }
+    // חישוב סך הקלוריות
+    public double getTotalCalories() {
+        double total = 0;
+        for (Item item : items) {
+            total += item.getCalories();
         }
         return total;
     }
 
-
+    // חישוב סך החלבונים
     public double getTotalProtein() {
         double total = 0;
-        List<List<Ingredient>> allLists = Arrays.asList(fruits, vegetables, proteins, liquids, fats, sweeteners);
-        for (List<Ingredient> list : allLists) {
-            for (Ingredient ing : list) {
-                total += ing.getProtein();
-            }
+        for (Item item : items) {
+            total += item.getProtein();
         }
         return total;
     }
 
-
-    public double getTotalCarbs() {
-        double total = 0;
-        List<List<Ingredient>> allLists = Arrays.asList(fruits, vegetables, proteins, liquids, fats, sweeteners);
-        for (List<Ingredient> list : allLists) {
-            for (Ingredient ing : list) {
-                total += ing.getCarbs();
-            }
-        }
-        return total;
-    }
-
-
+    // חישוב סך השומנים
     public double getTotalFat() {
         double total = 0;
-        List<List<Ingredient>> allLists = Arrays.asList(fruits, vegetables, proteins, liquids, fats, sweeteners);
-        for (List<Ingredient> list : allLists) {
-            for (Ingredient ing : list) {
-                total += ing.getFat();
-            }
+        for (Item item : items) {
+            total += item.getFat();
         }
         return total;
+    }
+
+    // חישוב סך הפחמימות
+    public double getTotalCarbs() {
+        double total = 0;
+        for (Item item : items) {
+            total += item.getCarbs();
+        }
+        return total;
+    }
+
+    // הדפסת סיכום השייק
+    public void printSummary() {
+        System.out.println("🍹 סיכום השייק שלך:");
+        if (items.isEmpty()) {
+            System.out.println("אין רכיבים בשייק.");
+            return;
+        }
+
+        for (Item item : items) {
+            System.out.println("- " + item.getName() + " (" + item.getCalories() + " קלוריות)");
+        }
+
+        System.out.println("----------------------------------");
+        System.out.println("סה\"כ קלוריות: " + getTotalCalories());
+        System.out.println("סה\"כ חלבונים: " + getTotalProtein() + " גרם");
+        System.out.println("סה\"כ שומנים: " + getTotalFat() + " גרם");
+        System.out.println("סה\"כ פחמימות: " + getTotalCarbs() + " גרם");
+        System.out.println("----------------------------------");
+    }
+
+    // Getter – אם תרצה לגשת לרשימת הרכיבים
+    public ArrayList<Item> getItems() {
+        return items;
     }
 }

@@ -11,24 +11,24 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyFinalProject">
-
+        <activity
+            android:name=".register"
+            android:exported="false" />
         <activity
             android:name=".login"
             android:exported="false" />
-
         <activity
             android:name=".Splash"
-            android:exported="true">   <!-- שים לב ל-exported=true -->
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".MainActivity2"
             android:exported="false" />
-
         <activity
             android:name=".MainActivity"
             android:exported="false" />

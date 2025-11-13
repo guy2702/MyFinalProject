@@ -2,22 +2,15 @@ package com.example.myfinalproject.model;
 
 public class User {
 
+
+    String id;
     String fname;
     String lname;
     String phone;
     String email;
     String password;
-    int age;
 
 
-    public User(String fname, String lname, String phone, String email, String password, int age) {
-        this.fname = fname;
-        this.lname = lname;
-        this.phone = phone;
-        this.email = email;
-        this.password = password;
-        this.age = age;
-    }
 
     public String getFname() {
         return fname;
@@ -59,13 +52,9 @@ public class User {
         this.password = password;
     }
 
-    public int getAge() {
-        return age;
-    }
 
-    public void setAge(int age) {
-        this.age = age;
-    }
+
+
 
     @Override
     public String toString() {
@@ -75,7 +64,6 @@ public class User {
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", age=" + age +
                 '}';
     }
 }
