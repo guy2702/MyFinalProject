@@ -4,24 +4,56 @@ import java.util.ArrayList;
 
 public class Shake {
 
+    private String shakeId;
+    private String uid;
     private ArrayList<Item> items;
 
-    // בנאי – יוצר שייק ריק בהתחלה
+    // Constructors
     public Shake() {
         items = new ArrayList<>();
     }
 
+    public Shake(String shakeId, String uid) {
+        this.shakeId = shakeId;
+        this.uid = uid;
+        this.items = new ArrayList<>();
+    }
 
+    // Getters & Setters
+    public String getShakeId() {
+        return shakeId;
+    }
+
+    public void setShakeId(String shakeId) {
+        this.shakeId = shakeId;
+    }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    public ArrayList<Item> getItems() {
+        return items;
+    }
+
+    public void setItems(ArrayList<Item> items) {
+        this.items = items;
+    }
+
+    // Methods to manage items
     public void addItem(Item item) {
         items.add(item);
     }
 
-    //
     public void removeItem(Item item) {
         items.remove(item);
     }
 
-    // חישוב סך הקלוריות
+    // Nutritional totals
     public double getTotalCalories() {
         double total = 0;
         for (Item item : items) {
@@ -30,7 +62,6 @@ public class Shake {
         return total;
     }
 
-    // חישוב סך החלבונים
     public double getTotalProtein() {
         double total = 0;
         for (Item item : items) {
@@ -39,7 +70,6 @@ public class Shake {
         return total;
     }
 
-    // חישוב סך השומנים
     public double getTotalFat() {
         double total = 0;
         for (Item item : items) {
@@ -48,7 +78,6 @@ public class Shake {
         return total;
     }
 
-    // חישוב סך הפחמימות
     public double getTotalCarbs() {
         double total = 0;
         for (Item item : items) {
@@ -57,7 +86,7 @@ public class Shake {
         return total;
     }
 
-    // הדפסת סיכום השייק
+    // Print summary
     public void printSummary() {
         System.out.println("🍹 סיכום השייק שלך:");
         if (items.isEmpty()) {
@@ -75,10 +104,5 @@ public class Shake {
         System.out.println("סה\"כ שומנים: " + getTotalFat() + " גרם");
         System.out.println("סה\"כ פחמימות: " + getTotalCarbs() + " גרם");
         System.out.println("----------------------------------");
-    }
-
-    // Getter – אם תרצה לגשת לרשימת הרכיבים
-    public ArrayList<Item> getItems() {
-        return items;
     }
 }

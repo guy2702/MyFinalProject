@@ -2,15 +2,37 @@ package com.example.myfinalproject.model;
 
 public class User {
 
+    private String id;
+    private String fname;
+    private String lname;
+    private String phone;
+    private String email;
+    private String password;
+    boolean isAdmin;
 
-    String id;
-    String fname;
-    String lname;
-    String phone;
-    String email;
-    String password;
+
+    public User() {
+    }
 
 
+    public User(String id, String fname, String lname, String phone, String email, String password) {
+        this.id = id;
+        this.fname = fname;
+        this.lname = lname;
+        this.phone = phone;
+        this.email = email;
+        this.password = password;
+        this.isAdmin = isAdmin;
+    }
+
+    // Getter ו-Setter ל-uid
+    public String getid() {
+        return id;
+    }
+
+    public void setid(String uid) {
+        this.id = uid;
+    }
 
     public String getFname() {
         return fname;
@@ -51,19 +73,25 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+    public boolean isAdmin() {
+        return isAdmin;
+    }
 
-
-
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
+    }
 
 
     @Override
     public String toString() {
         return "User{" +
-                "fname='" + fname + '\'' +
+                "id='" + id + '\'' +
+                ", fname='" + fname + '\'' +
                 ", lname='" + lname + '\'' +
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
+                ", isAdmin=" + isAdmin +
                 '}';
     }
 }
