@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "5745469883",
+    "firebase_url": "https://guygalfirebase-default-rtdb.firebaseio.com",
+    "project_id": "guygalfirebase",
+    "storage_bucket": "guygalfirebase.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:5745469883:android:7e9938405fb3a483a4fc9e",
+        "android_client_info": {
+          "package_name": "com.example.myfinalproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDwpQhLcYdSudrn294hgu3IfP_dXKpOIuA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
