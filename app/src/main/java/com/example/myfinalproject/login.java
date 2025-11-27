@@ -44,7 +44,7 @@ public class login extends AppCompatActivity implements View.OnClickListener {
             return insets;
         });
 
-        // אתחול משתנים
+
         databaseService = DatabaseService.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
