@@ -12,10 +12,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyFinalProject">
         <activity
-            android:name=".register"
+            android:name=".homepage"
             android:exported="false" />
         <activity
             android:name=".login"
+            android:exported="false" />
+        <activity
+            android:name=".register"
             android:exported="false" />
         <activity
             android:name=".Splash"
