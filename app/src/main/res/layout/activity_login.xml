@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".login">
 
-    <!-- כותרת -->
+
     <TextView
         android:id="@+id/loginTitle"
         android:layout_width="wrap_content"
@@ -20,7 +20,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="40dp"/>
 
-    <!-- שדה אימייל -->
+
     <EditText
         android:id="@+id/emailInput"
         android:layout_width="0dp"

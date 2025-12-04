@@ -19,6 +19,7 @@
         android:focusable="false"/>
 
 
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -49,9 +50,10 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:text="הרשמה"
+            android:textStyle="bold"
             android:textSize="18sp"
-            android:backgroundTint="#F4531E"
-            android:textColor="#FFFFFF"
+            android:backgroundTint="#3B3555E5"
+            android:textColor="#000000"
             android:layout_marginBottom="16dp"/>
 
         <Button
@@ -59,9 +61,10 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:text="התחברות"
+            android:textStyle="bold"
             android:textSize="18sp"
-            android:backgroundTint="#F2FDD835"
-            android:textColor="#FFFFFF"
+            android:backgroundTint="#15FDD835"
+            android:textColor="#000000"
             android:layout_marginBottom="16dp"/>
 
         <Button
@@ -69,9 +72,10 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:text="אודות"
+            android:textStyle="bold"
             android:textSize="18sp"
-            android:backgroundTint="#00ACC1"
-            android:textColor="#FFFFFF"/>
+            android:backgroundTint="#66E53935"
+            android:textColor="#000000"/>
 
     </LinearLayout>
 

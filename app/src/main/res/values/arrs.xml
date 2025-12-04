@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+
+    <string-array name="typeArr">
+        <item>נוזלים</item>
+        <item>ירקות</item>
+        <item>פירות</item>
+        <item>תוספי חלבון</item>
+        <item>ממתיקים</item>
+        <item>אגוזים</item>
+
+
+    </string-array>
+</resources>

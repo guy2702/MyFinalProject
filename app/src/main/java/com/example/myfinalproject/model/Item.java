@@ -10,9 +10,13 @@ public class Item {
     private double fat;
     private double carbs;
 
+    String pic;
 
-    public Item(int id, String name, String type,
-                double calories, double protein, double fat, double carbs) {
+
+    public Item() {
+    }
+
+    public Item(int id, String name, String type, double calories, double protein, double fat, double carbs, String pic) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -20,6 +24,7 @@ public class Item {
         this.protein = protein;
         this.fat = fat;
         this.carbs = carbs;
+        this.pic = pic;
     }
 
     // --- Getters & Setters ---
@@ -73,6 +78,19 @@ public class Item {
 
     public void setCarbs(double carbs) {
         this.carbs = carbs;
+    }
+
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getPic() {
+        return pic;
+    }
+
+    public void setPic(String pic) {
+        this.pic = pic;
     }
 
     // --- מתודה שתדפיס את כל הנתונים ---

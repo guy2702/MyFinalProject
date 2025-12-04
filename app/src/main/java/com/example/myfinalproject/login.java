@@ -1,7 +1,9 @@
 package com.example.myfinalproject;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,7 +17,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.myfinalproject.R;
 import com.example.myfinalproject.model.User;
 import com.example.myfinalproject.services.DatabaseService;
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,8 +29,12 @@ public class login extends AppCompatActivity implements View.OnClickListener {
     private EditText etEmail, etPassword;
     private Button btnLogin;
     private TextView tvRegister;
+
     private DatabaseService databaseService;
     private FirebaseAuth mAuth;
+
+    public static final String MyPREFERENCES = "MyPrefs";
+    SharedPreferences sharedPreferences;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -44,6 +49,7 @@ public class login extends AppCompatActivity implements View.OnClickListener {
             return insets;
         });
 
+        sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
 
         databaseService = DatabaseService.getInstance();
         mAuth = FirebaseAuth.getInstance();
@@ -52,6 +58,12 @@ public class login extends AppCompatActivity implements View.OnClickListener {
         etPassword = findViewById(R.id.passwordInput);
         btnLogin = findViewById(R.id.loginBtn);
         tvRegister = findViewById(R.id.registerText);
+
+        // הצגת אימייל וסיסמה שמורים אם קיימים
+        String savedEmail = sharedPreferences.getString("email", "");
+        String savedPassword = sharedPreferences.getString("password", "");
+        etEmail.setText(savedEmail);
+        etPassword.setText(savedPassword);
 
         btnLogin.setOnClickListener(this);
         tvRegister.setOnClickListener(this);
@@ -65,9 +77,13 @@ public class login extends AppCompatActivity implements View.OnClickListener {
             String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
-            if (!checkInput(email, password)) {
-                return;
-            }
+            // שמירה ב־SharedPreferences
+            sharedPreferences.edit()
+                    .putString("email", email)
+                    .putString("password", password)
+                    .apply();
+
+            if (!checkInput(email, password)) return;
 
             loginUser(email, password);
 
@@ -83,13 +99,11 @@ public class login extends AppCompatActivity implements View.OnClickListener {
             etEmail.requestFocus();
             return false;
         }
-
         if (password.isEmpty() || password.length() < 6) {
-            etPassword.setError("סיסמה חייבת להיות לפחות 6 תווים");
+            etPassword.setError("הסיסמה חייבת להיות לפחות 6 תווים");
             etPassword.requestFocus();
             return false;
         }
-
         return true;
     }
 
@@ -108,12 +122,25 @@ public class login extends AppCompatActivity implements View.OnClickListener {
                         databaseService.getUser(uid, new DatabaseService.DatabaseCallback<User>() {
                             @Override
                             public void onCompleted(User user) {
-                                Log.d(TAG, "Login success, user: " + user.getid());
+                                if (user == null) {
+                                    Log.e(TAG, "User not found for UID: " + uid);
+                                    etPassword.setError("משתמש לא נמצא");
+                                    etPassword.requestFocus();
+                                    return;
+                                }
 
-                                Intent homepageIntent = new Intent(login.this, homepage.class);
-                                homepageIntent.putExtra("USER_ID", user.getid());
-                                homepageIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                startActivity(homepageIntent);
+                                Log.d(TAG, "Login success, user: " + user.getId());
+
+                                Intent intent;
+                                if (user.isAdmin()) {
+                                    intent = new Intent(login.this, AdminPage.class);
+                                } else {
+                                    intent = new Intent(login.this, homepage.class);
+                                    intent.putExtra("USER_ID", user.getId());
+                                }
+
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
                             }
 
                             @Override
