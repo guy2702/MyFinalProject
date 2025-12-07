@@ -8,6 +8,22 @@
     tools:context=".login">
 
 
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="1"
+        android:clickable="false"
+        android:focusable="false"
+        android:contentDescription="רקע"
+        android:scaleType="fitXY"
+        android:src="@drawable/back1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
     <TextView
         android:id="@+id/loginTitle"
         android:layout_width="wrap_content"

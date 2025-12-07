@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.widget.ArrayAdapter;
@@ -14,41 +13,40 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.example.myfinalproject.Utils.ImageUtil;
 import com.example.myfinalproject.model.Item;
+import com.example.myfinalproject.services.DatabaseService;
 
 public class AddItem extends AppCompatActivity {
 
-    private EditText etName, etCalories, etProtein, etFat, etCarbs;
+    private EditText eTname, eTcalories, eTprotein, eTfat, eTcarbs;
     private Spinner spinnerType;
     private ImageView itemImage;
     private Button btnAddItem;
 
-    private Uri selectedImageUri = null;
+    private Bitmap cameraBitmap = null;
 
     private ActivityResultLauncher<String> galleryLauncher;
     private ActivityResultLauncher<Intent> cameraLauncher;
+    private ActivityResultLauncher<String> cameraPermissionLauncher;
+
+    private DatabaseService databaseService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_item);
 
-        etName = findViewById(R.id.inputName);
-        etCalories = findViewById(R.id.inputCalories);
-        etProtein = findViewById(R.id.inputProtein);
-        etFat = findViewById(R.id.inputFat);
-        etCarbs = findViewById(R.id.inputCarbs);
-        spinnerType = findViewById(R.id.spinnerType);
-        itemImage = findViewById(R.id.itemImage);
-        btnAddItem = findViewById(R.id.btnAddItem);
+        InitViews();
+        databaseService = DatabaseService.getInstance();
 
-        // מחברים את ה-Spinner ל-string-array
+
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.typeArr,
@@ -57,79 +55,121 @@ public class AddItem extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerType.setAdapter(adapter);
 
-        // --- Launchers ---
+        // Permission launcher
+        cameraPermissionLauncher =
+                registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+                        isGranted -> {
+                            if (isGranted) openCamera();
+                            else Toast.makeText(this, "אין הרשאת מצלמה", Toast.LENGTH_SHORT).show();
+                        });
+
+        // Gallery
         galleryLauncher = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
-                new ActivityResultCallback<Uri>() {
-                    @Override
-                    public void onActivityResult(Uri result) {
-                        if (result != null) {
-                            selectedImageUri = result;
-                            itemImage.setImageURI(selectedImageUri);
-                        }
+                uri -> {
+                    if (uri != null) {
+                        itemImage.setImageURI(uri);
+                        cameraBitmap = null;
                     }
-                });
+                }
+        );
 
+        // Camera (Bitmap)
         cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Bundle extras = result.getData().getExtras();
-                        Bitmap photoBitmap = (Bitmap) extras.get("data");
-                        itemImage.setImageBitmap(photoBitmap);
-
-                        // שמירה זמנית של התמונה ב-URI null (ניתן להמיר ל-Uri או להעלות ל-Firebase)
-                        selectedImageUri = null;
+                        if (extras != null) {
+                            cameraBitmap = (Bitmap) extras.get("data");
+                            itemImage.setImageBitmap(cameraBitmap);
+                        }
                     }
-                });
+                }
+        );
 
-        // --- לחיצות ---
-        itemImage.setOnClickListener(v -> {
-            // בחר בין גלריה למצלמה
-            chooseImage();
-        });
-
-        btnAddItem.setOnClickListener(v -> addItem());
+        itemImage.setOnClickListener(v -> showImagePickerDialog());
+        btnAddItem.setOnClickListener(v -> saveItem());
     }
 
-    private void chooseImage() {
-        // אפשר לפתוח תפריט עם אפשרות גלריה/מצלמה, פה דוגמא פשוטה לגלריה
+    private void InitViews() {
+        eTname = findViewById(R.id.inputName);
+        eTcalories = findViewById(R.id.inputCalories);
+        eTprotein = findViewById(R.id.inputProtein);
+        eTfat = findViewById(R.id.inputFat);
+        eTcarbs = findViewById(R.id.inputCarbs);
+        spinnerType = findViewById(R.id.spinnerType);
+        itemImage = findViewById(R.id.itemImage);
+        btnAddItem = findViewById(R.id.btnAddItem);
+    }
+
+    private void showImagePickerDialog() {
+        String[] options = {"צלם תמונה", "בחר מהגלריה"};
+        new AlertDialog.Builder(this)
+                .setTitle("בחר מקור תמונה")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) openCamera();
+                    else openGallery();
+                })
+                .show();
+    }
+
+    private void openGallery() {
         galleryLauncher.launch("image/*");
     }
 
-    private void addItem() {
-        String name = etName.getText().toString().trim();
-        String type = spinnerType.getSelectedItem().toString();
-        String caloriesStr = etCalories.getText().toString().trim();
-        String proteinStr = etProtein.getText().toString().trim();
-        String fatStr = etFat.getText().toString().trim();
-        String carbsStr = etCarbs.getText().toString().trim();
-
-        if (name.isEmpty() || caloriesStr.isEmpty() || proteinStr.isEmpty() || fatStr.isEmpty() || carbsStr.isEmpty()) {
-            Toast.makeText(this, "נא למלא את כל השדות", Toast.LENGTH_SHORT).show();
+    private void openCamera() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
             return;
         }
 
-        double calories = Double.parseDouble(caloriesStr);
-        double protein = Double.parseDouble(proteinStr);
-        double fat = Double.parseDouble(fatStr);
-        double carbs = Double.parseDouble(carbsStr);
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraLauncher.launch(cameraIntent);
+    }
 
-        String picString = selectedImageUri != null ? selectedImageUri.toString() : null;
+    private void saveItem() {
+        String name = eTname.getText().toString().trim();
+        String calories = eTcalories.getText().toString().trim();
+        String protein = eTprotein.getText().toString().trim();
+        String fat = eTfat.getText().toString().trim();
+        String carbs = eTcarbs.getText().toString().trim();
+        String type = spinnerType.getSelectedItem().toString();
 
-        // יצירת Item עם הפרמטרים + תמונה
-        Item newItem = new Item(0, name, type, calories, protein, fat, carbs, picString);
+        if (name.isEmpty() || calories.isEmpty() || protein.isEmpty()
+                || fat.isEmpty() || carbs.isEmpty()) {
+            Toast.makeText(this, "אנא מלא את כל השדות", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        Toast.makeText(this, "מוצר נוסף: " + newItem.getName(), Toast.LENGTH_SHORT).show();
+        int id = Integer.parseInt(databaseService.generateItemId());
 
-        // ניקוי השדות
-        etName.setText("");
-        etCalories.setText("");
-        etProtein.setText("");
-        etFat.setText("");
-        etCarbs.setText("");
-        spinnerType.setSelection(0);
-        itemImage.setImageResource(R.drawable.ic_launcher_foreground);
-        selectedImageUri = null;
+        // המרה ל-Base64 דרך ImageView (כולל תמונת מצלמה או גלריה)
+        String base64Image = ImageUtil.convertTo64Base(itemImage);
+
+        Item item = new Item(
+                id,
+                name,
+                type,
+                Double.parseDouble(calories),
+                Double.parseDouble(protein),
+                Double.parseDouble(fat),
+                Double.parseDouble(carbs),
+                base64Image
+        );
+
+        databaseService.createNewItem(item, new DatabaseService.DatabaseCallback<Void>() {
+            @Override
+            public void onCompleted(Void object) {
+                Toast.makeText(AddItem.this, "המוצר נוסף בהצלחה!", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+
+            @Override
+            public void onFailed(Exception e) {
+                Toast.makeText(AddItem.this, "שגיאה בהוספת מוצר", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

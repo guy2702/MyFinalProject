@@ -9,6 +9,23 @@
     android:padding="24dp"
     tools:context=".register">
 
+
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="430dp"
+        android:layout_height="736dp"
+        android:clickable="false"
+        android:contentDescription="רקע"
+        android:focusable="false"
+        android:scaleType="fitXY"
+        android:src="@drawable/back2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+
     <TextView
         android:id="@+id/textTitle"
         android:layout_width="wrap_content"
