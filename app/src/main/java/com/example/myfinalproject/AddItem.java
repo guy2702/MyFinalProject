@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -25,10 +24,10 @@ import com.example.myfinalproject.services.DatabaseService;
 
 public class AddItem extends AppCompatActivity {
 
-    private EditText eTname, eTcalories, eTprotein, eTfat, eTcarbs;
+    private EditText inputName, inputCalories, inputProtein, inputFat, inputCarbs;
     private Spinner spinnerType;
     private ImageView itemImage;
-    private Button btnAddItem;
+    private Button btnAddItem, btnCamera, btnGallery;
 
     private Bitmap cameraBitmap = null;
 
@@ -43,10 +42,10 @@ public class AddItem extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_item);
 
-        InitViews();
+        initViews();
         databaseService = DatabaseService.getInstance();
 
-
+        // Spinner setup
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.typeArr,
@@ -55,7 +54,7 @@ public class AddItem extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerType.setAdapter(adapter);
 
-        // Permission launcher
+        // Camera permission
         cameraPermissionLauncher =
                 registerForActivityResult(new ActivityResultContracts.RequestPermission(),
                         isGranted -> {
@@ -63,7 +62,7 @@ public class AddItem extends AppCompatActivity {
                             else Toast.makeText(this, "אין הרשאת מצלמה", Toast.LENGTH_SHORT).show();
                         });
 
-        // Gallery
+        // Gallery launcher
         galleryLauncher = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
                 uri -> {
@@ -74,7 +73,7 @@ public class AddItem extends AppCompatActivity {
                 }
         );
 
-        // Camera (Bitmap)
+        // Camera launcher (thumbnail)
         cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -88,30 +87,23 @@ public class AddItem extends AppCompatActivity {
                 }
         );
 
-        itemImage.setOnClickListener(v -> showImagePickerDialog());
+        // Buttons
+        btnCamera.setOnClickListener(v -> openCamera());
+        btnGallery.setOnClickListener(v -> openGallery());
         btnAddItem.setOnClickListener(v -> saveItem());
     }
 
-    private void InitViews() {
-        eTname = findViewById(R.id.inputName);
-        eTcalories = findViewById(R.id.inputCalories);
-        eTprotein = findViewById(R.id.inputProtein);
-        eTfat = findViewById(R.id.inputFat);
-        eTcarbs = findViewById(R.id.inputCarbs);
+    private void initViews() {
+        inputName = findViewById(R.id.inputName);
+        inputCalories = findViewById(R.id.inputCalories);
+        inputProtein = findViewById(R.id.inputProtein);
+        inputFat = findViewById(R.id.inputFat);
+        inputCarbs = findViewById(R.id.inputCarbs);
         spinnerType = findViewById(R.id.spinnerType);
         itemImage = findViewById(R.id.itemImage);
+        btnCamera = findViewById(R.id.btnCamera);
+        btnGallery = findViewById(R.id.btnGallery);
         btnAddItem = findViewById(R.id.btnAddItem);
-    }
-
-    private void showImagePickerDialog() {
-        String[] options = {"צלם תמונה", "בחר מהגלריה"};
-        new AlertDialog.Builder(this)
-                .setTitle("בחר מקור תמונה")
-                .setItems(options, (dialog, which) -> {
-                    if (which == 0) openCamera();
-                    else openGallery();
-                })
-                .show();
     }
 
     private void openGallery() {
@@ -130,11 +122,11 @@ public class AddItem extends AppCompatActivity {
     }
 
     private void saveItem() {
-        String name = eTname.getText().toString().trim();
-        String calories = eTcalories.getText().toString().trim();
-        String protein = eTprotein.getText().toString().trim();
-        String fat = eTfat.getText().toString().trim();
-        String carbs = eTcarbs.getText().toString().trim();
+        String name = inputName.getText().toString().trim();
+        String calories = inputCalories.getText().toString().trim();
+        String protein = inputProtein.getText().toString().trim();
+        String fat = inputFat.getText().toString().trim();
+        String carbs = inputCarbs.getText().toString().trim();
         String type = spinnerType.getSelectedItem().toString();
 
         if (name.isEmpty() || calories.isEmpty() || protein.isEmpty()
@@ -143,9 +135,14 @@ public class AddItem extends AppCompatActivity {
             return;
         }
 
+        if (itemImage.getDrawable() == null) {
+            Toast.makeText(this, "נא לבחור תמונה", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         int id = Integer.parseInt(databaseService.generateItemId());
 
-        // המרה ל-Base64 דרך ImageView (כולל תמונת מצלמה או גלריה)
+        // Convert image to Base64
         String base64Image = ImageUtil.convertTo64Base(itemImage);
 
         Item item = new Item(

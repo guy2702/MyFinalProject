@@ -34,7 +34,9 @@
             android:layout_height="wrap_content"
             android:text="הוספת פריט"
             android:textSize="18sp"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#4D96FF"
+            android:textColor="#FFFFFF"/>
 
         <Button
             android:id="@+id/btnUserTable"
@@ -42,15 +44,19 @@
             android:layout_height="wrap_content"
             android:text="טבלת משתמשים"
             android:textSize="18sp"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#4D96FF"
+            android:textColor="#FFFFFF"/>
 
         <Button
             android:id="@+id/btnAllShakes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="כל השייקים "
+            android:text="כל השייקים"
             android:textSize="18sp"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#4D96FF"
+            android:textColor="#FFFFFF"/>
 
         <Button
             android:id="@+id/btnLogout"
@@ -58,8 +64,9 @@
             android:layout_height="wrap_content"
             android:text="התנתקות"
             android:textSize="18sp"
-            android:layout_marginTop="32dp"/>
-
+            android:layout_marginTop="32dp"
+            android:backgroundTint="#4D96FF"
+            android:textColor="#FFFFFF"/>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

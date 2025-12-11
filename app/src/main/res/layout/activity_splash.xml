@@ -6,7 +6,20 @@
     android:layout_height="match_parent">
 
     <!-- רקע -->
-
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="1"
+        android:clickable="false"
+        android:focusable="false"
+        android:contentDescription="רקע"
+        android:scaleType="fitXY"
+        android:src="@drawable/backsplash"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
     <!-- טקסט ברוכים הבאים -->
     <TextView
         android:id="@+id/welcomeText"
