@@ -2,8 +2,8 @@ package com.example.myfinalproject;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,11 +11,10 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-public class AdminPage extends AppCompatActivity implements View.OnClickListener {
+public class AdminPage extends AppCompatActivity {
 
-    private Button btnAddItem;
-    private Button btnUsers;
-    private Button btnLogout; // כפתור התנתקות
+    private Button btnAddItem, btnUsers, btnLogout;
+    private TextView tvGreeting;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,29 +31,22 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
         btnAddItem = findViewById(R.id.btnAddItem);
         btnUsers = findViewById(R.id.btnUserTable);
         btnLogout = findViewById(R.id.btnLogout);
+        tvGreeting = findViewById(R.id.tvGreeting);
 
-        // שימוש ב-this לכל הכפתורים
-        btnAddItem.setOnClickListener(this);
-        btnUsers.setOnClickListener(this);
-        btnLogout.setOnClickListener(this);
-    }
+        // קבלת שם המשתמש מה-Intent
+        String userName = getIntent().getStringExtra("USER_NAME");
+        if (userName != null) {
+            tvGreeting.setText("שלום " + userName + "!");
+        }
 
-    @Override
-    public void onClick(View v) {
-        int id = v.getId();
-
-        if (id == btnAddItem.getId()) {
-            Intent intent = new Intent(AdminPage.this, AddItem.class);
-            startActivity(intent);
-        } else if (id == btnUsers.getId()) {
-            Intent intent = new Intent(AdminPage.this, users.class);
-            startActivity(intent);
-        } else if (id == btnLogout.getId()) {
-            // מעבר לעמוד הבית MainActivity וניקוי Back Stack
+        // הכפתורים
+        btnAddItem.setOnClickListener(v -> startActivity(new Intent(AdminPage.this, AddItem.class)));
+        btnUsers.setOnClickListener(v -> startActivity(new Intent(AdminPage.this, users.class)));
+        btnLogout.setOnClickListener(v -> {
             Intent intent = new Intent(AdminPage.this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
-        }
+        });
     }
 }

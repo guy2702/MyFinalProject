@@ -136,9 +136,10 @@ public class login extends AppCompatActivity implements View.OnClickListener {
                                     intent = new Intent(login.this, AdminPage.class);
                                 } else {
                                     intent = new Intent(login.this, homepage.class);
-                                    intent.putExtra("USER_ID", user.getId());
                                 }
 
+                                // העברת שם המשתמש ל־Activity הבא
+                                intent.putExtra("USER_NAME", user.getFname());
                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                 startActivity(intent);
                             }

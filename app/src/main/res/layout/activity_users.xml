@@ -5,7 +5,8 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="#FDF6F0">
 
     <!-- כותרת -->
     <TextView
@@ -13,9 +14,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="רשימת משתמשים"
-        android:textSize="26sp"
+        android:textSize="28sp"
         android:textStyle="bold"
         android:gravity="center"
+        android:textColor="#564634"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -27,12 +29,16 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="חפש משתמש..."
-        android:padding="8dp"
-        android:background="@android:drawable/edit_text"
+        android:padding="12dp"
+        android:backgroundTint="#FFFFFF"
+        android:layout_marginBottom="12dp"
+        android:drawableStart="@android:drawable/ic_menu_search"
+        android:drawablePadding="8dp"
+        android:clipToOutline="true"
+        android:outlineProvider="background"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="8dp"/>
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- רשימת משתמשים -->
     <androidx.recyclerview.widget.RecyclerView
@@ -42,5 +48,8 @@
         app:layout_constraintTop_toBottomOf="@id/etSearch"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp"
+        android:scrollbars="vertical"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
