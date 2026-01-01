@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.myfinalproject.Adapter.UsersAdapter;
 import com.example.myfinalproject.model.User;
 import com.example.myfinalproject.services.DatabaseService;
 

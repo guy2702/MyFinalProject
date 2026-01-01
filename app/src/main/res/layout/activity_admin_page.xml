@@ -29,7 +29,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- ברכה למשתמש -->
         <TextView
             android:id="@+id/tvGreeting"
             android:layout_width="wrap_content"
@@ -54,6 +53,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="הוספת פריט"
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#9D37393C"
+            android:textColor="#FFFFFF"/>
+
+        <!-- כפתור חדש: כל הפריטים -->
+        <Button
+            android:id="@+id/btnItems"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="כל הפריטים"
             android:textSize="18sp"
             android:layout_marginBottom="16dp"
             android:backgroundTint="#9D37393C"
@@ -89,5 +99,4 @@
             android:textColor="#FFFFFF"
             android:textSize="18sp" />
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

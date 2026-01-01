@@ -9,8 +9,8 @@ import com.example.myfinalproject.model.User;
 import com.example.myfinalproject.model.Item;
 import com.example.myfinalproject.model.Shake;
 
-import com.google.firebase.auth.FirebaseAuth;       // ← נוספו
-import com.google.firebase.auth.FirebaseUser;       // ← נוספו
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -18,6 +18,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
+import com.google.firebase.database.ValueEventListener;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -121,11 +122,9 @@ public class DatabaseService {
     /// @param path the path to read the data from
     /// @return a DatabaseReference object to read the data from
     /// @see DatabaseReference
-
     private DatabaseReference readData(@NotNull final String path) {
         return databaseReference.child(path);
     }
-
 
     /// get data from the database at a specific path
     /// @param path the path to get the data from
@@ -171,13 +170,11 @@ public class DatabaseService {
     /// @return a new id for the object
     /// @see String
     /// @see DatabaseReference#push()
-
     private String generateNewId(@NotNull final String path) {
         return databaseReference.child(path).push().getKey();
     }
 
-
-    /// run a transaction on the data at a specific path </br>
+    /// run a transaction on the data at a specific path
     /// good for incrementing a value or modifying an object in the database
     /// @param path the path to run the transaction on
     /// @param clazz the class of the object to return
@@ -234,7 +231,6 @@ public class DatabaseService {
     ///            if the operation fails, the callback will receive an exception
     /// @see DatabaseCallback
     /// @see User
-
     public void createNewUser(@NotNull final User user,
                               @Nullable final DatabaseCallback<String> callback) {
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -353,11 +349,31 @@ public class DatabaseService {
     }
 
     public String generateItemId() {
-        return generateNewId(ITEMS_PATH);
+        return generateNewId(ITEMS_PATH); // ← String עכשיו
     }
 
     public void deleteItem(@NotNull final String itemId, @Nullable final DatabaseCallback<Void> callback) {
         deleteData(ITEMS_PATH + "/" + itemId, callback);
+    }
+
+    /// --- הוספת תמיכה ב-Realtime Listener --- ///
+    public void listenToItemsRealtime(@NotNull final DatabaseCallback<List<Item>> callback) {
+        readData(ITEMS_PATH).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Item> items = new ArrayList<>();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Item item = ds.getValue(Item.class);
+                    if (item != null) items.add(item);
+                }
+                callback.onCompleted(items);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onFailed(error.toException());
+            }
+        });
     }
 
     // endregion item section

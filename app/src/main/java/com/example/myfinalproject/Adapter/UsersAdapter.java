@@ -1,4 +1,4 @@
-package com.example.myfinalproject;
+package com.example.myfinalproject.Adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.myfinalproject.R;
 import com.example.myfinalproject.model.User;
 
 import java.util.ArrayList;
