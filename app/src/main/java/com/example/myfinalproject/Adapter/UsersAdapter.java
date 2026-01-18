@@ -1,79 +1,101 @@
-package com.example.myfinalproject.Adapter;
+package com.example.myfinalproject;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.myfinalproject.R;
 import com.example.myfinalproject.model.User;
+import com.example.myfinalproject.services.DatabaseService;
 
-import java.util.ArrayList;
-import java.util.List;
+public class UserDetails extends AppCompatActivity {
 
-public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> {
-
-    private List<User> users;      // הרשימה המוצגת
-    private List<User> fullList;   // הרשימה המקורית לשמירה
-
-    public UsersAdapter(List<User> users) {
-        this.users = users;
-        this.fullList = new ArrayList<>(users);
-    }
-
-    @NonNull
-    @Override
-    public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.itemuser, parent, false);
-        return new UserViewHolder(view);
-    }
+    private EditText etFirstName, etLastName, etEmail, etPhone;
+    private Button btnDelete, btnUpdate;
+    private String userId;
 
     @Override
-    public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
-        User user = users.get(position);
-        holder.tvFullName.setText(user.getFname() + " " + user.getLname());
-        holder.tvEmail.setText(user.getEmail());
-        holder.tvPhone.setText(user.getPhone());
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_user_details);
+
+        etFirstName = findViewById(R.id.etUserFirstNameDetail);
+        etLastName = findViewById(R.id.etUserLastNameDetail);
+        etEmail = findViewById(R.id.etUserEmailDetail);
+        etPhone = findViewById(R.id.etUserPhoneDetail);
+
+        btnDelete = findViewById(R.id.btnDeleteUser);
+        btnUpdate = findViewById(R.id.btnUpdateUser);
+
+        userId = getIntent().getStringExtra("userId");
+        if (userId == null) return;
+
+        loadUserDetails();
+
+        btnDelete.setOnClickListener(v -> deleteUser());
+        btnUpdate.setOnClickListener(v -> updateUser());
     }
 
-    @Override
-    public int getItemCount() {
-        return users.size();
-    }
+    private void loadUserDetails() {
+        DatabaseService.getInstance().getUser(userId, new DatabaseService.DatabaseCallback<User>() {
+            @Override
+            public void onCompleted(User user) {
+                if (user == null) return;
 
-    // פונקציית סינון גמישה
-    public void filter(String query) {
-        query = query.toLowerCase().replace(" ", ""); // הסרת רווחים בחיפוש
-        users.clear();
-        if(query.isEmpty()) {
-            users.addAll(fullList);
-        } else {
-            for(User user : fullList) {
-                // הסרת רווחים מהשדות לפני השוואה
-                String fullName = (user.getFname() + user.getLname()).toLowerCase().replace(" ", "");
-                String email = user.getEmail().toLowerCase().replace(" ", "");
-                String phone = user.getPhone().toLowerCase().replace(" ", "");
-
-                if(fullName.contains(query) || email.contains(query) || phone.contains(query)) {
-                    users.add(user);
-                }
+                etFirstName.setText(user.getFname());
+                etLastName.setText(user.getLname());
+                etEmail.setText(user.getEmail());
+                etPhone.setText(user.getPhone());
             }
-        }
-        notifyDataSetChanged();
+
+            @Override
+            public void onFailed(Exception e) {
+                e.printStackTrace();
+                Toast.makeText(UserDetails.this, "שגיאה בטעינת המשתמש", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    static class UserViewHolder extends RecyclerView.ViewHolder {
-        TextView tvFullName, tvEmail, tvPhone;
+    private void deleteUser() {
+        DatabaseService.getInstance().deleteUser(userId, new DatabaseService.DatabaseCallback<Void>() {
+            @Override
+            public void onCompleted(Void unused) {
+                Toast.makeText(UserDetails.this, "המשתמש נמחק בהצלחה", Toast.LENGTH_SHORT).show();
+                finish(); // סגור עמוד זה וחזור לרשימת המשתמשים
+            }
 
-        public UserViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tvFullName = itemView.findViewById(R.id.tvFullName);
-            tvEmail = itemView.findViewById(R.id.tvEmail);
-            tvPhone = itemView.findViewById(R.id.tvPhone);
-        }
+            @Override
+            public void onFailed(Exception e) {
+                e.printStackTrace();
+                Toast.makeText(UserDetails.this, "שגיאה במחיקת המשתמש", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateUser() {
+        String fname = etFirstName.getText().toString().trim();
+        String lname = etLastName.getText().toString().trim();
+        String email = etEmail.getText().toString().trim();
+        String phone = etPhone.getText().toString().trim();
+
+        User updatedUser = new User(userId, fname, lname, email, phone, ""); // הסיסמה נשארת ריקה
+
+        DatabaseService.getInstance().updateUser(updatedUser, new DatabaseService.DatabaseCallback<Void>() {
+            @Override
+            public void onCompleted(Void unused) {
+                Toast.makeText(UserDetails.this, "פרטי המשתמש עודכנו בהצלחה", Toast.LENGTH_SHORT).show();
+                finish(); // חזרה לרשימת המשתמשים
+            }
+
+            @Override
+            public void onFailed(Exception e) {
+                e.printStackTrace();
+                Toast.makeText(UserDetails.this, "שגיאה בעדכון המשתמש", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

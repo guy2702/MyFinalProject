@@ -1,8 +1,10 @@
 package com.example.myfinalproject.model;
 
+import androidx.annotation.NonNull;
+
 public class Item {
 
-    private String id;          // ← String במקום int
+    private String id;          // תמיד נשתמש ב-String ב-App
     private String name;
     private String type;
     private double calories;
@@ -27,7 +29,15 @@ public class Item {
 
     // --- Getters & Setters ---
     public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+
+    // מתקן את הבעיה עם Firebase: אם ה-ID היה Long, נהפוך אותו ל-String
+    public void setId(Object id) {
+        if (id != null) {
+            this.id = String.valueOf(id);
+        } else {
+            this.id = null;
+        }
+    }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -50,6 +60,7 @@ public class Item {
     public String getPic() { return pic; }
     public void setPic(String pic) { this.pic = pic; }
 
+    @NonNull
     @Override
     public String toString() {
         return String.format(

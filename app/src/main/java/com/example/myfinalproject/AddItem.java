@@ -16,12 +16,14 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.myfinalproject.Utils.ImageUtil;
 import com.example.myfinalproject.model.Item;
 import com.example.myfinalproject.services.DatabaseService;
 
@@ -29,22 +31,25 @@ import java.io.IOException;
 
 public class AddItem extends AppCompatActivity {
 
-    private static final int REQUEST_CAMERA = 100;
-    private static final int REQUEST_GALLERY = 101;
-    private static final int PERMISSION_REQUEST = 200;
 
+    // constant to compare
+    // the activity result code
+    int SELECT_PICTURE = 200;
     private EditText inputName, inputCalories, inputProtein, inputFat, inputCarbs;
     private Spinner spinnerType;
     private Button btnAddItem, btnCamera, btnGallery;
     private ImageView itemImage;
-    private Uri imageUri = null;
+
+    private ActivityResultLauncher<Intent> captureImageLauncher;
+
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_item);
 
-        // Find views
+        // --- Find views ---
         inputName = findViewById(R.id.inputName);
         inputCalories = findViewById(R.id.inputCalories);
         inputProtein = findViewById(R.id.inputProtein);
@@ -56,7 +61,7 @@ public class AddItem extends AppCompatActivity {
         btnCamera = findViewById(R.id.btnCamera);
         btnGallery = findViewById(R.id.btnGallery);
 
-        // Set spinner adapter
+        // --- Set spinner adapter ---
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 this,
                 R.array.typeArr,
@@ -65,7 +70,7 @@ public class AddItem extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerType.setAdapter(adapter);
 
-        // Button listeners
+        // --- Button listeners ---
         btnAddItem.setOnClickListener(v -> addItem());
         btnCamera.setOnClickListener(v -> openCamera());
         btnGallery.setOnClickListener(v -> openGallery());
@@ -80,6 +85,9 @@ public class AddItem extends AppCompatActivity {
         String fatStr = inputFat.getText().toString().trim();
         String carbsStr = inputCarbs.getText().toString().trim();
 
+        String imagePic = ImageUtil.convertTo64Base(itemImage);
+
+
         if (name.isEmpty() || type.isEmpty()) {
             Toast.makeText(this, "אנא מלא שם וסוג מוצר", Toast.LENGTH_SHORT).show();
             return;
@@ -90,7 +98,7 @@ public class AddItem extends AppCompatActivity {
         double fat = fatStr.isEmpty() ? 0 : Double.parseDouble(fatStr);
         double carbs = carbsStr.isEmpty() ? 0 : Double.parseDouble(carbsStr);
 
-        // צור פריט חדש
+        // --- צור פריט חדש עם ID מסוג String ---
         Item item = new Item();
         item.setId(DatabaseService.getInstance().generateItemId());
         item.setName(name);
@@ -99,11 +107,8 @@ public class AddItem extends AppCompatActivity {
         item.setProtein(protein);
         item.setFat(fat);
         item.setCarbs(carbs);
+        item.setPic(imagePic);
 
-        // תמונה (אם קיימת)
-        if (imageUri != null) {
-            item.setPic(imageUri.toString());
-        }
 
         DatabaseService.getInstance().createNewItem(item, new DatabaseService.DatabaseCallback<Void>() {
             @Override
@@ -125,84 +130,50 @@ public class AddItem extends AppCompatActivity {
 
     // --- Open Camera ---
     private void openCamera() {
-        if (checkPermissions()) {
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(intent, REQUEST_CAMERA);
-        }
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        captureImageLauncher.launch(takePictureIntent);
     }
 
     // --- Open Gallery ---
     private void openGallery() {
-        if (checkPermissions()) {
-            Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setType("image/*");
-            startActivityForResult(intent, REQUEST_GALLERY);
-        }
+
+        imageChooser();
+
     }
 
-    // --- Permission Check ---
-    private boolean checkPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
-                    ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{
-                        Manifest.permission.CAMERA,
-                        Manifest.permission.READ_MEDIA_IMAGES
-                }, PERMISSION_REQUEST);
-                return false;
-            }
-        } else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
-                    ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{
-                        Manifest.permission.CAMERA,
-                        Manifest.permission.READ_EXTERNAL_STORAGE
-                }, PERMISSION_REQUEST);
-                return false;
-            }
-        }
-        return true;
+
+    void imageChooser() {
+
+        // create an instance of the
+        // intent of the type image
+        Intent i = new Intent();
+        i.setType("image/*");
+        i.setAction(Intent.ACTION_GET_CONTENT);
+
+        // pass the constant to compare it
+        // with the returned requestCode
+        startActivityForResult(Intent.createChooser(i, "Select Picture"), SELECT_PICTURE);
     }
 
-    // --- Handle permission result ---
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_REQUEST) {
-            boolean granted = true;
-            for (int res : grantResults) {
-                if (res != PackageManager.PERMISSION_GRANTED) {
-                    granted = false;
-                    break;
-                }
-            }
-            if (!granted) {
-                Toast.makeText(this, "יש לאשר הרשאות מצלמה וגלריה", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    // --- Handle Camera/Gallery result ---
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    // this function is triggered when user
+    // selects the image from the imageChooser
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == Activity.RESULT_OK && data != null) {
-            try {
-                if (requestCode == REQUEST_GALLERY) {
-                    imageUri = data.getData();
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                    itemImage.setImageBitmap(bitmap);
-                } else if (requestCode == REQUEST_CAMERA) {
-                    Bitmap bitmap = (Bitmap) data.getExtras().get("data");
-                    itemImage.setImageBitmap(bitmap);
-                    // לשמור URI זמני
-                    imageUri = data.getData();
+        if (resultCode == RESULT_OK) {
+
+            // compare the resultCode with the
+            // SELECT_PICTURE constant
+            if (requestCode == SELECT_PICTURE) {
+                // Get the url of the image from data
+                Uri selectedImageUri = data.getData();
+                if (null != selectedImageUri) {
+                    // update the preview image in the layout
+                    itemImage.setImageURI(selectedImageUri);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-                Toast.makeText(this, "שגיאה בטעינת התמונה", Toast.LENGTH_SHORT).show();
             }
         }
     }
 }
+
+

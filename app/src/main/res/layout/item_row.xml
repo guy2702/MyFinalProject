@@ -20,7 +20,8 @@
             android:layout_width="match_parent"
             android:layout_height="150dp"
             android:scaleType="centerCrop"
-            android:contentDescription="תמונת פריט"/>
+            android:contentDescription="תמונת פריט"
+            android:background="@android:color/darker_gray"/>
 
         <TextView
             android:id="@+id/tvItemName"

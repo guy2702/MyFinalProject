@@ -81,7 +81,6 @@ public class DatabaseService {
         return instance;
     }
 
-
     // region private generic methods
     // to write and read data from the database
 

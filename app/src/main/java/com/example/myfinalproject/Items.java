@@ -1,6 +1,8 @@
 package com.example.myfinalproject;
 
+import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -25,7 +27,6 @@ public class Items extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_items);
 
-        // התאמת Padding למערכת ה-bars
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.items), (v, insets) -> {
             v.setPadding(
                     insets.getInsets(WindowInsetsCompat.Type.systemBars()).left,
@@ -39,12 +40,16 @@ public class Items extends AppCompatActivity {
         rvItems = findViewById(R.id.rvItems);
 
         itemList = new ArrayList<>();
-        adapter = new ItemAdapter(itemList);
+
+        adapter = new ItemAdapter(itemList, item -> {
+            Intent intent = new Intent(Items.this, ItemId.class);
+            intent.putExtra("itemId", item.getId());
+            startActivity(intent);
+        });
 
         rvItems.setLayoutManager(new LinearLayoutManager(this));
         rvItems.setAdapter(adapter);
 
-        // מאזין בזמן אמת לשינויים ברשימת הפריטים
         DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
             @Override
             public void onCompleted(List<Item> items) {

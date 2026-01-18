@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="#FDF6F0">
+
+    <!-- כותרת -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="פרטי משתמש"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#564634"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- שם פרטי -->
+    <EditText
+        android:id="@+id/tvUserFirstNameDetail"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="שם פרטי"
+        android:textSize="18sp"
+        android:padding="12dp"
+        android:backgroundTint="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <!-- שם משפחה -->
+    <EditText
+        android:id="@+id/tvUserLastNameDetail"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="שם משפחה"
+        android:textSize="18sp"
+        android:padding="12dp"
+        android:backgroundTint="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/tvUserFirstNameDetail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
+    <!-- אימייל -->
+    <EditText
+        android:id="@+id/tvUserEmailDetail"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="אימייל"
+        android:textSize="18sp"
+        android:padding="12dp"
+        android:backgroundTint="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/tvUserLastNameDetail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
+    <!-- טלפון -->
+    <EditText
+        android:id="@+id/tvUserPhoneDetail"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="טלפון"
+        android:textSize="18sp"
+        android:padding="12dp"
+        android:backgroundTint="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/tvUserEmailDetail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
+    <!-- סיסמה -->
+    <EditText
+        android:id="@+id/tvUserPasswordDetail"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="סיסמה"
+        android:textSize="18sp"
+        android:padding="12dp"
+        android:backgroundTint="#FFFFFF"
+        android:inputType="textPassword"
+        app:layout_constraintTop_toBottomOf="@id/tvUserPhoneDetail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
+    <!-- כפתור מחיקה -->
+    <Button
+        android:id="@+id/btnDeleteUser"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="מחיקה"
+        android:backgroundTint="#B71C1C"
+        android:textColor="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/tvUserPasswordDetail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <!-- כפתור עדכון -->
+    <Button
+        android:id="@+id/btnUpdateUser"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="עדכון"
+        android:backgroundTint="#388E3C"
+        android:textColor="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/btnDeleteUser"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
