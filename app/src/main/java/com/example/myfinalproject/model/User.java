@@ -1,6 +1,9 @@
 package com.example.myfinalproject.model;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
+
     private String id;
     private String fname;
     private String lname;
@@ -9,13 +12,12 @@ public class User {
     private String password;
     private boolean isAdmin;
 
+    // קונסטרקטור ריק — חובה ל-Firebase
+    public User() {}
 
-    public User() {
-        // קונסטרקטור ריק — נדרש לפעמים על ידי Firebase
-    }
-
-
-    public User(String id, String fname,String lname,String phone, String email,String password,boolean isAdmin){
+    public User(String id, String fname, String lname,
+                String phone, String email,
+                String password, boolean isAdmin) {
 
         this.id = id;
         this.fname = fname;
@@ -26,7 +28,6 @@ public class User {
         this.isAdmin = isAdmin;
     }
 
-
     public String getId() {
         return id;
     }
@@ -34,7 +35,6 @@ public class User {
     public void setId(String id) {
         this.id = id;
     }
-
 
     public String getFname() {
         return fname;
@@ -44,7 +44,6 @@ public class User {
         this.fname = fname;
     }
 
-    // Getter / Setter עבור lname
     public String getLname() {
         return lname;
     }
@@ -53,7 +52,6 @@ public class User {
         this.lname = lname;
     }
 
-    // Getter / Setter עבור phone
     public String getPhone() {
         return phone;
     }
@@ -62,7 +60,6 @@ public class User {
         this.phone = phone;
     }
 
-    // Getter / Setter עבור email
     public String getEmail() {
         return email;
     }
@@ -71,7 +68,6 @@ public class User {
         this.email = email;
     }
 
-    // Getter / Setter עבור password
     public String getPassword() {
         return password;
     }
@@ -80,7 +76,6 @@ public class User {
         this.password = password;
     }
 
-    // Getter / Setter עבור isAdmin (boolean)
     public boolean isAdmin() {
         return isAdmin;
     }

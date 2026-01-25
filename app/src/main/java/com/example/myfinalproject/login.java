@@ -135,7 +135,7 @@ public class login extends AppCompatActivity implements View.OnClickListener {
                                 if (user.isAdmin()) {
                                     intent = new Intent(login.this, AdminPage.class);
                                 } else {
-                                    intent = new Intent(login.this, homepage.class);
+                                    intent = new Intent(login.this, Choise.class);
                                 }
 
                                 // העברת שם המשתמש ל־Activity הבא

@@ -39,11 +39,8 @@ public class Splash extends AppCompatActivity {
             @Override
             public void run() {
                 if(stageIndex < smoothieStages.length){
-                    // החלפת תמונה
                     smoothieImage.setImageResource(smoothieStages[stageIndex]);
                     stageIndex++;
-
-                    // לחזור על זה אחרי שנייה
                     handler.postDelayed(this, delayMillis);
                 } else {
                     // אחרי שהשייק התמלא – מעבר ל-MainActivity

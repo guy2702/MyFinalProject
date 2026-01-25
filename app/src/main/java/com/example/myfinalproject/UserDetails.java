@@ -1,104 +1,85 @@
 package com.example.myfinalproject;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.myfinalproject.model.User;
-import com.example.myfinalproject.services.DatabaseService;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class UserDetails extends AppCompatActivity {
 
-    private EditText etFirstName, etLastName, etEmail, etPhone, etPassword;
+    private EditText etFname, etLname, etEmail, etPhone, etPassword;
     private Button btnDelete, btnUpdate;
+
+    private DatabaseReference usersRef;
     private String userId;
+    private boolean isAdmin;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_details);
 
-        // קישור ל־XML
-        etFirstName = findViewById(R.id.tvUserFirstNameDetail);
-        etLastName  = findViewById(R.id.tvUserLastNameDetail);
-        etEmail     = findViewById(R.id.tvUserEmailDetail);
-        etPhone     = findViewById(R.id.tvUserPhoneDetail);
-        etPassword  = findViewById(R.id.tvUserPasswordDetail);
+        etFname = findViewById(R.id.tvUserFirstNameDetail);
+        etLname = findViewById(R.id.tvUserLastNameDetail);
+        etEmail = findViewById(R.id.tvUserEmailDetail);
+        etPhone = findViewById(R.id.tvUserPhoneDetail);
+        etPassword = findViewById(R.id.tvUserPasswordDetail);
 
         btnDelete = findViewById(R.id.btnDeleteUser);
         btnUpdate = findViewById(R.id.btnUpdateUser);
 
-        // קבלת ID מה־Intent
-        userId = getIntent().getStringExtra("userId");
-        if (userId == null) return;
+        usersRef = FirebaseDatabase.getInstance().getReference("users");
 
-        loadUserDetails(userId);
+        User user = (User) getIntent().getSerializableExtra("user");
+        if(user != null){
+            userId = user.getId();
+            isAdmin = user.isAdmin();
 
-        // כפתור מחיקה
+            etFname.setText(user.getFname());
+            etLname.setText(user.getLname());
+            etEmail.setText(user.getEmail());
+            etPhone.setText(user.getPhone());
+            etPassword.setText(user.getPassword());
+        } else {
+            Toast.makeText(this,"שגיאה: המשתמש לא קיים",Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
         btnDelete.setOnClickListener(v -> {
-            DatabaseService.getInstance().deleteUser(userId, new DatabaseService.DatabaseCallback<Void>() {
-                @Override
-                public void onCompleted(Void unused) {
-                    Toast.makeText(UserDetailsActivity.this, "המשתמש נמחק בהצלחה", Toast.LENGTH_SHORT).show();
-                    finish(); // חזרה לרשימת המשתמשים
-                }
-
-                @Override
-                public void onFailed(Exception e) {
-                    Toast.makeText(UserDetailsActivity.this, "שגיאה במחיקה", Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
-                }
-            });
-        });
-
-        // כפתור עדכון
-        btnUpdate.setOnClickListener(v -> {
-            User updatedUser = new User();
-            updatedUser.setId(userId);
-            updatedUser.setFname(etFirstName.getText().toString());
-            updatedUser.setLname(etLastName.getText().toString());
-            updatedUser.setEmail(etEmail.getText().toString());
-            updatedUser.setPhone(etPhone.getText().toString());
-            updatedUser.setPassword(etPassword.getText().toString());
-
-            DatabaseService.getInstance().updateUser(updatedUser, new DatabaseService.DatabaseCallback<Void>() {
-                @Override
-                public void onCompleted(Void unused) {
-                    Toast.makeText(UserDetailsActivity.this, "המשתמש עודכן בהצלחה", Toast.LENGTH_SHORT).show();
-                    finish(); // חזרה לרשימת המשתמשים
-                }
-
-                @Override
-                public void onFailed(Exception e) {
-                    Toast.makeText(UserDetailsActivity.this, "שגיאה בעדכון", Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
-                }
-            });
-        });
-    }
-
-    private void loadUserDetails(String uid) {
-        DatabaseService.getInstance().getUser(uid, new DatabaseService.DatabaseCallback<User>() {
-            @Override
-            public void onCompleted(User user) {
-                if (user != null) {
-                    etFirstName.setText(user.getFname());
-                    etLastName.setText(user.getLname());
-                    etEmail.setText(user.getEmail());
-                    etPhone.setText(user.getPhone());
-                    etPassword.setText(user.getPassword());
-                }
+            if(userId != null && !userId.isEmpty()){
+                usersRef.child(userId).removeValue()
+                        .addOnSuccessListener(unused -> {
+                            Toast.makeText(this,"המשתמש נמחק בהצלחה",Toast.LENGTH_SHORT).show();
+                            finish();
+                        })
+                        .addOnFailureListener(e -> Toast.makeText(this,"שגיאה במחיקה",Toast.LENGTH_SHORT).show());
             }
+        });
 
-            @Override
-            public void onFailed(Exception e) {
-                Toast.makeText(UserDetailsActivity.this, "שגיאה בטעינת פרטי המשתמש", Toast.LENGTH_SHORT).show();
-                e.printStackTrace();
+        btnUpdate.setOnClickListener(v -> {
+            if(userId != null && !userId.isEmpty()){
+                User updatedUser = new User(
+                        userId,
+                        etFname.getText().toString().trim(),
+                        etLname.getText().toString().trim(),
+                        etPhone.getText().toString().trim(),
+                        etEmail.getText().toString().trim(),
+                        etPassword.getText().toString().trim(),
+                        isAdmin
+                );
+                usersRef.child(userId).setValue(updatedUser)
+                        .addOnSuccessListener(unused -> {
+                            Toast.makeText(this,"עודכן בהצלחה",Toast.LENGTH_SHORT).show();
+                            finish();
+                        })
+                        .addOnFailureListener(e -> Toast.makeText(this,"שגיאה בעדכון",Toast.LENGTH_SHORT).show());
             }
         });
     }

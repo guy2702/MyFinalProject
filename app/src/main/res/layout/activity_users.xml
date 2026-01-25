@@ -1,55 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/main"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="#FDF6F0">
+    android:padding="12dp">
 
-    <!-- כותרת -->
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="רשימת משתמשים"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:textColor="#564634"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="12dp"/>
-
-    <!-- שורת חיפוש -->
+    <!-- EditText לחיפוש בזמן אמת -->
     <EditText
         android:id="@+id/etSearch"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="חפש משתמש..."
-        android:padding="12dp"
-        android:backgroundTint="#FFFFFF"
-        android:layout_marginBottom="12dp"
-        android:drawableStart="@android:drawable/ic_menu_search"
-        android:drawablePadding="8dp"
-        android:clipToOutline="true"
-        android:outlineProvider="background"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:hint="חפש משתמש"
+        android:padding="8dp"
+        android:background="@android:drawable/edit_text"
+        android:inputType="text"
+        android:imeOptions="actionDone"/>
 
-    <!-- רשימת משתמשים -->
+    <!-- RecyclerView להצגת המשתמשים -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvUsers"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/etSearch"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:clipToPadding="false"
-        android:paddingBottom="16dp"
-        android:scrollbars="vertical"/>
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_weight="1"
+        android:paddingTop="8dp"/>
+
+</LinearLayout>

@@ -28,10 +28,8 @@ public class users extends AppCompatActivity {
 
         rvUsers = findViewById(R.id.rvUsers);
         etSearch = findViewById(R.id.etSearch);
-
         rvUsers.setLayoutManager(new LinearLayoutManager(this));
 
-        // טעינת המשתמשים מה־Firebase והצגת הרשימה
         DatabaseService.getInstance().getUserList(new DatabaseService.DatabaseCallback<List<User>>() {
             @Override
             public void onCompleted(List<User> users) {
@@ -45,20 +43,12 @@ public class users extends AppCompatActivity {
             }
         });
 
-        // TextWatcher לחיפוש בזמן אמת
         etSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if(adapter != null) {
-                    adapter.filter(s.toString());
-                }
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(adapter != null) adapter.filter(s.toString());
             }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
     }
 }
