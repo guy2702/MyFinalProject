@@ -3,43 +3,65 @@ package com.example.myfinalproject;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 public class Choise extends AppCompatActivity {
 
     private TextView tvWelcome;
-    private Button btnMuscle, btnCut;
+    private RadioGroup rgGoal, rgSize; // rgGoal = מסה/חיטוב, rgSize = גודל כוס
+    private Button btnNext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choise);
 
+        // התחברות ל־Views
         tvWelcome = findViewById(R.id.tvWelcome);
-        btnMuscle = findViewById(R.id.btnMuscle);
-        btnCut = findViewById(R.id.btnCut);
+        rgGoal = findViewById(R.id.rgGoal);
+        rgSize = findViewById(R.id.rgSize);
+        btnNext = findViewById(R.id.btnNext);
 
-        // קבלת שם המשתמש מה-Intent
+        // קבלת שם המשתמש
         String userName = getIntent().getStringExtra("USER_NAME");
-        if(userName != null && !userName.isEmpty()){
+        if (userName != null && !userName.isEmpty()) {
             tvWelcome.setText("שלום, " + userName + "!");
         } else {
             tvWelcome.setText("שלום!");
         }
 
-        btnMuscle.setOnClickListener(v -> {
-            Intent intent = new Intent(Choise.this, Size.class);
-            intent.putExtra("USER_NAME", userName); // העברת שם המשתמש לעמוד הבא
-            intent.putExtra("CHOICE", "מסה");       // אפשר להעביר גם את הבחירה
-            startActivity(intent);
-        });
+        btnNext.setOnClickListener(v -> {
+            // בדיקה אם נבחרה מטרה
+            int selectedGoalId = rgGoal.getCheckedRadioButtonId();
+            if (selectedGoalId == -1) {
+                Toast.makeText(this, "אנא בחר מסה או חיטוב", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-        btnCut.setOnClickListener(v -> {
-            Intent intent = new Intent(Choise.this, Size.class);
+            // בדיקה אם נבחר גודל כוס
+            int selectedSizeId = rgSize.getCheckedRadioButtonId();
+            if (selectedSizeId == -1) {
+                Toast.makeText(this, "אנא בחר גודל כוס", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // קבלת הערכים שנבחרו
+            RadioButton selectedGoalRadio = findViewById(selectedGoalId);
+            RadioButton selectedSizeRadio = findViewById(selectedSizeId);
+
+            String choice = selectedGoalRadio.getText().toString(); // מסה/חיטוב
+            String cupSize = selectedSizeRadio.getText().toString();  // 200/400/600 גרם
+
+            // שליחת הנתונים ל-FruitsandVegtables
+            Intent intent = new Intent(Choise.this, FruitsandVegtables.class);
             intent.putExtra("USER_NAME", userName);
-            intent.putExtra("CHOICE", "חיטוב");
+            intent.putExtra("CHOICE", choice);
+            intent.putExtra("CUP_SIZE", cupSize);
             startActivity(intent);
         });
     }
