@@ -20,9 +20,9 @@
             android:id="@+id/ivItemImage"
             android:layout_width="match_parent"
             android:layout_height="150dp"
-            android:background="@android:color/darker_gray"
             android:contentDescription="תמונת פריט"
-            android:scaleType="centerCrop" />
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true" />
 
         <TextView
             android:id="@+id/tvItemName"

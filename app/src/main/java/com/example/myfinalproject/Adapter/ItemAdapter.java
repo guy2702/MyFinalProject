@@ -2,6 +2,7 @@ package com.example.myfinalproject.Adapter;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,9 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     private final ArrayList<Item> items;
     private final OnItemClickListener listener;
 
+    // ✅ משתנה חדש שקובע האם לאפשר סימון ירוק ובחירה
+    private boolean isSelectionMode = false;
+
     public interface OnItemClickListener {
         void onItemClick(Item item);
     }
@@ -30,6 +34,11 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     public ItemAdapter(ArrayList<Item> items, OnItemClickListener listener) {
         this.items = items;
         this.listener = listener;
+    }
+
+    // ✅ פונקציה לקביעת מצב האדפטר (בחירה או צפייה בלבד)
+    public void setSelectionMode(boolean selectionMode) {
+        this.isSelectionMode = selectionMode;
     }
 
     @NonNull
@@ -46,14 +55,26 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         holder.tvName.setText(item.getName() != null ? item.getName() : "-");
         holder.tvDescription.setText(item.getType() != null ? item.getType() : "-");
 
-
+        // טעינת תמונה
         holder.ivImage.setImageBitmap(ImageUtil.convertFrom64base(item.getPic()));
 
-
-
+        // ✅ שינוי צבע רקע: רק אם אנחנו במצב בחירה והפריט נבחר
+        if (isSelectionMode && item.isSelected()) {
+            holder.itemView.setBackgroundColor(Color.parseColor("#C8E6C9")); // ירוק בהיר
+        } else {
+            holder.itemView.setBackgroundColor(Color.WHITE); // לבן רגיל
+        }
 
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) listener.onItemClick(item);
+            // ✅ רק אם אנחנו במצב בחירה, נעדכן את ה-boolean בתוך ה-Item
+            if (isSelectionMode) {
+                item.setSelected(!item.isSelected());
+                notifyItemChanged(position);
+            }
+
+            if (listener != null) {
+                listener.onItemClick(item);
+            }
         });
     }
 
@@ -74,7 +95,6 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         }
     }
 
-    // פונקציה סטטית לטעינת תמונה מכל ImageView
     public static void loadImageFromUrl(ImageView imageView, String url) {
         if (url != null && !url.isEmpty()) {
             new Thread(() -> {

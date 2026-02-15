@@ -2,6 +2,8 @@ package com.example.myfinalproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -22,41 +24,74 @@ public class FruitsandVegtables extends AppCompatActivity {
     private RecyclerView rvItems;
     private ItemAdapter adapter;
     private ArrayList<Item> itemList;
+    private Button btnFinish;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fruitsand_vegtables);
 
+        // הגדרת פדינג למערכת
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // קבלת הבחירה מהדף הקודם
-        String selectedGoal = getIntent().getStringExtra("CHOICE"); // "מסה" או "חיטוב"
+        // קבלת המטרה (מסה/חיטוב) מהמסך הקודם
+        String selectedGoal = getIntent().getStringExtra("CHOICE");
 
         rvItems = findViewById(R.id.rvFruitsandVegetables);
+        btnFinish = findViewById(R.id.btnFinish);
         itemList = new ArrayList<>();
 
+        // יצירת האדפטר
         adapter = new ItemAdapter(itemList, item -> {
-            Intent intent = new Intent(FruitsandVegtables.this, ItemId.class);
-            intent.putExtra("itemId", item.getId());
-            startActivity(intent);
+            // הלחיצה מנוהלת אוטומטית בתוך האדפטר (שינוי צבע) כי הפעלנו SelectionMode
         });
+
+        // ✅ הפעלת מצב בחירה כדי שיופיע הצבע הירוק בלחיצה
+        adapter.setSelectionMode(true);
 
         rvItems.setLayoutManager(new LinearLayoutManager(this));
         rvItems.setAdapter(adapter);
 
-        // קבלת כל המוצרים עם סינון לפי המטרה
+        // לחיצה על כפתור "המשך"
+        btnFinish.setOnClickListener(v -> {
+            // בדיקה האם לפחות פריט אחד נבחר (isSelected == true)
+            boolean atLeastOneSelected = false;
+            for (Item item : itemList) {
+                if (item.isSelected()) {
+                    atLeastOneSelected = true;
+                    break;
+                }
+            }
+
+            if (atLeastOneSelected) {
+                // מעבר למסך הנוזלים (או למסך הבא בתור)
+                Intent intent = new Intent(FruitsandVegtables.this, liquids.class);
+                // אופציונלי: להעביר את ה-Choice הלאה אם צריך
+                intent.putExtra("CHOICE", selectedGoal);
+                startActivity(intent);
+            } else {
+                // הודעה למשתמש אם לא בחר כלום
+                Toast.makeText(this, "חובה לבחור לפחות פריט אחד!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // טעינת הנתונים מה-Firebase
         DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
             @Override
             public void onCompleted(List<Item> items) {
                 itemList.clear();
                 for (Item item : items) {
+                    // סינון לפי המטרה שנבחרה (מסה/חיטוב) וסינון שזה לא נוזל
                     if (item.getGoal() != null && item.getGoal().equals(selectedGoal)) {
-                        itemList.add(item);
+                        // וודא שאתה לא מציג נוזלים במסך הפירות והירקות
+                        if (item.getType() != null && !item.getType().contains("נוזל")) {
+                            item.setSelected(false); // איפוס בחירה בטעינה
+                            itemList.add(item);
+                        }
                     }
                 }
                 adapter.notifyDataSetChanged();

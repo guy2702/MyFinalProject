@@ -18,22 +18,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyFinalProject">
         <activity
+            android:name=".Sweeteners"
+            android:exported="false" />
+        <activity
+            android:name=".ProtienSupplements"
+            android:exported="false" />
+        <activity
+            android:name=".liquids"
+            android:exported="false" />
+        <activity
             android:name=".FruitsandVegtables"
             android:exported="false" />
         <activity
-            android:name=".Size"
-            android:exported="false" />
-        <activity
-            android:name=".Cutting"
-            android:exported="false" />
-        <activity
-            android:name=".Bulking"
-            android:exported="false" />
-        <activity
             android:name=".Choise"
-            android:exported="false" />
-        <activity
-            android:name=".CreatingShake"
             android:exported="false" />
         <activity
             android:name=".ItemId"
