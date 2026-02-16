@@ -2,6 +2,7 @@ package com.example.myfinalproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -31,49 +32,61 @@ public class ProtienSupplements extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_protien_supplements);
 
+        // קבלת המטרה (מסה/חיטוב) מהמסך הקודם
+        String selectedGoal = getIntent().getStringExtra("CHOICE");
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // קבלת המטרה (מסה/חיטוב) מהמסך הקודם
-        String selectedGoal = getIntent().getStringExtra("CHOICE");
-
         rvSupplements = findViewById(R.id.rvSupplements);
         btnFinish = findViewById(R.id.btnFinishSupplements);
         supplementsList = new ArrayList<>();
 
+        // יצירת האדפטר
         adapter = new ItemAdapter(supplementsList, item -> {
-            // בחירה מנוהלת באדפטר
+            // לחיצה מנוהלת באדפטר (בחירה)
         });
-
-        // הפעלת מצב בחירה לצבע ירוק
         adapter.setSelectionMode(true);
 
         rvSupplements.setLayoutManager(new LinearLayoutManager(this));
         rvSupplements.setAdapter(adapter);
 
         btnFinish.setOnClickListener(v -> {
-            // כאן המשתמש לא חייב לבחור (יכול להיות שייק בלי אבקה),
-            // אבל אם תרצה לחייב - תוכל להוסיף את הלוגיקה של hasSelection
-            Intent intent = new Intent(ProtienSupplements.this, Sweeteners.class);
-            intent.putExtra("CHOICE", selectedGoal);
-            startActivity(intent);
+            boolean atLeastOneSelected = false;
+            for (Item item : supplementsList) {
+                if (item.isSelected()) {
+                    atLeastOneSelected = true;
+                    break;
+                }
+            }
+
+            if (atLeastOneSelected) {
+                Intent intent = new Intent(ProtienSupplements.this, Sweeteners.class);
+                intent.putExtra("CHOICE", selectedGoal); // מעבירים הלאה את המטרה
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "חובה לבחור לפחות תוסף אחד!", Toast.LENGTH_SHORT).show();
+            }
         });
 
+        // טעינת הנתונים מה-Firebase
         DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
             @Override
             public void onCompleted(List<Item> items) {
                 supplementsList.clear();
                 for (Item item : items) {
-                    // סינון לפי סוג תוספים והתאמה למטרה
+                    // ✅ סינון לפי סוג (חלבון/תוסף) וגם לפי המטרה
                     if (item.getType() != null &&
-                            (item.getType().equalsIgnoreCase("תוספים") || item.getType().equalsIgnoreCase("Supplements"))) {
+                            (item.getType().toLowerCase().contains("חלבון") ||
+                                    item.getType().toLowerCase().contains("תוסף"))) {
 
                         if (item.getGoal() != null && item.getGoal().equals(selectedGoal)) {
-                            item.setSelected(false);
+                            item.setSelected(false); // איפוס בחירה
                             supplementsList.add(item);
+                            Log.d("ProtienSupplements", "Item added: " + item.getName());
                         }
                     }
                 }
