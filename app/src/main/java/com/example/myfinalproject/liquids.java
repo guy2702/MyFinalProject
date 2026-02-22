@@ -3,6 +3,7 @@ package com.example.myfinalproject;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,7 +18,9 @@ import com.example.myfinalproject.model.Item;
 import com.example.myfinalproject.services.DatabaseService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class liquids extends AppCompatActivity {
 
@@ -25,6 +28,12 @@ public class liquids extends AppCompatActivity {
     private ItemAdapter adapter;
     private ArrayList<Item> liquidsList;
     private Button btnFinish;
+    private TextView tvTitleLiquids;
+
+    private String category = "נוזלים";
+    private String selectedGoal;
+    private int cupSize;
+    private int allowedGrams;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,37 +46,69 @@ public class liquids extends AppCompatActivity {
             return insets;
         });
 
-        // ✅ קבלת המטרה (מסה/חיטוב) מהמסך הקודם
-        String selectedGoal = getIntent().getStringExtra("CHOICE");
+        // נתונים מהמסך הקודם
+        selectedGoal = getIntent().getStringExtra("CHOICE");
+        cupSize = getIntent().getIntExtra("CUP_SIZE", 400);
 
+        tvTitleLiquids = findViewById(R.id.tvTitleLiquids);
         rvLiquids = findViewById(R.id.rvLiquids);
         btnFinish = findViewById(R.id.btnFinishLiquids);
+
         liquidsList = new ArrayList<>();
 
+        // אחוזים לפי קטגוריה ומטרה
+        Map<String, Double> percentages = new HashMap<>();
+        if (selectedGoal.equals("מסה")) {
+            percentages.put("נוזלים", 0.25);
+            percentages.put("פירות/ירקות", 0.20);
+            percentages.put("תוספי חלבון", 0.25);
+            percentages.put("ממתיקים", 0.10);
+            percentages.put("אגוזים", 0.20);
+        } else { // חיטוב
+            percentages.put("נוזלים", 0.30);
+            percentages.put("פירות/ירקות", 0.35);
+            percentages.put("תוספי חלבון", 0.20);
+            percentages.put("ממתיקים", 0.05);
+            percentages.put("אגוזים", 0.10);
+        }
+
+        // גרם מותרים לקטגוריה מחושב לפי אחוז מהכוס
+        allowedGrams = (int) (cupSize * percentages.get(category));
+
+        Runnable updateTitle = () -> {
+            int selectedCount = 0;
+            for (Item item : liquidsList) {
+                if (item.isSelected()) selectedCount++;
+            }
+            int perItemGrams = selectedCount > 0 ? allowedGrams / selectedCount : 0;
+            tvTitleLiquids.setText("בחר נוזל בסיס - כל פריט יקבל ~" + perItemGrams + " גרם מתוך " + allowedGrams + " גרם");
+        };
+
         adapter = new ItemAdapter(liquidsList, item -> {
-            // בחירה מנוהלת באדפטר
+            item.setSelected(!item.isSelected());
+            updateTitle.run();
+            adapter.notifyDataSetChanged();
         });
 
         adapter.setSelectionMode(true);
         rvLiquids.setLayoutManager(new LinearLayoutManager(this));
         rvLiquids.setAdapter(adapter);
 
+        updateTitle.run();
+
         btnFinish.setOnClickListener(v -> {
-            boolean hasSelection = false;
+            int selectedCount = 0;
             for (Item item : liquidsList) {
-                if (item.isSelected()) {
-                    hasSelection = true;
-                    break;
-                }
+                if (item.isSelected()) selectedCount++;
             }
 
-            if (hasSelection) {
-                Intent intent = new Intent(liquids.this, ProtienSupplements.class);
-                // מעבירים את הבחירה הלאה גם למסך הבא אם צריך
-                intent.putExtra("CHOICE", selectedGoal);
-                startActivity(intent);
-            } else {
+            if (selectedCount == 0) {
                 Toast.makeText(this, "חובה לבחור לפחות נוזל אחד!", Toast.LENGTH_SHORT).show();
+            } else {
+                Intent intent = new Intent(liquids.this, ProtienSupplements.class);
+                intent.putExtra("CHOICE", selectedGoal);
+                intent.putExtra("CUP_SIZE", cupSize);
+                startActivity(intent);
             }
         });
 
@@ -76,13 +117,11 @@ public class liquids extends AppCompatActivity {
             public void onCompleted(List<Item> items) {
                 liquidsList.clear();
                 for (Item item : items) {
-                    // ✅ סינון כפול: גם סוג "נוזל" וגם התאמה למטרה (מסה/חיטוב)
                     if (item.getType() != null &&
                             (item.getType().equalsIgnoreCase("נוזלים") ||
                                     item.getType().equalsIgnoreCase("liquids") ||
                                     item.getType().equalsIgnoreCase("נוזל"))) {
 
-                        // בדיקה אם המטרה של הנוזל תואמת לבחירת המשתמש
                         if (item.getGoal() != null && item.getGoal().equals(selectedGoal)) {
                             item.setSelected(false);
                             liquidsList.add(item);
@@ -90,6 +129,7 @@ public class liquids extends AppCompatActivity {
                     }
                 }
                 adapter.notifyDataSetChanged();
+                updateTitle.run();
             }
 
             @Override

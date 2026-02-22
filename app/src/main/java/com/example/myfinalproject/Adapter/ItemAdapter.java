@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -24,7 +25,6 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     private final ArrayList<Item> items;
     private final OnItemClickListener listener;
 
-    // ✅ משתנה חדש שקובע האם לאפשר סימון ירוק ובחירה
     private boolean isSelectionMode = false;
 
     public interface OnItemClickListener {
@@ -36,7 +36,6 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         this.listener = listener;
     }
 
-    // ✅ פונקציה לקביעת מצב האדפטר (בחירה או צפייה בלבד)
     public void setSelectionMode(boolean selectionMode) {
         this.isSelectionMode = selectionMode;
     }
@@ -58,20 +57,25 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         // טעינת תמונה
         holder.ivImage.setImageBitmap(ImageUtil.convertFrom64base(item.getPic()));
 
-        // ✅ שינוי צבע רקע: רק אם אנחנו במצב בחירה והפריט נבחר
+        // --- ניהול רקע ו־EditText ---
         if (isSelectionMode && item.isSelected()) {
-            holder.itemView.setBackgroundColor(Color.parseColor("#C8E6C9")); // ירוק בהיר
+            holder.itemView.setBackgroundColor(Color.parseColor("#C8E6C9")); // ירוק
+            holder.etAmount.setVisibility(View.VISIBLE);
+            holder.etAmount.setFocusable(true);
+            holder.etAmount.setFocusableInTouchMode(true);
         } else {
-            holder.itemView.setBackgroundColor(Color.WHITE); // לבן רגיל
+            holder.itemView.setBackgroundColor(Color.WHITE);
+            holder.etAmount.setVisibility(View.GONE);
+            holder.etAmount.setText("");
+            holder.etAmount.setFocusable(false);
+            holder.etAmount.setFocusableInTouchMode(false);
         }
 
         holder.itemView.setOnClickListener(v -> {
-            // ✅ רק אם אנחנו במצב בחירה, נעדכן את ה-boolean בתוך ה-Item
             if (isSelectionMode) {
                 item.setSelected(!item.isSelected());
                 notifyItemChanged(position);
             }
-
             if (listener != null) {
                 listener.onItemClick(item);
             }
@@ -86,12 +90,14 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     static class ItemViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvDescription;
         ImageView ivImage;
+        EditText etAmount;
 
         public ItemViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvItemName);
             tvDescription = itemView.findViewById(R.id.tvItemDescription);
             ivImage = itemView.findViewById(R.id.ivItemImage);
+            etAmount = itemView.findViewById(R.id.etItemAmount); // שדה להזנת כמות
         }
     }
 

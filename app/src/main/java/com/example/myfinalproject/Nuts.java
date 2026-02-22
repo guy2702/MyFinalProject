@@ -19,17 +19,17 @@ import com.example.myfinalproject.services.DatabaseService;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Sweeteners extends AppCompatActivity {
+public class Nuts extends AppCompatActivity {
 
-    private RecyclerView rvSweeteners;
+    private RecyclerView rvNuts;
     private ItemAdapter adapter;
-    private ArrayList<Item> sweetenersList;
+    private ArrayList<Item> nutsList;
     private Button btnFinish;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sweeteners);
+        setContentView(R.layout.activity_nuts);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -37,24 +37,24 @@ public class Sweeteners extends AppCompatActivity {
             return insets;
         });
 
-        // קבלת המטרה (מסה/חיטוב) מהמסך הקודם
+        // קבלת מסה / חיטוב מהמסך הקודם
         String selectedGoal = getIntent().getStringExtra("CHOICE");
 
-        rvSweeteners = findViewById(R.id.rvSweeteners);
-        btnFinish = findViewById(R.id.btnFinishSweeteners);
-        sweetenersList = new ArrayList<>();
+        rvNuts = findViewById(R.id.rvNuts);
+        btnFinish = findViewById(R.id.btnFinishNuts);
+        nutsList = new ArrayList<>();
 
-        adapter = new ItemAdapter(sweetenersList, item -> {
-            // בחירה מנוהלת באדפטר
+        adapter = new ItemAdapter(nutsList, item -> {
+            // הבחירה מנוהלת באדפטר
         });
 
         adapter.setSelectionMode(true);
-        rvSweeteners.setLayoutManager(new LinearLayoutManager(this));
-        rvSweeteners.setAdapter(adapter);
+        rvNuts.setLayoutManager(new LinearLayoutManager(this));
+        rvNuts.setAdapter(adapter);
 
         btnFinish.setOnClickListener(v -> {
             boolean hasSelection = false;
-            for (Item item : sweetenersList) {
+            for (Item item : nutsList) {
                 if (item.isSelected()) {
                     hasSelection = true;
                     break;
@@ -62,26 +62,36 @@ public class Sweeteners extends AppCompatActivity {
             }
 
             if (hasSelection) {
-                Intent intent = new Intent(Sweeteners.this, Nuts.class);
-                intent.putExtra("CHOICE", selectedGoal);
+                Toast.makeText(this, "נבחרו אגוזים בהצלחה!", Toast.LENGTH_SHORT).show();
+
+                // מעבר לדף ShakeResults
+                Intent intent = new Intent(Nuts.this, ShakeResults.class);
+                intent.putExtra("CHOICE", selectedGoal); // מעביר את הבחירה מסה/חיטוב
                 startActivity(intent);
+
+                // סוגר את המסך הנוכחי
+                finish();
+
             } else {
-                Toast.makeText(this, "חובה לבחור לפחות ממתיק אחד!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "חובה לבחור לפחות אגוז אחד!", Toast.LENGTH_SHORT).show();
             }
         });
 
         DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
             @Override
             public void onCompleted(List<Item> items) {
-                sweetenersList.clear();
+                nutsList.clear();
                 for (Item item : items) {
+
+                    // סינון לפי סוג אגוזים + התאמה למטרה
                     if (item.getType() != null &&
-                            (item.getType().toLowerCase().contains("ממתיק") ||
-                                    item.getType().toLowerCase().contains("sweetener"))) {
+                            (item.getType().equalsIgnoreCase("אגוזים") ||
+                                    item.getType().equalsIgnoreCase("nuts") ||
+                                    item.getType().equalsIgnoreCase("אגוז"))) {
 
                         if (item.getGoal() != null && item.getGoal().equals(selectedGoal)) {
                             item.setSelected(false);
-                            sweetenersList.add(item);
+                            nutsList.add(item);
                         }
                     }
                 }
