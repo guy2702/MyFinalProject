@@ -10,9 +10,11 @@ public class User implements Serializable {
     private String phone;
     private String email;
     private String password;
-    private boolean isAdmin;
 
-    // קונסטרקטור ריק — חובה ל-Firebase
+    // 🔥 שינוי: במקום boolean → Object
+    private Object isAdmin;
+
+    // חובה ל-Firebase
     public User() {}
 
     public User(String id, String fname, String lname,
@@ -76,12 +78,19 @@ public class User implements Serializable {
         this.password = password;
     }
 
+    // ✅ getter חכם – תמיד מחזיר boolean תקין
     public boolean isAdmin() {
-        return isAdmin;
+        if (isAdmin instanceof Boolean) {
+            return (Boolean) isAdmin;
+        } else if (isAdmin instanceof String) {
+            return ((String) isAdmin).equalsIgnoreCase("true");
+        }
+        return false;
     }
 
-    public void setAdmin(boolean admin) {
-        isAdmin = admin;
+    // ✅ setter גמיש
+    public void setAdmin(Object admin) {
+        this.isAdmin = admin;
     }
 
     @Override

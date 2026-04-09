@@ -17,7 +17,9 @@ import com.example.myfinalproject.model.Item;
 import com.example.myfinalproject.services.DatabaseService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FruitsandVegtables extends AppCompatActivity {
 
@@ -25,6 +27,12 @@ public class FruitsandVegtables extends AppCompatActivity {
     private ItemAdapter adapter;
     private ArrayList<Item> itemList;
     private Button btnFinish;
+
+    // מיפוי שמחזיק את הכמות שהמשתמש הזין לכל פריט
+    private Map<Item, Integer> selectedAmounts = new HashMap<>();
+
+    // כמה גרם צריך לבחור מכל קטגוריה
+    private int allowedGrams = 200; // לדוגמה לפירות/ירקות, אפשר לשנות לפי קטגוריה
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,10 +55,8 @@ public class FruitsandVegtables extends AppCompatActivity {
 
         // יצירת האדפטר
         adapter = new ItemAdapter(itemList, item -> {
-            // הלחיצה מנוהלת אוטומטית בתוך האדפטר (שינוי צבע) כי הפעלנו SelectionMode
+            // הלחיצה מנוהלת אוטומטית בתוך האדפטר (שינוי צבע)
         });
-
-        // ✅ הפעלת מצב בחירה כדי שיופיע הצבע הירוק בלחיצה
         adapter.setSelectionMode(true);
 
         rvItems.setLayoutManager(new LinearLayoutManager(this));
@@ -58,25 +64,30 @@ public class FruitsandVegtables extends AppCompatActivity {
 
         // לחיצה על כפתור "המשך"
         btnFinish.setOnClickListener(v -> {
-            // בדיקה האם לפחות פריט אחד נבחר (isSelected == true)
+            int totalSelectedGrams = 0;
             boolean atLeastOneSelected = false;
-            for (Item item : itemList) {
-                if (item.isSelected()) {
+
+            for (Map.Entry<Item, Integer> entry : selectedAmounts.entrySet()) {
+                if (entry.getKey().isSelected()) {
                     atLeastOneSelected = true;
-                    break;
+                    totalSelectedGrams += entry.getValue();
                 }
             }
 
-            if (atLeastOneSelected) {
-                // מעבר למסך הנוזלים (או למסך הבא בתור)
-                Intent intent = new Intent(FruitsandVegtables.this, liquids.class);
-                // אופציונלי: להעביר את ה-Choice הלאה אם צריך
-                intent.putExtra("CHOICE", selectedGoal);
-                startActivity(intent);
-            } else {
-                // הודעה למשתמש אם לא בחר כלום
+            if (!atLeastOneSelected) {
                 Toast.makeText(this, "חובה לבחור לפחות פריט אחד!", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            if (totalSelectedGrams != allowedGrams) {
+                Toast.makeText(this, "בחרת כמות לא נכונה! עליך לבחור בדיוק " + allowedGrams + " גרם", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // הכל תקין - ממשיכים למסך הבא
+            Intent intent = new Intent(FruitsandVegtables.this, liquids.class);
+            intent.putExtra("CHOICE", selectedGoal);
+            startActivity(intent);
         });
 
         // טעינת הנתונים מה-Firebase
@@ -85,11 +96,9 @@ public class FruitsandVegtables extends AppCompatActivity {
             public void onCompleted(List<Item> items) {
                 itemList.clear();
                 for (Item item : items) {
-                    // סינון לפי המטרה שנבחרה (מסה/חיטוב) וסינון שזה לא נוזל
                     if (item.getGoal() != null && item.getGoal().equals(selectedGoal)) {
-                        // וודא שאתה לא מציג נוזלים במסך הפירות והירקות
                         if (item.getType() != null && !item.getType().contains("נוזל")) {
-                            item.setSelected(false); // איפוס בחירה בטעינה
+                            item.setSelected(false);
                             itemList.add(item);
                         }
                     }
@@ -102,5 +111,14 @@ public class FruitsandVegtables extends AppCompatActivity {
                 e.printStackTrace();
             }
         });
+    }
+
+    // פונקציה שקוראים לה מה-Adapter כאשר המשתמש מזין כמות
+    public void updateItemAmount(Item item, int grams) {
+        if (grams > 0) {
+            selectedAmounts.put(item, grams);
+        } else {
+            selectedAmounts.remove(item);
+        }
     }
 }
