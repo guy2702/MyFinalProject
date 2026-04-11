@@ -1,8 +1,8 @@
 package com.example.myfinalproject.Adapter;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,14 +17,12 @@ import com.example.myfinalproject.R;
 import com.example.myfinalproject.Utils.ImageUtil;
 import com.example.myfinalproject.model.Item;
 
-import java.net.URL;
 import java.util.ArrayList;
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder> {
 
     private final ArrayList<Item> items;
     private final OnItemClickListener listener;
-
     private boolean isSelectionMode = false;
 
     public interface OnItemClickListener {
@@ -38,6 +36,11 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
 
     public void setSelectionMode(boolean selectionMode) {
         this.isSelectionMode = selectionMode;
+        notifyDataSetChanged();
+    }
+
+    public ArrayList<Item> getItems() {
+        return items;
     }
 
     @NonNull
@@ -54,30 +57,84 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         holder.tvName.setText(item.getName() != null ? item.getName() : "-");
         holder.tvDescription.setText(item.getType() != null ? item.getType() : "-");
 
-        // טעינת תמונה
-        holder.ivImage.setImageBitmap(ImageUtil.convertFrom64base(item.getPic()));
+        try {
+            if (item.getPic() != null && !item.getPic().isEmpty()) {
+                holder.ivImage.setImageBitmap(ImageUtil.convertFrom64base(item.getPic()));
+            } else {
+                holder.ivImage.setImageResource(android.R.color.darker_gray);
+            }
+        } catch (Exception e) {
+            holder.ivImage.setImageResource(android.R.color.darker_gray);
+        }
 
-        // --- ניהול רקע ו־EditText ---
+        if (holder.textWatcher != null) {
+            holder.etAmount.removeTextChangedListener(holder.textWatcher);
+        }
+
+        holder.etAmount.setText(item.getAmount() > 0 ? String.valueOf(item.getAmount()) : "");
+
         if (isSelectionMode && item.isSelected()) {
-            holder.itemView.setBackgroundColor(Color.parseColor("#C8E6C9")); // ירוק
+            holder.itemView.setBackgroundColor(Color.parseColor("#C8E6C9"));
             holder.etAmount.setVisibility(View.VISIBLE);
-            holder.etAmount.setFocusable(true);
-            holder.etAmount.setFocusableInTouchMode(true);
+            holder.etAmount.setEnabled(true);
         } else {
             holder.itemView.setBackgroundColor(Color.WHITE);
             holder.etAmount.setVisibility(View.GONE);
-            holder.etAmount.setText("");
-            holder.etAmount.setFocusable(false);
-            holder.etAmount.setFocusableInTouchMode(false);
+            holder.etAmount.setEnabled(false);
         }
 
-        holder.itemView.setOnClickListener(v -> {
-            if (isSelectionMode) {
-                item.setSelected(!item.isSelected());
-                notifyItemChanged(position);
+        holder.textWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                int pos = holder.getAdapterPosition();
+                if (pos == RecyclerView.NO_POSITION) {
+                    return;
+                }
+
+                String text = s.toString().trim();
+                int amount = 0;
+
+                if (!text.isEmpty()) {
+                    try {
+                        amount = Integer.parseInt(text);
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+
+                items.get(pos).setAmount(amount);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        };
+
+        holder.etAmount.addTextChangedListener(holder.textWatcher);
+
+        holder.itemView.setOnClickListener(v -> {
+            int pos = holder.getAdapterPosition();
+            if (pos == RecyclerView.NO_POSITION) {
+                return;
+            }
+
+            Item clickedItem = items.get(pos);
+
+            if (isSelectionMode) {
+                clickedItem.setSelected(!clickedItem.isSelected());
+
+                if (!clickedItem.isSelected()) {
+                    clickedItem.setAmount(0);
+                }
+
+                notifyItemChanged(pos);
+            }
+
             if (listener != null) {
-                listener.onItemClick(item);
+                listener.onItemClick(clickedItem);
             }
         });
     }
@@ -91,35 +148,14 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         TextView tvName, tvDescription;
         ImageView ivImage;
         EditText etAmount;
+        TextWatcher textWatcher;
 
         public ItemViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvItemName);
             tvDescription = itemView.findViewById(R.id.tvItemDescription);
             ivImage = itemView.findViewById(R.id.ivItemImage);
-            etAmount = itemView.findViewById(R.id.etItemAmount); // שדה להזנת כמות
-        }
-    }
-
-    public static void loadImageFromUrl(ImageView imageView, String url) {
-        if (url != null && !url.isEmpty()) {
-            new Thread(() -> {
-                try {
-                    Bitmap bitmap = BitmapFactory.decodeStream(new URL(url).openConnection().getInputStream());
-                    imageView.post(() -> {
-                        if (bitmap != null) {
-                            imageView.setImageBitmap(bitmap);
-                        } else {
-                            imageView.setImageResource(android.R.color.darker_gray);
-                        }
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    imageView.post(() -> imageView.setImageResource(android.R.color.darker_gray));
-                }
-            }).start();
-        } else {
-            imageView.setImageResource(android.R.color.darker_gray);
+            etAmount = itemView.findViewById(R.id.etItemAmount);
         }
     }
 }

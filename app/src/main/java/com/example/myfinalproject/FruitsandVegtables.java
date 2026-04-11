@@ -2,7 +2,9 @@ package com.example.myfinalproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,108 +19,165 @@ import com.example.myfinalproject.model.Item;
 import com.example.myfinalproject.services.DatabaseService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 
 public class FruitsandVegtables extends AppCompatActivity {
 
+    private TextView textView;
     private RecyclerView rvItems;
+    private Button btnNext;
     private ItemAdapter adapter;
     private ArrayList<Item> itemList;
-    private Button btnFinish;
 
-    // מיפוי שמחזיק את הכמות שהמשתמש הזין לכל פריט
-    private Map<Item, Integer> selectedAmounts = new HashMap<>();
-
-    // כמה גרם צריך לבחור מכל קטגוריה
-    private int allowedGrams = 200; // לדוגמה לפירות/ירקות, אפשר לשנות לפי קטגוריה
+    private String goal;
+    private int cupSize;
+    private int fruitsVegAmount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fruitsand_vegtables);
 
-        // הגדרת פדינג למערכת
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // קבלת המטרה (מסה/חיטוב) מהמסך הקודם
-        String selectedGoal = getIntent().getStringExtra("CHOICE");
-
+        textView = findViewById(R.id.textView);
         rvItems = findViewById(R.id.rvFruitsandVegetables);
-        btnFinish = findViewById(R.id.btnFinish);
-        itemList = new ArrayList<>();
+        btnNext = findViewById(R.id.btnNext);
 
-        // יצירת האדפטר
-        adapter = new ItemAdapter(itemList, item -> {
-            // הלחיצה מנוהלת אוטומטית בתוך האדפטר (שינוי צבע)
-        });
+        goal = getIntent().getStringExtra("GOAL");
+        cupSize = getIntent().getIntExtra("CUP_SIZE", 0);
+
+        fruitsVegAmount = SmoothieCalculator.getCategoryAmount(
+                goal,
+                cupSize,
+                SmoothieCalculator.TYPE_FRUITS_VEGETABLES
+        );
+
+        String goalText = "";
+        if ("MUSCLE".equalsIgnoreCase(goal)) {
+            goalText = "מסה";
+        } else if ("CUT".equalsIgnoreCase(goal)) {
+            goalText = "חיטוב";
+        }
+
+        textView.setText("בחר פירות וירקות  " + fruitsVegAmount + " גרם\nמטרה: " + goalText);
+
+        itemList = new ArrayList<>();
+        adapter = new ItemAdapter(itemList, item -> {});
         adapter.setSelectionMode(true);
 
         rvItems.setLayoutManager(new LinearLayoutManager(this));
         rvItems.setAdapter(adapter);
 
-        // לחיצה על כפתור "המשך"
-        btnFinish.setOnClickListener(v -> {
-            int totalSelectedGrams = 0;
-            boolean atLeastOneSelected = false;
-
-            for (Map.Entry<Item, Integer> entry : selectedAmounts.entrySet()) {
-                if (entry.getKey().isSelected()) {
-                    atLeastOneSelected = true;
-                    totalSelectedGrams += entry.getValue();
-                }
-            }
-
-            if (!atLeastOneSelected) {
-                Toast.makeText(this, "חובה לבחור לפחות פריט אחד!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if (totalSelectedGrams != allowedGrams) {
-                Toast.makeText(this, "בחרת כמות לא נכונה! עליך לבחור בדיוק " + allowedGrams + " גרם", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // הכל תקין - ממשיכים למסך הבא
-            Intent intent = new Intent(FruitsandVegtables.this, liquids.class);
-            intent.putExtra("CHOICE", selectedGoal);
-            startActivity(intent);
-        });
-
-        // טעינת הנתונים מה-Firebase
         DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
             @Override
             public void onCompleted(List<Item> items) {
                 itemList.clear();
+
                 for (Item item : items) {
-                    if (item.getGoal() != null && item.getGoal().equals(selectedGoal)) {
-                        if (item.getType() != null && !item.getType().contains("נוזל")) {
-                            item.setSelected(false);
-                            itemList.add(item);
-                        }
+                    if (item == null) continue;
+
+                    if (isFruitVegetable(item) && matchesGoal(item, goal)) {
+                        itemList.add(item);
                     }
                 }
+
                 adapter.notifyDataSetChanged();
             }
 
             @Override
             public void onFailed(Exception e) {
-                e.printStackTrace();
+                Toast.makeText(FruitsandVegtables.this,
+                        "שגיאה בטעינת הנתונים",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnNext.setOnClickListener(v -> {
+            int totalAmount = 0;
+            int selectedCount = 0;
+
+            for (Item item : adapter.getItems()) {
+                if (item.isSelected()) {
+                    selectedCount++;
+
+                    if (item.getAmount() <= 0) {
+                        Toast.makeText(FruitsandVegtables.this,
+                                "יש להזין כמות לכל פריט שנבחר",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    totalAmount += item.getAmount();
+                }
+            }
+
+            if (selectedCount == 0) {
+                Toast.makeText(FruitsandVegtables.this,
+                        "יש לבחור לפחות פריט אחד",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Log.d("FRUITS_AMOUNT", "total=" + totalAmount + " allowed=" + fruitsVegAmount);
+
+            if (totalAmount != fruitsVegAmount) {
+                Toast.makeText(FruitsandVegtables.this,
+                        "הכמות אינה תקינה",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            try {
+                ShakeSelectionManager.setCategoryItems("fruits_vegetables", adapter.getItems());
+
+                Intent intent = new Intent(FruitsandVegtables.this, liquids.class);
+                intent.putExtra("GOAL", goal);
+                intent.putExtra("CUP_SIZE", cupSize);
+                startActivity(intent);
+            } catch (Exception e) {
+                Log.e("LIQUIDS_ERROR", "Crash opening liquids", e);
+                Toast.makeText(FruitsandVegtables.this,
+                        "שגיאה במעבר לנוזלים",
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    // פונקציה שקוראים לה מה-Adapter כאשר המשתמש מזין כמות
-    public void updateItemAmount(Item item, int grams) {
-        if (grams > 0) {
-            selectedAmounts.put(item, grams);
-        } else {
-            selectedAmounts.remove(item);
+    private boolean isFruitVegetable(Item item) {
+        String type = item.getType();
+        if (type == null) return false;
+
+        type = type.trim().toLowerCase(Locale.ROOT);
+
+        return type.contains("fruit")
+                || type.contains("vegetable")
+                || type.contains("fruits")
+                || type.contains("veg")
+                || type.contains("פירות")
+                || type.contains("ירקות");
+    }
+
+    private boolean matchesGoal(Item item, String selectedGoal) {
+        String itemGoal = item.getGoal();
+        if (itemGoal == null || selectedGoal == null) return false;
+
+        itemGoal = itemGoal.trim().toLowerCase(Locale.ROOT);
+        selectedGoal = selectedGoal.trim().toLowerCase(Locale.ROOT);
+
+        if (selectedGoal.equals("muscle")) {
+            return itemGoal.equals("muscle") || itemGoal.equals("מסה");
         }
+
+        if (selectedGoal.equals("cut")) {
+            return itemGoal.equals("cut") || itemGoal.equals("חיטוב");
+        }
+
+        return false;
     }
 }

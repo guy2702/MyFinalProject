@@ -18,9 +18,8 @@ import com.example.myfinalproject.model.Item;
 import com.example.myfinalproject.services.DatabaseService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 
 public class liquids extends AppCompatActivity {
 
@@ -30,7 +29,6 @@ public class liquids extends AppCompatActivity {
     private Button btnFinish;
     private TextView tvTitleLiquids;
 
-    private String category = "נוזלים";
     private String selectedGoal;
     private int cupSize;
     private int allowedGrams;
@@ -46,51 +44,57 @@ public class liquids extends AppCompatActivity {
             return insets;
         });
 
-        // נתונים מהמסך הקודם
-        selectedGoal = getIntent().getStringExtra("CHOICE");
-        cupSize = getIntent().getIntExtra("CUP_SIZE", 400);
-
         tvTitleLiquids = findViewById(R.id.tvTitleLiquids);
         rvLiquids = findViewById(R.id.rvLiquids);
         btnFinish = findViewById(R.id.btnFinishLiquids);
 
-        liquidsList = new ArrayList<>();
+        selectedGoal = getIntent().getStringExtra("GOAL");
+        cupSize = getIntent().getIntExtra("CUP_SIZE", 400);
 
-        // אחוזים לפי קטגוריה ומטרה
-        Map<String, Double> percentages = new HashMap<>();
-        if (selectedGoal.equals("מסה")) {
-            percentages.put("נוזלים", 0.25);
-            percentages.put("פירות/ירקות", 0.20);
-            percentages.put("תוספי חלבון", 0.25);
-            percentages.put("ממתיקים", 0.10);
-            percentages.put("אגוזים", 0.20);
-        } else { // חיטוב
-            percentages.put("נוזלים", 0.30);
-            percentages.put("פירות/ירקות", 0.35);
-            percentages.put("תוספי חלבון", 0.20);
-            percentages.put("ממתיקים", 0.05);
-            percentages.put("אגוזים", 0.10);
+        if (selectedGoal == null) {
+            Toast.makeText(this, "שגיאה בקבלת המטרה", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
         }
 
-        // גרם מותרים לקטגוריה מחושב לפי אחוז מהכוס
-        allowedGrams = (int) (cupSize * percentages.get(category));
+        allowedGrams = SmoothieCalculator.getCategoryAmount(
+                selectedGoal,
+                cupSize,
+                SmoothieCalculator.TYPE_LIQUIDS
+        );
+
+        final String goalText;
+        if ("MUSCLE".equalsIgnoreCase(selectedGoal)) {
+            goalText = "מסה";
+        } else if ("CUT".equalsIgnoreCase(selectedGoal)) {
+            goalText = "חיטוב";
+        } else {
+            goalText = "";
+        }
+
+        liquidsList = new ArrayList<>();
 
         Runnable updateTitle = () -> {
             int selectedCount = 0;
+
             for (Item item : liquidsList) {
-                if (item.isSelected()) selectedCount++;
+                if (item.isSelected()) {
+                    selectedCount++;
+                }
             }
+
             int perItemGrams = selectedCount > 0 ? allowedGrams / selectedCount : 0;
-            tvTitleLiquids.setText("בחר נוזל בסיס - כל פריט יקבל ~" + perItemGrams + " גרם מתוך " + allowedGrams + " גרם");
+
+            tvTitleLiquids.setText(
+                    "בחר נוזל בסיס  " + allowedGrams + " גרם\n" +
+                            "מטרה: " + goalText + "\n" +
+                            "לכל פריט: " + perItemGrams + " גרם"
+            );
         };
 
-        adapter = new ItemAdapter(liquidsList, item -> {
-            item.setSelected(!item.isSelected());
-            updateTitle.run();
-            adapter.notifyDataSetChanged();
-        });
-
+        adapter = new ItemAdapter(liquidsList, item -> {});
         adapter.setSelectionMode(true);
+
         rvLiquids.setLayoutManager(new LinearLayoutManager(this));
         rvLiquids.setAdapter(adapter);
 
@@ -98,44 +102,92 @@ public class liquids extends AppCompatActivity {
 
         btnFinish.setOnClickListener(v -> {
             int selectedCount = 0;
-            for (Item item : liquidsList) {
-                if (item.isSelected()) selectedCount++;
+            int totalAmount = 0;
+
+            for (Item item : adapter.getItems()) {
+                if (item.isSelected()) {
+                    selectedCount++;
+
+                    if (item.getAmount() <= 0) {
+                        Toast.makeText(this, "יש להזין כמות לכל נוזל שנבחר", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    totalAmount += item.getAmount();
+                }
             }
 
             if (selectedCount == 0) {
-                Toast.makeText(this, "חובה לבחור לפחות נוזל אחד!", Toast.LENGTH_SHORT).show();
-            } else {
-                Intent intent = new Intent(liquids.this, ProtienSupplements.class);
-                intent.putExtra("CHOICE", selectedGoal);
-                intent.putExtra("CUP_SIZE", cupSize);
-                startActivity(intent);
+                Toast.makeText(this, "חובה לבחור לפחות נוזל אחד", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            if (totalAmount != allowedGrams) {
+                Toast.makeText(this, "הכמות אינה תקינה", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            ShakeSelectionManager.setCategoryItems("liquids", adapter.getItems());
+
+            Intent intent = new Intent(liquids.this, ProtienSupplements.class);
+            intent.putExtra("GOAL", selectedGoal);
+            intent.putExtra("CUP_SIZE", cupSize);
+            startActivity(intent);
         });
 
         DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
             @Override
             public void onCompleted(List<Item> items) {
                 liquidsList.clear();
-                for (Item item : items) {
-                    if (item.getType() != null &&
-                            (item.getType().equalsIgnoreCase("נוזלים") ||
-                                    item.getType().equalsIgnoreCase("liquids") ||
-                                    item.getType().equalsIgnoreCase("נוזל"))) {
 
-                        if (item.getGoal() != null && item.getGoal().equals(selectedGoal)) {
-                            item.setSelected(false);
-                            liquidsList.add(item);
-                        }
+                for (Item item : items) {
+                    if (item == null) continue;
+
+                    if (isLiquid(item) && matchesGoal(item, selectedGoal)) {
+                        item.setSelected(false);
+                        item.setAmount(0);
+                        liquidsList.add(item);
                     }
                 }
+
                 adapter.notifyDataSetChanged();
                 updateTitle.run();
             }
 
             @Override
             public void onFailed(Exception e) {
-                e.printStackTrace();
+                Toast.makeText(liquids.this, "שגיאה בטעינת הנוזלים", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private boolean isLiquid(Item item) {
+        String type = item.getType();
+        if (type == null) return false;
+
+        type = type.trim().toLowerCase(Locale.ROOT);
+
+        return type.contains("liquid")
+                || type.contains("liquids")
+                || type.contains("נוזל")
+                || type.contains("נוזלים");
+    }
+
+    private boolean matchesGoal(Item item, String goal) {
+        String itemGoal = item.getGoal();
+        if (itemGoal == null || goal == null) return false;
+
+        itemGoal = itemGoal.trim().toLowerCase(Locale.ROOT);
+        goal = goal.trim().toLowerCase(Locale.ROOT);
+
+        if (goal.equals("muscle")) {
+            return itemGoal.equals("muscle") || itemGoal.equals("מסה");
+        }
+
+        if (goal.equals("cut")) {
+            return itemGoal.equals("cut") || itemGoal.equals("חיטוב");
+        }
+
+        return false;
     }
 }

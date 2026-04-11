@@ -3,6 +3,7 @@ package com.example.myfinalproject;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,6 +19,7 @@ import com.example.myfinalproject.services.DatabaseService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Sweeteners extends AppCompatActivity {
 
@@ -25,6 +27,11 @@ public class Sweeteners extends AppCompatActivity {
     private ItemAdapter adapter;
     private ArrayList<Item> sweetenersList;
     private Button btnFinish;
+    private TextView tvTitleSweeteners;
+
+    private String selectedGoal;
+    private int cupSize;
+    private int allowedGrams;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,61 +44,150 @@ public class Sweeteners extends AppCompatActivity {
             return insets;
         });
 
-        // קבלת המטרה (מסה/חיטוב) מהמסך הקודם
-        String selectedGoal = getIntent().getStringExtra("CHOICE");
+        selectedGoal = getIntent().getStringExtra("GOAL");
+        cupSize = getIntent().getIntExtra("CUP_SIZE", 400);
+
+        if (selectedGoal == null) {
+            Toast.makeText(this, "שגיאה בקבלת המטרה", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         rvSweeteners = findViewById(R.id.rvSweeteners);
         btnFinish = findViewById(R.id.btnFinishSweeteners);
+        tvTitleSweeteners = findViewById(R.id.tvTitleSweeteners);
+
         sweetenersList = new ArrayList<>();
 
-        adapter = new ItemAdapter(sweetenersList, item -> {
-            // בחירה מנוהלת באדפטר
-        });
+        allowedGrams = SmoothieCalculator.getCategoryAmount(
+                selectedGoal,
+                cupSize,
+                SmoothieCalculator.TYPE_SWEETENERS
+        );
 
-        adapter.setSelectionMode(true);
-        rvSweeteners.setLayoutManager(new LinearLayoutManager(this));
-        rvSweeteners.setAdapter(adapter);
+        final String goalText;
+        if ("MUSCLE".equalsIgnoreCase(selectedGoal)) {
+            goalText = "מסה";
+        } else if ("CUT".equalsIgnoreCase(selectedGoal)) {
+            goalText = "חיטוב";
+        } else {
+            goalText = "";
+        }
 
-        btnFinish.setOnClickListener(v -> {
-            boolean hasSelection = false;
+        Runnable updateTitle = () -> {
+            int selectedCount = 0;
+
             for (Item item : sweetenersList) {
                 if (item.isSelected()) {
-                    hasSelection = true;
-                    break;
+                    selectedCount++;
                 }
             }
 
-            if (hasSelection) {
-                Intent intent = new Intent(Sweeteners.this, Nuts.class);
-                intent.putExtra("CHOICE", selectedGoal);
-                startActivity(intent);
-            } else {
-                Toast.makeText(this, "חובה לבחור לפחות ממתיק אחד!", Toast.LENGTH_SHORT).show();
+            int perItemGrams = selectedCount > 0 ? allowedGrams / selectedCount : 0;
+
+            tvTitleSweeteners.setText(
+                    "בחר ממתיקים  " + allowedGrams + " גרם\n" +
+                            "מטרה: " + goalText + "\n" +
+                            "לכל פריט: " + perItemGrams + " גרם"
+            );
+        };
+
+        adapter = new ItemAdapter(sweetenersList, item -> {});
+        adapter.setSelectionMode(true);
+
+        rvSweeteners.setLayoutManager(new LinearLayoutManager(this));
+        rvSweeteners.setAdapter(adapter);
+
+        updateTitle.run();
+
+        btnFinish.setOnClickListener(v -> {
+            int selectedCount = 0;
+            int totalAmount = 0;
+
+            for (Item item : adapter.getItems()) {
+                if (item.isSelected()) {
+                    selectedCount++;
+
+                    if (item.getAmount() <= 0) {
+                        Toast.makeText(this, "יש להזין כמות לכל ממתיק שנבחר", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    totalAmount += item.getAmount();
+                }
             }
+
+            if (selectedCount == 0) {
+                Toast.makeText(this, "חובה לבחור לפחות ממתיק אחד", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (totalAmount != allowedGrams) {
+                Toast.makeText(this, "הכמות אינה תקינה", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            ShakeSelectionManager.setCategoryItems("sweeteners", adapter.getItems());
+
+            Intent intent = new Intent(Sweeteners.this, Nuts.class);
+            intent.putExtra("GOAL", selectedGoal);
+            intent.putExtra("CUP_SIZE", cupSize);
+            startActivity(intent);
         });
 
         DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
             @Override
             public void onCompleted(List<Item> items) {
                 sweetenersList.clear();
-                for (Item item : items) {
-                    if (item.getType() != null &&
-                            (item.getType().toLowerCase().contains("ממתיק") ||
-                                    item.getType().toLowerCase().contains("sweetener"))) {
 
-                        if (item.getGoal() != null && item.getGoal().equals(selectedGoal)) {
-                            item.setSelected(false);
-                            sweetenersList.add(item);
-                        }
+                for (Item item : items) {
+                    if (item == null) continue;
+
+                    if (isSweetener(item) && matchesGoal(item, selectedGoal)) {
+                        item.setSelected(false);
+                        item.setAmount(0);
+                        sweetenersList.add(item);
                     }
                 }
+
                 adapter.notifyDataSetChanged();
+                updateTitle.run();
             }
 
             @Override
             public void onFailed(Exception e) {
-                e.printStackTrace();
+                Toast.makeText(Sweeteners.this, "שגיאה בטעינת הממתיקים", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private boolean isSweetener(Item item) {
+        String type = item.getType();
+        if (type == null) return false;
+
+        type = type.trim().toLowerCase(Locale.ROOT);
+
+        return type.contains("sweet")
+                || type.contains("sweetener")
+                || type.contains("ממתיק")
+                || type.contains("ממתיקים");
+    }
+
+    private boolean matchesGoal(Item item, String goal) {
+        String itemGoal = item.getGoal();
+        if (itemGoal == null || goal == null) return false;
+
+        itemGoal = itemGoal.trim().toLowerCase(Locale.ROOT);
+        goal = goal.trim().toLowerCase(Locale.ROOT);
+
+        if (goal.equals("muscle")) {
+            return itemGoal.equals("muscle") || itemGoal.equals("מסה");
+        }
+
+        if (goal.equals("cut")) {
+            return itemGoal.equals("cut") || itemGoal.equals("חיטוב");
+        }
+
+        return false;
     }
 }

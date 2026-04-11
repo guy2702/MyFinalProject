@@ -3,6 +3,7 @@ package com.example.myfinalproject;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,6 +19,7 @@ import com.example.myfinalproject.services.DatabaseService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Nuts extends AppCompatActivity {
 
@@ -25,6 +27,11 @@ public class Nuts extends AppCompatActivity {
     private ItemAdapter adapter;
     private ArrayList<Item> nutsList;
     private Button btnFinish;
+    private TextView tvTitleNuts;
+
+    private String selectedGoal;
+    private int cupSize;
+    private int allowedGrams;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,71 +44,151 @@ public class Nuts extends AppCompatActivity {
             return insets;
         });
 
-        // קבלת מסה / חיטוב מהמסך הקודם
-        String selectedGoal = getIntent().getStringExtra("CHOICE");
+        selectedGoal = getIntent().getStringExtra("GOAL");
+        cupSize = getIntent().getIntExtra("CUP_SIZE", 400);
+
+        if (selectedGoal == null) {
+            Toast.makeText(this, "שגיאה בקבלת המטרה", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         rvNuts = findViewById(R.id.rvNuts);
         btnFinish = findViewById(R.id.btnFinishNuts);
+        tvTitleNuts = findViewById(R.id.tvTitleNuts);
+
         nutsList = new ArrayList<>();
 
-        adapter = new ItemAdapter(nutsList, item -> {
-            // הבחירה מנוהלת באדפטר
-        });
+        allowedGrams = SmoothieCalculator.getCategoryAmount(
+                selectedGoal,
+                cupSize,
+                SmoothieCalculator.TYPE_NUTS
+        );
 
-        adapter.setSelectionMode(true);
-        rvNuts.setLayoutManager(new LinearLayoutManager(this));
-        rvNuts.setAdapter(adapter);
+        final String goalText;
+        if ("MUSCLE".equalsIgnoreCase(selectedGoal)) {
+            goalText = "מסה";
+        } else if ("CUT".equalsIgnoreCase(selectedGoal)) {
+            goalText = "חיטוב";
+        } else {
+            goalText = "";
+        }
 
-        btnFinish.setOnClickListener(v -> {
-            boolean hasSelection = false;
+        Runnable updateTitle = () -> {
+            int selectedCount = 0;
+
             for (Item item : nutsList) {
                 if (item.isSelected()) {
-                    hasSelection = true;
-                    break;
+                    selectedCount++;
                 }
             }
 
-            if (hasSelection) {
-                Toast.makeText(this, "נבחרו אגוזים בהצלחה!", Toast.LENGTH_SHORT).show();
+            int perItemGrams = selectedCount > 0 ? allowedGrams / selectedCount : 0;
 
-                // מעבר לדף ShakeResults
-                Intent intent = new Intent(Nuts.this, ShakeResults.class);
-                intent.putExtra("CHOICE", selectedGoal); // מעביר את הבחירה מסה/חיטוב
-                startActivity(intent);
+            tvTitleNuts.setText(
+                    "בחר אגוזים  " + allowedGrams + " גרם\n" +
+                            "מטרה: " + goalText + "\n" +
+                            "לכל פריט: " + perItemGrams + " גרם"
+            );
+        };
 
-                // סוגר את המסך הנוכחי
-                finish();
+        adapter = new ItemAdapter(nutsList, item -> {});
+        adapter.setSelectionMode(true);
 
-            } else {
-                Toast.makeText(this, "חובה לבחור לפחות אגוז אחד!", Toast.LENGTH_SHORT).show();
+        rvNuts.setLayoutManager(new LinearLayoutManager(this));
+        rvNuts.setAdapter(adapter);
+
+        updateTitle.run();
+
+        btnFinish.setOnClickListener(v -> {
+            int selectedCount = 0;
+            int totalAmount = 0;
+
+            for (Item item : adapter.getItems()) {
+                if (item.isSelected()) {
+                    selectedCount++;
+
+                    if (item.getAmount() <= 0) {
+                        Toast.makeText(this, "יש להזין כמות לכל אגוז שנבחר", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    totalAmount += item.getAmount();
+                }
             }
+
+            if (selectedCount == 0) {
+                Toast.makeText(this, "חובה לבחור לפחות אגוז אחד", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (totalAmount != allowedGrams) {
+                Toast.makeText(this, "הכמות אינה תקינה", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            ShakeSelectionManager.setCategoryItems("nuts", adapter.getItems());
+
+            Intent intent = new Intent(Nuts.this, ShakeResults.class);
+            intent.putExtra("GOAL", selectedGoal);
+            intent.putExtra("CUP_SIZE", cupSize);
+            startActivity(intent);
+            finish();
         });
 
         DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
             @Override
             public void onCompleted(List<Item> items) {
                 nutsList.clear();
+
                 for (Item item : items) {
+                    if (item == null) continue;
 
-                    // סינון לפי סוג אגוזים + התאמה למטרה
-                    if (item.getType() != null &&
-                            (item.getType().equalsIgnoreCase("אגוזים") ||
-                                    item.getType().equalsIgnoreCase("nuts") ||
-                                    item.getType().equalsIgnoreCase("אגוז"))) {
-
-                        if (item.getGoal() != null && item.getGoal().equals(selectedGoal)) {
-                            item.setSelected(false);
-                            nutsList.add(item);
-                        }
+                    if (isNut(item) && matchesGoal(item, selectedGoal)) {
+                        item.setSelected(false);
+                        item.setAmount(0);
+                        nutsList.add(item);
                     }
                 }
+
                 adapter.notifyDataSetChanged();
+                updateTitle.run();
             }
 
             @Override
             public void onFailed(Exception e) {
-                e.printStackTrace();
+                Toast.makeText(Nuts.this, "שגיאה בטעינת האגוזים", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private boolean isNut(Item item) {
+        String type = item.getType();
+        if (type == null) return false;
+
+        type = type.trim().toLowerCase(Locale.ROOT);
+
+        return type.contains("nut")
+                || type.contains("nuts")
+                || type.contains("אגוז")
+                || type.contains("אגוזים");
+    }
+
+    private boolean matchesGoal(Item item, String goal) {
+        String itemGoal = item.getGoal();
+        if (itemGoal == null || goal == null) return false;
+
+        itemGoal = itemGoal.trim().toLowerCase(Locale.ROOT);
+        goal = goal.trim().toLowerCase(Locale.ROOT);
+
+        if (goal.equals("muscle")) {
+            return itemGoal.equals("muscle") || itemGoal.equals("מסה");
+        }
+
+        if (goal.equals("cut")) {
+            return itemGoal.equals("cut") || itemGoal.equals("חיטוב");
+        }
+
+        return false;
     }
 }
