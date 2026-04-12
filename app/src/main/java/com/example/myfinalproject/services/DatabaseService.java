@@ -298,6 +298,10 @@ public class DatabaseService {
     public void createNewItem(@NotNull final Item item, @Nullable final DatabaseCallback<Void> callback) {
         writeData(ITEMS_PATH + "/" + item.getId(), item, callback);
     }
+    public void updateItem(@NotNull final Item item,
+                           @Nullable final DatabaseCallback<Void> callback) {
+        writeData(ITEMS_PATH + "/" + item.getId(), item, callback);
+    }
 
     public void getItem(@NotNull final String itemId, @NotNull final DatabaseCallback<Item> callback) {
         getData(ITEMS_PATH + "/" + itemId, Item.class, callback);

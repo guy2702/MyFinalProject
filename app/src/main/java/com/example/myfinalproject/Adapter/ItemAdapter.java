@@ -46,16 +46,20 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     @NonNull
     @Override
     public ItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_row, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_row, parent, false);
         return new ItemViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ItemViewHolder holder, int position) {
+
         Item item = items.get(position);
 
         holder.tvName.setText(item.getName() != null ? item.getName() : "-");
         holder.tvDescription.setText(item.getType() != null ? item.getType() : "-");
+
+        holder.tvSugar.setText("סוכר: " + item.getSugar());
 
         try {
             if (item.getPic() != null && !item.getPic().isEmpty()) {
@@ -84,42 +88,33 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         }
 
         holder.textWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+
                 int pos = holder.getAdapterPosition();
-                if (pos == RecyclerView.NO_POSITION) {
-                    return;
-                }
+                if (pos == RecyclerView.NO_POSITION) return;
 
-                String text = s.toString().trim();
                 int amount = 0;
-
-                if (!text.isEmpty()) {
-                    try {
-                        amount = Integer.parseInt(text);
-                    } catch (NumberFormatException ignored) {
+                try {
+                    if (!s.toString().trim().isEmpty()) {
+                        amount = Integer.parseInt(s.toString().trim());
                     }
-                }
+                } catch (Exception ignored) {}
 
                 items.get(pos).setAmount(amount);
             }
 
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
+            @Override public void afterTextChanged(Editable s) {}
         };
 
         holder.etAmount.addTextChangedListener(holder.textWatcher);
 
         holder.itemView.setOnClickListener(v -> {
+
             int pos = holder.getAdapterPosition();
-            if (pos == RecyclerView.NO_POSITION) {
-                return;
-            }
+            if (pos == RecyclerView.NO_POSITION) return;
 
             Item clickedItem = items.get(pos);
 
@@ -145,17 +140,22 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     }
 
     static class ItemViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvDescription;
+
+        TextView tvName, tvDescription, tvSugar;
         ImageView ivImage;
         EditText etAmount;
         TextWatcher textWatcher;
 
         public ItemViewHolder(@NonNull View itemView) {
             super(itemView);
+
             tvName = itemView.findViewById(R.id.tvItemName);
             tvDescription = itemView.findViewById(R.id.tvItemDescription);
             ivImage = itemView.findViewById(R.id.ivItemImage);
             etAmount = itemView.findViewById(R.id.etItemAmount);
+
+            // ✔ זה התיקון הקריטי שלך
+            tvSugar = itemView.findViewById(R.id.tvItemSugar);
         }
     }
 }

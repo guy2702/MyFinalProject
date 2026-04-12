@@ -8,11 +8,13 @@ public class Item {
     private String name;
     private String type;
     private String goal;
+
     private double calories;
     private double protein;
     private double fat;
     private double carbs;
-    private double sugar;
+    private double sugar = 0;
+
     private String pic;
 
     private boolean selected = false;
@@ -35,14 +37,14 @@ public class Item {
         this.pic = pic;
     }
 
-    public boolean isSelected() { return selected; }
-    public void setSelected(boolean selected) { this.selected = selected; }
+    public String getId() {
+        return id;
+    }
 
-    public int getAmount() { return amount; }
-    public void setAmount(int amount) { this.amount = amount; }
-
-    public String getId() { return id; }
-    public void setId(Object id) { this.id = (id != null) ? String.valueOf(id) : null; }
+    // ✅ FIX חשוב
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -70,6 +72,12 @@ public class Item {
 
     public String getPic() { return pic; }
     public void setPic(String pic) { this.pic = pic; }
+
+    public boolean isSelected() { return selected; }
+    public void setSelected(boolean selected) { this.selected = selected; }
+
+    public int getAmount() { return amount; }
+    public void setAmount(int amount) { this.amount = amount; }
 
     @NonNull
     @Override

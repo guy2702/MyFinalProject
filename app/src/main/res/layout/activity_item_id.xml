@@ -20,68 +20,119 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <!-- תמונת מוצר -->
             <ImageView
                 android:id="@+id/ivItemImageDetail"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
-                android:scaleType="centerCrop"
-                android:contentDescription="Item Image"/>
+                android:scaleType="centerCrop"/>
 
-            <!-- שם מוצר -->
             <TextView
                 android:id="@+id/tvItemNameDetail"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:textSize="22sp"
-                android:layout_marginTop="8dp"/>
+                android:textSize="22sp"/>
 
-            <!-- סוג מוצר -->
             <TextView
                 android:id="@+id/tvItemTypeDetail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:layout_marginTop="4dp"/>
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
-            <!-- מטרה (מסה / חיטוב) -->
             <TextView
                 android:id="@+id/tvItemGoalDetail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginTop="4dp"/>
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
-            <!-- נתוני תזונה -->
             <TextView
                 android:id="@+id/tvItemCaloriesDetail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"/>
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
             <TextView
                 android:id="@+id/tvItemProteinDetail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"/>
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
             <TextView
                 android:id="@+id/tvItemFatDetail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"/>
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
             <TextView
                 android:id="@+id/tvItemCarbsDetail"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/tvItemSugarDetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+            <EditText
+                android:id="@+id/etName"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"/>
+                android:hint="שם מוצר"/>
+
+            <EditText
+                android:id="@+id/etType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="סוג"/>
+
+            <EditText
+                android:id="@+id/etGoal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="מטרה"/>
+
+            <EditText
+                android:id="@+id/etCalories"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="קלוריות"
+                android:inputType="numberDecimal"/>
+
+            <EditText
+                android:id="@+id/etProtein"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="חלבון"
+                android:inputType="numberDecimal"/>
+
+            <EditText
+                android:id="@+id/etFat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="שומן"
+                android:inputType="numberDecimal"/>
+
+            <EditText
+                android:id="@+id/etCarbs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="פחמימות"
+                android:inputType="numberDecimal"/>
+
+            <EditText
+                android:id="@+id/etSugar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="סוכר"
+                android:inputType="numberDecimal"/>
+
+            <Button
+                android:id="@+id/btnUpdateItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="עדכן פריט"
+                android:backgroundTint="#4CAF50"
+                android:textColor="#FFFFFF"
+                android:layout_marginTop="10dp"/>
+
         </LinearLayout>
     </ScrollView>
 
-    <!-- כפתור מחיקה -->
     <Button
         android:id="@+id/btnDeleteItem"
         android:layout_width="0dp"
@@ -93,4 +144,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
