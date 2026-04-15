@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myfinalproject.Adapter.ItemAdapter;
 import com.example.myfinalproject.model.Item;
+import com.example.myfinalproject.model.ShakeSelectionManager;
 import com.example.myfinalproject.services.DatabaseService;
 
 import java.util.ArrayList;

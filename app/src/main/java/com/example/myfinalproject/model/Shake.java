@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class Shake {
 
     private String shakeId;
-    private String uid;
+
     private ArrayList<Item> items;
 
     // Constructors
@@ -13,10 +13,9 @@ public class Shake {
         items = new ArrayList<>();
     }
 
-    public Shake(String shakeId, String uid) {
+    public Shake(String shakeId, ArrayList<Item> items) {
         this.shakeId = shakeId;
-        this.uid = uid;
-        this.items = new ArrayList<>();
+        this.items = items;
     }
 
     // Getters & Setters
@@ -28,13 +27,7 @@ public class Shake {
         this.shakeId = shakeId;
     }
 
-    public String getUid() {
-        return uid;
-    }
 
-    public void setUid(String uid) {
-        this.uid = uid;
-    }
 
     public ArrayList<Item> getItems() {
         return items;

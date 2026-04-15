@@ -18,10 +18,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyFinalProject">
         <activity
-            android:name=".NutritionCalculator"
+            android:name=".UserHome"
             android:exported="false" />
         <activity
-            android:name=".ShakeSelectionManager"
+            android:name=".model.NutritionCalculator"
+            android:exported="false" />
+        <activity
+            android:name=".model.ShakeSelectionManager"
             android:exported="false" />
         <activity
             android:name=".ShakeResults"

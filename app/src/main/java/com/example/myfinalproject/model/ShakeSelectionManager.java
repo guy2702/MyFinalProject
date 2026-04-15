@@ -1,6 +1,4 @@
-package com.example.myfinalproject;
-
-import com.example.myfinalproject.model.Item;
+package com.example.myfinalproject.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;

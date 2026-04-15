@@ -40,6 +40,8 @@ public class DatabaseService {
     /// paths for different data types in the database
     /// @see DatabaseService#readData(String)
     private static final String USERS_PATH = "users",
+
+    USERS_PATH_SHAKE = "userShake",
             ITEMS_PATH = "item",
             SHAKES_PATH = "shake";
 
@@ -344,7 +346,12 @@ public class DatabaseService {
     // region shake section
 
     public void createNewShake(@NotNull final Shake shake, @Nullable final DatabaseCallback<Void> callback) {
-        writeData(SHAKES_PATH + "/" + shake.getUid(), shake, callback);
+
+        String uid=  FirebaseAuth.getInstance().getUid();
+
+        writeData(SHAKES_PATH + "/" + shake.getShakeId(), shake, callback);
+
+        writeData(USERS_PATH_SHAKE + "/" + uid+"/"  + shake.getShakeId(), shake, callback);
     }
 
     public void getShake(@NotNull final String shakeId, @NotNull final DatabaseCallback<Shake> callback) {

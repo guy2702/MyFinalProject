@@ -46,14 +46,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     @NonNull
     @Override
     public ItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_row, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_row, parent, false);
         return new ItemViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ItemViewHolder holder, int position) {
-
         Item item = items.get(position);
 
         holder.tvName.setText(item.getName() != null ? item.getName() : "-");
@@ -71,37 +69,44 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
             holder.ivImage.setImageResource(android.R.color.darker_gray);
         }
 
-        if (holder.textWatcher != null) {
-            holder.etAmount.removeTextChangedListener(holder.textWatcher);
+        if (holder.amountWatcher != null) {
+            holder.etAmount.removeTextChangedListener(holder.amountWatcher);
         }
 
         holder.etAmount.setText(item.getAmount() > 0 ? String.valueOf(item.getAmount()) : "");
 
         if (isSelectionMode && item.isSelected()) {
             holder.itemView.setBackgroundColor(Color.parseColor("#C8E6C9"));
+
             holder.etAmount.setVisibility(View.VISIBLE);
             holder.etAmount.setEnabled(true);
+
+            holder.tvSugar.setVisibility(View.GONE);
         } else {
             holder.itemView.setBackgroundColor(Color.WHITE);
+
             holder.etAmount.setVisibility(View.GONE);
             holder.etAmount.setEnabled(false);
+
+            holder.tvSugar.setVisibility(View.VISIBLE);
         }
 
-        holder.textWatcher = new TextWatcher() {
+        holder.amountWatcher = new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
                 int pos = holder.getAdapterPosition();
                 if (pos == RecyclerView.NO_POSITION) return;
 
+                String text = s.toString().trim();
                 int amount = 0;
-                try {
-                    if (!s.toString().trim().isEmpty()) {
-                        amount = Integer.parseInt(s.toString().trim());
-                    }
-                } catch (Exception ignored) {}
+
+                if (!text.isEmpty()) {
+                    try {
+                        amount = Integer.parseInt(text);
+                    } catch (Exception ignored) {}
+                }
 
                 items.get(pos).setAmount(amount);
             }
@@ -109,10 +114,9 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
             @Override public void afterTextChanged(Editable s) {}
         };
 
-        holder.etAmount.addTextChangedListener(holder.textWatcher);
+        holder.etAmount.addTextChangedListener(holder.amountWatcher);
 
         holder.itemView.setOnClickListener(v -> {
-
             int pos = holder.getAdapterPosition();
             if (pos == RecyclerView.NO_POSITION) return;
 
@@ -140,22 +144,19 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
     }
 
     static class ItemViewHolder extends RecyclerView.ViewHolder {
-
         TextView tvName, tvDescription, tvSugar;
         ImageView ivImage;
         EditText etAmount;
-        TextWatcher textWatcher;
+
+        TextWatcher amountWatcher;
 
         public ItemViewHolder(@NonNull View itemView) {
             super(itemView);
-
             tvName = itemView.findViewById(R.id.tvItemName);
             tvDescription = itemView.findViewById(R.id.tvItemDescription);
+            tvSugar = itemView.findViewById(R.id.tvItemSugar);
             ivImage = itemView.findViewById(R.id.ivItemImage);
             etAmount = itemView.findViewById(R.id.etItemAmount);
-
-            // ✔ זה התיקון הקריטי שלך
-            tvSugar = itemView.findViewById(R.id.tvItemSugar);
         }
     }
 }
