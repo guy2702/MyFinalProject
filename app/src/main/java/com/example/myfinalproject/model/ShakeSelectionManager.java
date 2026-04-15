@@ -8,6 +8,7 @@ import java.util.Map;
 public class ShakeSelectionManager {
 
     private static final Map<String, ArrayList<Item>> selectionsByCategory = new HashMap<>();
+    private static Shake currentViewedShake;
 
     public static void setCategoryItems(String category, List<Item> items) {
         ArrayList<Item> selected = new ArrayList<>();
@@ -31,7 +32,16 @@ public class ShakeSelectionManager {
         return allItems;
     }
 
+    public static void setCurrentViewedShake(Shake shake) {
+        currentViewedShake = shake;
+    }
+
+    public static Shake getCurrentViewedShake() {
+        return currentViewedShake;
+    }
+
     public static void clearAll() {
         selectionsByCategory.clear();
+        currentViewedShake = null;
     }
 }

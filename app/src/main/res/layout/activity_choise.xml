@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -20,7 +21,7 @@
         android:id="@+id/tvWelcome"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="36dp"
         android:text="שלום, משתמש!"
         android:textSize="24sp"
         android:textStyle="bold"
@@ -34,7 +35,7 @@
         android:id="@+id/tvGoal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="28dp"
         android:text="בחר מטרה:"
         android:textSize="22sp"
         android:textStyle="bold"
@@ -47,7 +48,7 @@
         android:id="@+id/rgGoal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="12dp"
         android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@id/tvGoal"
         app:layout_constraintStart_toStartOf="parent"
@@ -59,7 +60,9 @@
             android:layout_height="wrap_content"
             android:text="מסה"
             android:textSize="18sp"
-            android:textColor="#083D85" />
+            android:textColor="#083D85"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp" />
 
         <RadioButton
             android:id="@+id/rbCut"
@@ -67,27 +70,30 @@
             android:layout_height="wrap_content"
             android:text="חיטוב"
             android:textSize="18sp"
-            android:textColor="#083D85" />
+            android:textColor="#083D85"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp" />
     </RadioGroup>
 
     <TextView
         android:id="@+id/tvChooseSize"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="84dp"
         android:text="בחר גודל כוס:"
+        android:textColor="#083D85"
         android:textSize="22sp"
         android:textStyle="bold"
-        android:textColor="#083D85"
-        app:layout_constraintTop_toBottomOf="@id/rgGoal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.545"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/rgGoal" />
 
     <RadioGroup
         android:id="@+id/rgSize"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="12dp"
         android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@id/tvChooseSize"
         app:layout_constraintStart_toStartOf="parent"
@@ -99,7 +105,9 @@
             android:layout_height="wrap_content"
             android:text="200 גרם"
             android:textSize="18sp"
-            android:textColor="#083D85" />
+            android:textColor="#083D85"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
 
         <RadioButton
             android:id="@+id/rb400"
@@ -107,7 +115,9 @@
             android:layout_height="wrap_content"
             android:text="400 גרם"
             android:textSize="18sp"
-            android:textColor="#083D85" />
+            android:textColor="#083D85"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
 
         <RadioButton
             android:id="@+id/rb600"
@@ -115,17 +125,29 @@
             android:layout_height="wrap_content"
             android:text="600 גרם"
             android:textSize="18sp"
-            android:textColor="#083D85" />
+            android:textColor="#083D85"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
     </RadioGroup>
 
     <Button
         android:id="@+id/btnNext"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
         android:text="הבא"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="קודם"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

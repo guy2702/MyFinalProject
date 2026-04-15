@@ -13,7 +13,7 @@ public class Choise extends AppCompatActivity {
 
     private TextView tvWelcome;
     private RadioGroup rgGoal, rgSize;
-    private Button btnNext;
+    private Button btnNext, btnBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +24,7 @@ public class Choise extends AppCompatActivity {
         rgGoal = findViewById(R.id.rgGoal);
         rgSize = findViewById(R.id.rgSize);
         btnNext = findViewById(R.id.btnNext);
+        btnBack = findViewById(R.id.btnBack);
 
         String userName = getIntent().getStringExtra("USER_NAME");
 
@@ -32,6 +33,12 @@ public class Choise extends AppCompatActivity {
         } else {
             tvWelcome.setText("שלום!");
         }
+
+        btnBack.setOnClickListener(v -> {
+            Intent intent = new Intent(Choise.this, UserHome.class);
+            startActivity(intent);
+            finish();
+        });
 
         btnNext.setOnClickListener(v -> {
             int selectedGoalId = rgGoal.getCheckedRadioButtonId();

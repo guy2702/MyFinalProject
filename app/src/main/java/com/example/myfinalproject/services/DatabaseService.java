@@ -361,6 +361,27 @@ public class DatabaseService {
     public void getShakeList(@NotNull final DatabaseCallback<List<Shake>> callback) {
         getDataList(SHAKES_PATH, Shake.class, callback);
     }
+    public void listenToUserShakesRealtime(@NotNull final String uid,
+                                           @NotNull final DatabaseCallback<List<Shake>> callback) {
+        readData(USERS_PATH_SHAKE + "/" + uid).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Shake> shakes = new ArrayList<>();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Shake shake = ds.getValue(Shake.class);
+                    if (shake != null) {
+                        shakes.add(shake);
+                    }
+                }
+                callback.onCompleted(shakes);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onFailed(error.toException());
+            }
+        });
+    }
 
     public void getUserShakeList(@NotNull String uid, @NotNull final DatabaseCallback<List<Shake>> callback) {
         getShakeList(new DatabaseCallback<>() {

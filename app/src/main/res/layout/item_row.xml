@@ -30,12 +30,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
-        <!-- 🔥 זה מה שהיה חסר -->
-        <TextView
-            android:id="@+id/tvItemSugar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="סוכר: 0" />
+
+
     </LinearLayout>
 
     <EditText

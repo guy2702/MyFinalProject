@@ -17,14 +17,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyFinalProject">
+
+
+        <activity
+            android:name=".ShakeDetails"
+            android:exported="false" />
+
+        <activity
+            android:name=".UserShake"
+            android:exported="false" />
         <activity
             android:name=".UserHome"
-            android:exported="false" />
-        <activity
-            android:name=".model.NutritionCalculator"
-            android:exported="false" />
-        <activity
-            android:name=".model.ShakeSelectionManager"
             android:exported="false" />
         <activity
             android:name=".ShakeResults"

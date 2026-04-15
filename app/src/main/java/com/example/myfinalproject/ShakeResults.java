@@ -1,5 +1,6 @@
 package com.example.myfinalproject;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -46,8 +47,8 @@ public class ShakeResults extends AppCompatActivity {
         NutritionCalculator.NutritionResult result =
                 NutritionCalculator.calculate(selectedItems);
 
-        String shId = databaseService.generateShakeId();
-        newShake = new Shake(shId, selectedItems);
+        String shakeId = databaseService.generateShakeId();
+        newShake = new Shake(shakeId, selectedItems);
 
         String text =
                 "תוצאות השייק:\n\n" +
@@ -61,7 +62,6 @@ public class ShakeResults extends AppCompatActivity {
     }
 
     public void goSaveShake(View view) {
-
         if (newShake == null) {
             Toast.makeText(this, "שגיאה ביצירת שייק", Toast.LENGTH_SHORT).show();
             return;
@@ -71,34 +71,22 @@ public class ShakeResults extends AppCompatActivity {
             @Override
             public void onCompleted(Void object) {
                 runOnUiThread(() -> {
-                    Toast.makeText(ShakeResults.this,
-                            "השייק נשמר בהצלחה",
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ShakeResults.this, "השייק נשמר בהצלחה", Toast.LENGTH_SHORT).show();
 
-                    // ניקוי בחירות
                     ShakeSelectionManager.clearAll();
 
-                    // מעבר למסך התחלה
-                    android.content.Intent intent =
-                            new android.content.Intent(ShakeResults.this, Choise.class);
-
-                    intent.setFlags(
-                            android.content.Intent.FLAG_ACTIVITY_NEW_TASK |
-                                    android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    );
-
+                    Intent intent = new Intent(ShakeResults.this, UserHome.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                 });
             }
 
             @Override
             public void onFailed(Exception e) {
-                runOnUiThread(() -> {
-                    Toast.makeText(ShakeResults.this,
-                            "שגיאה בשמירה",
-                            Toast.LENGTH_SHORT).show();
-                });
+                runOnUiThread(() ->
+                        Toast.makeText(ShakeResults.this, "שגיאה בשמירה", Toast.LENGTH_SHORT).show()
+                );
             }
         });
     }
-        }
+}

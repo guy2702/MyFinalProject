@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvShakeDetails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="פרטי שייק"
+        android:textSize="18sp" />
+
+</ScrollView>

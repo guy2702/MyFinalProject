@@ -17,7 +17,7 @@ import com.google.firebase.auth.FirebaseUser;
 public class UserHome extends AppCompatActivity {
 
     private TextView tvWelcome;
-    private Button btnStartShake, btnLogout;
+    private Button btnStartShake, btnMyShakes, btnLogout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,9 +33,9 @@ public class UserHome extends AppCompatActivity {
 
         tvWelcome = findViewById(R.id.tvWelcome);
         btnStartShake = findViewById(R.id.btnStartShake);
+        btnMyShakes = findViewById(R.id.btnMyShakes);
         btnLogout = findViewById(R.id.btnLogout);
 
-        // שם משתמש מהאימייל
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         if (user != null && user.getEmail() != null) {
@@ -45,13 +45,16 @@ public class UserHome extends AppCompatActivity {
             tvWelcome.setText("ברוך הבא");
         }
 
-        // התחלת שייק
         btnStartShake.setOnClickListener(v -> {
             Intent intent = new Intent(UserHome.this, Choise.class);
             startActivity(intent);
         });
 
-        // התנתקות
+        btnMyShakes.setOnClickListener(v -> {
+            Intent intent = new Intent(UserHome.this, UserShake.class);
+            startActivity(intent);
+        });
+
         btnLogout.setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();
 
