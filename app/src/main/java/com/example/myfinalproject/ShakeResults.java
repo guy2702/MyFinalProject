@@ -30,6 +30,10 @@ public class ShakeResults extends AppCompatActivity {
     private Button btnBackToNuts;
     private Button btnHomeNoSave;
 
+    // הווספת משתנים לקריאת המטרה וגודל הכוס
+    private String selectedGoal;
+    private int cupSize;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +50,10 @@ public class ShakeResults extends AppCompatActivity {
         btnBackToNuts = findViewById(R.id.btnBackToNuts);
         btnHomeNoSave = findViewById(R.id.btnHomeNoSave);
         databaseService = DatabaseService.getInstance();
+
+        // 1. קריאת הנתונים מה-Intent שהתחיל את האקטיביטי
+        selectedGoal = getIntent().getStringExtra("GOAL");
+        cupSize = getIntent().getIntExtra("CUP_SIZE", 400);
 
         ArrayList<Item> selectedItems = ShakeSelectionManager.getAllSelectedItems();
 
@@ -67,6 +75,9 @@ public class ShakeResults extends AppCompatActivity {
 
         btnBackToNuts.setOnClickListener(v -> {
             Intent intent = new Intent(ShakeResults.this, Nuts.class);
+            // 2. העברת הנתונים בחזרה כשחוזרים ל-Nuts
+            intent.putExtra("GOAL", selectedGoal); // העברת המטרה
+            intent.putExtra("CUP_SIZE", cupSize);   // העברת גודל הכוס
             startActivity(intent);
             finish();
         });

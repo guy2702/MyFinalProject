@@ -78,20 +78,12 @@ public class Sweeteners extends AppCompatActivity {
         }
 
         Runnable updateTitle = () -> {
-            int selectedCount = 0;
-
-            for (Item item : sweetenersList) {
-                if (item.isSelected()) {
-                    selectedCount++;
-                }
-            }
-
-            int perItemGrams = selectedCount > 0 ? allowedGrams / selectedCount : 0;
+            // *** התיקון נמצא כאן: הסרתי את חישוב perItemGrams ואת השרשור לכותרת ***
 
             tvTitleSweeteners.setText(
                     "בחר ממתיקים  " + allowedGrams + " גרם\n" +
-                            "מטרה: " + goalText + "\n" +
-                            "לכל פריט: " + perItemGrams + " גרם"
+                            "מטרה: " + goalText
+                    // הסרתי את השורה המטעה: + "\n" + "לכל פריט: " + perItemGrams + " גרם"
             );
         };
 

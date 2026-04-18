@@ -78,21 +78,19 @@ public class liquids extends AppCompatActivity {
         liquidsList = new ArrayList<>();
 
         Runnable updateTitle = () -> {
-            int selectedCount = 0;
+            // התחלת חישוב הכותרת
+            String title = "בחר נוזל בסיס  " + allowedGrams + " גרם\n";
 
-            for (Item item : liquidsList) {
-                if (item.isSelected()) {
-                    selectedCount++;
-                }
+            // הוספת שורת המטרה
+            if (!goalText.isEmpty()) {
+                title += "מטרה: " + goalText + "\n";
             }
 
-            int perItemGrams = selectedCount > 0 ? allowedGrams / selectedCount : 0;
+            // *** התיקון נמצא כאן: מחקתי את שורת הקוד שהוסיפה את ה"לכל פריט" ***
+            // *** title += "לכל פריט: " + perItemGrams + " גרם"; ***
 
-            tvTitleLiquids.setText(
-                    "בחר נוזל בסיס  " + allowedGrams + " גרם\n" +
-                            "מטרה: " + goalText + "\n" +
-                            "לכל פריט: " + perItemGrams + " גרם"
-            );
+            // עדכון ה-TextView עם הכותרת הסופית
+            tvTitleLiquids.setText(title);
         };
 
         adapter = new ItemAdapter(liquidsList, item -> {});

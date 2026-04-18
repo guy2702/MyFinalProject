@@ -78,20 +78,13 @@ public class Nuts extends AppCompatActivity {
         }
 
         Runnable updateTitle = () -> {
-            int selectedCount = 0;
-
-            for (Item item : nutsList) {
-                if (item.isSelected()) {
-                    selectedCount++;
-                }
-            }
-
-            int perItemGrams = selectedCount > 0 ? allowedGrams / selectedCount : 0;
+            // הוסר החישוב של selectedCount ו-perItemGrams כי אין בהם צורך יותר
 
             tvTitleNuts.setText(
                     "בחר אגוזים  " + allowedGrams + " גרם\n" +
-                            "מטרה: " + goalText + "\n" +
-                            "לכל פריט: " + perItemGrams + " גרם"
+                            "מטרה: " + goalText
+                    // השורה הבאה הוסרה:
+                    // + "\n" + "לכל פריט: " + perItemGrams + " גרם"
             );
         };
 

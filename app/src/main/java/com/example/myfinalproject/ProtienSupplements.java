@@ -78,20 +78,12 @@ public class ProtienSupplements extends AppCompatActivity {
         }
 
         Runnable updateTitle = () -> {
-            int selectedCount = 0;
-
-            for (Item item : supplementsList) {
-                if (item.isSelected()) {
-                    selectedCount++;
-                }
-            }
-
-            int perItemGrams = selectedCount > 0 ? allowedGrams / selectedCount : 0;
+            // *** התיקון נמצא כאן: מחקתי את החישוב של perItemGrams ואת השרשור לכותרת ***
 
             tvTitleSupplements.setText(
                     "בחר תוספי חלבון  " + allowedGrams + " גרם\n" +
-                            "מטרה: " + goalText + "\n" +
-                            "לכל פריט: " + perItemGrams + " גרם"
+                            "מטרה: " + goalText
+                    // הסרתי את השורה המטעה: + "\n" + "לכל פריט: " + perItemGrams + " גרם"
             );
         };
 
