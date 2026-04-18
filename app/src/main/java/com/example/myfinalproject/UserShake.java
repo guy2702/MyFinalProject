@@ -52,6 +52,7 @@ public class UserShake extends AppCompatActivity {
         adapter = new UserShakeAdapter(shakeList, shake -> {
             ShakeSelectionManager.setCurrentViewedShake(shake);
             Intent intent = new Intent(UserShake.this, ShakeDetails.class);
+            intent.putExtra("isAdminView", false);
             startActivity(intent);
         });
 

@@ -11,7 +11,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-// ודא שיש לך import נכון ל-Items
 import com.example.myfinalproject.Items;
 
 public class AdminPage extends AppCompatActivity {
@@ -25,32 +24,29 @@ public class AdminPage extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_admin_page);
 
-        // התאמת Padding למערכת ה-bars
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // קישור לכפתורים
         btnAddItem = findViewById(R.id.btnAddItem);
         btnItems = findViewById(R.id.btnItems);
         btnUsers = findViewById(R.id.btnUserTable);
-
+        btnAllShakes = findViewById(R.id.btnAllShakes);
         btnLogout = findViewById(R.id.btnLogout);
 
         tvGreeting = findViewById(R.id.tvGreeting);
 
-        // קבלת שם המשתמש מה-Intent
         String userName = getIntent().getStringExtra("USER_NAME");
         if (userName != null) {
             tvGreeting.setText("שלום " + userName + "!");
         }
 
-        // פעולות הכפתורים
         btnAddItem.setOnClickListener(v -> startActivity(new Intent(AdminPage.this, AddItem.class)));
         btnItems.setOnClickListener(v -> startActivity(new Intent(AdminPage.this, Items.class)));
         btnUsers.setOnClickListener(v -> startActivity(new Intent(AdminPage.this, users.class)));
+        btnAllShakes.setOnClickListener(v -> startActivity(new Intent(AdminPage.this, AdminAllShakes.class)));
 
         btnLogout.setOnClickListener(v -> {
             Intent intent = new Intent(AdminPage.this, MainActivity.class);

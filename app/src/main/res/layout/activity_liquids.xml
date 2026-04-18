@@ -32,10 +32,10 @@
         app:layout_constraintTop_toBottomOf="@id/tvTitleLiquids"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/btnFinishLiquids" />
+        app:layout_constraintBottom_toTopOf="@+id/btnNextLiquids" />
 
     <Button
-        android:id="@+id/btnFinishLiquids"
+        android:id="@+id/btnNextLiquids"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="המשך"
@@ -45,7 +45,19 @@
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
         android:backgroundTint="#1565C0"
+        android:layout_marginStart="24dp"
+        android:layout_marginBottom="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/btnPrevLiquids"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="הקודם"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

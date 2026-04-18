@@ -28,6 +28,7 @@ public class Sweeteners extends AppCompatActivity {
     private ItemAdapter adapter;
     private ArrayList<Item> sweetenersList;
     private Button btnFinish;
+    private Button btnPrev;
     private TextView tvTitleSweeteners;
 
     private String selectedGoal;
@@ -56,6 +57,7 @@ public class Sweeteners extends AppCompatActivity {
 
         rvSweeteners = findViewById(R.id.rvSweeteners);
         btnFinish = findViewById(R.id.btnFinishSweeteners);
+        btnPrev = findViewById(R.id.btnPrevSweeteners);
         tvTitleSweeteners = findViewById(R.id.tvTitleSweeteners);
 
         sweetenersList = new ArrayList<>();
@@ -100,6 +102,14 @@ public class Sweeteners extends AppCompatActivity {
         rvSweeteners.setAdapter(adapter);
 
         updateTitle.run();
+
+        btnPrev.setOnClickListener(v -> {
+            Intent intent = new Intent(Sweeteners.this, ProtienSupplements.class);
+            intent.putExtra("GOAL", selectedGoal);
+            intent.putExtra("CUP_SIZE", cupSize);
+            startActivity(intent);
+            finish();
+        });
 
         btnFinish.setOnClickListener(v -> {
             int selectedCount = 0;

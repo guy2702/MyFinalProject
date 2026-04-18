@@ -5,6 +5,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.myfinalproject.model.AdminShakeItem;
 import com.example.myfinalproject.model.User;
 import com.example.myfinalproject.model.Item;
 import com.example.myfinalproject.model.Shake;
@@ -297,8 +298,59 @@ public class DatabaseService {
 
     // region item section
 
-    public void createNewItem(@NotNull final Item item, @Nullable final DatabaseCallback<Void> callback) {
-        writeData(ITEMS_PATH + "/" + item.getId(), item, callback);
+    public void createNewShake(@NotNull final Shake shake, @Nullable final DatabaseCallback<Void> callback) {
+
+        String uid = FirebaseAuth.getInstance().getUid();
+
+        if (uid == null) {
+            if (callback != null) {
+                callback.onFailed(new Exception("המשתמש לא מחובר"));
+            }
+            return;
+        }
+
+        shake.setUserId(uid);
+
+        getUser(uid, new DatabaseCallback<User>() {
+            @Override
+            public void onCompleted(User user) {
+                if (user != null) {
+                    String fullName = user.getFname() + " " + user.getLname();
+                    shake.setUserName(fullName.trim());
+                } else {
+                    shake.setUserName("לא ידוע");
+                }
+
+                writeData(SHAKES_PATH + "/" + shake.getShakeId(), shake, new DatabaseCallback<Void>() {
+                    @Override
+                    public void onCompleted(Void object) {
+                        writeData(USERS_PATH_SHAKE + "/" + uid + "/" + shake.getShakeId(), shake, callback);
+                    }
+
+                    @Override
+                    public void onFailed(Exception e) {
+                        if (callback != null) callback.onFailed(e);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailed(Exception e) {
+                shake.setUserName("לא ידוע");
+
+                writeData(SHAKES_PATH + "/" + shake.getShakeId(), shake, new DatabaseCallback<Void>() {
+                    @Override
+                    public void onCompleted(Void object) {
+                        writeData(USERS_PATH_SHAKE + "/" + uid + "/" + shake.getShakeId(), shake, callback);
+                    }
+
+                    @Override
+                    public void onFailed(Exception ex) {
+                        if (callback != null) callback.onFailed(ex);
+                    }
+                });
+            }
+        });
     }
     public void updateItem(@NotNull final Item item,
                            @Nullable final DatabaseCallback<Void> callback) {
@@ -307,6 +359,11 @@ public class DatabaseService {
 
     public void getItem(@NotNull final String itemId, @NotNull final DatabaseCallback<Item> callback) {
         getData(ITEMS_PATH + "/" + itemId, Item.class, callback);
+    }
+    public void createNewItem(@NotNull final Item item,
+                              @Nullable final DatabaseCallback<Void> callback) {
+
+        writeData(ITEMS_PATH + "/" + item.getId(), item, callback);
     }
 
     public void getItemList(@NotNull final DatabaseCallback<List<Item>> callback) {
@@ -345,13 +402,41 @@ public class DatabaseService {
 
     // region shake section
 
-    public void createNewShake(@NotNull final Shake shake, @Nullable final DatabaseCallback<Void> callback) {
 
-        String uid=  FirebaseAuth.getInstance().getUid();
+    public void listenToAllShakesForAdmin(@NotNull final DatabaseCallback<List<AdminShakeItem>> callback) {
 
-        writeData(SHAKES_PATH + "/" + shake.getShakeId(), shake, callback);
+        readData(SHAKES_PATH).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-        writeData(USERS_PATH_SHAKE + "/" + uid+"/"  + shake.getShakeId(), shake, callback);
+                List<AdminShakeItem> list = new ArrayList<>();
+
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Shake shake = ds.getValue(Shake.class);
+
+                    if (shake != null) {
+
+                        String userName = shake.getUserName() != null ? shake.getUserName() : "לא ידוע";
+
+                        int itemsCount = shake.getItems() != null ? shake.getItems().size() : 0;
+
+                        list.add(new AdminShakeItem(
+                                shake.getShakeId(),
+                                shake.getUserId(),
+                                userName,
+                                itemsCount
+                        ));
+                    }
+                }
+
+                callback.onCompleted(list);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onFailed(error.toException());
+            }
+        });
     }
 
     public void getShake(@NotNull final String shakeId, @NotNull final DatabaseCallback<Shake> callback) {
@@ -361,6 +446,7 @@ public class DatabaseService {
     public void getShakeList(@NotNull final DatabaseCallback<List<Shake>> callback) {
         getDataList(SHAKES_PATH, Shake.class, callback);
     }
+
     public void listenToUserShakesRealtime(@NotNull final String uid,
                                            @NotNull final DatabaseCallback<List<Shake>> callback) {
         readData(USERS_PATH_SHAKE + "/" + uid).addValueEventListener(new ValueEventListener() {
@@ -387,7 +473,7 @@ public class DatabaseService {
         getShakeList(new DatabaseCallback<>() {
             @Override
             public void onCompleted(List<Shake> shakes) {
-                shakes.removeIf(shake -> !Objects.equals(shake.getItems(), uid));
+                shakes.removeIf(shake -> !Objects.equals(shake.getUserId(), uid));
                 callback.onCompleted(shakes);
             }
 
@@ -405,7 +491,4 @@ public class DatabaseService {
     public void deleteShake(@NotNull final String shakeId, @Nullable final DatabaseCallback<Void> callback) {
         deleteData(SHAKES_PATH + "/" + shakeId, callback);
     }
-
-    // endregion shake section
-
-}
+    }

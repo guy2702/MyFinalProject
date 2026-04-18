@@ -1,16 +1,16 @@
 package com.example.myfinalproject.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Shake {
+public class Shake implements Serializable {
 
     private String shakeId;
-
     private ArrayList<Item> items;
+    private String userId;
+    private String userName;
 
-    // Constructors
     public Shake() {
-        items = new ArrayList<>();
     }
 
     public Shake(String shakeId, ArrayList<Item> items) {
@@ -18,7 +18,13 @@ public class Shake {
         this.items = items;
     }
 
-    // Getters & Setters
+    public Shake(String shakeId, ArrayList<Item> items, String userId, String userName) {
+        this.shakeId = shakeId;
+        this.items = items;
+        this.userId = userId;
+        this.userName = userName;
+    }
+
     public String getShakeId() {
         return shakeId;
     }
@@ -26,8 +32,6 @@ public class Shake {
     public void setShakeId(String shakeId) {
         this.shakeId = shakeId;
     }
-
-
 
     public ArrayList<Item> getItems() {
         return items;
@@ -37,65 +41,19 @@ public class Shake {
         this.items = items;
     }
 
-    // Methods to manage items
-    public void addItem(Item item) {
-        items.add(item);
+    public String getUserId() {
+        return userId;
     }
 
-    public void removeItem(Item item) {
-        items.remove(item);
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
-    // Nutritional totals
-    public double getTotalCalories() {
-        double total = 0;
-        for (Item item : items) {
-            total += item.getCalories();
-        }
-        return total;
+    public String getUserName() {
+        return userName;
     }
 
-    public double getTotalProtein() {
-        double total = 0;
-        for (Item item : items) {
-            total += item.getProtein();
-        }
-        return total;
-    }
-
-    public double getTotalFat() {
-        double total = 0;
-        for (Item item : items) {
-            total += item.getFat();
-        }
-        return total;
-    }
-
-    public double getTotalCarbs() {
-        double total = 0;
-        for (Item item : items) {
-            total += item.getCarbs();
-        }
-        return total;
-    }
-
-    // Print summary
-    public void printSummary() {
-        System.out.println("🍹 סיכום השייק שלך:");
-        if (items.isEmpty()) {
-            System.out.println("אין רכיבים בשייק.");
-            return;
-        }
-
-        for (Item item : items) {
-            System.out.println("- " + item.getName() + " (" + item.getCalories() + " קלוריות)");
-        }
-
-        System.out.println("----------------------------------");
-        System.out.println("סה\"כ קלוריות: " + getTotalCalories());
-        System.out.println("סה\"כ חלבונים: " + getTotalProtein() + " גרם");
-        System.out.println("סה\"כ שומנים: " + getTotalFat() + " גרם");
-        System.out.println("סה\"כ פחמימות: " + getTotalCarbs() + " גרם");
-        System.out.println("----------------------------------");
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }

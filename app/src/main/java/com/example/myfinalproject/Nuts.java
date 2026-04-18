@@ -28,6 +28,7 @@ public class Nuts extends AppCompatActivity {
     private ItemAdapter adapter;
     private ArrayList<Item> nutsList;
     private Button btnFinish;
+    private Button btnPrev;
     private TextView tvTitleNuts;
 
     private String selectedGoal;
@@ -56,6 +57,7 @@ public class Nuts extends AppCompatActivity {
 
         rvNuts = findViewById(R.id.rvNuts);
         btnFinish = findViewById(R.id.btnFinishNuts);
+        btnPrev = findViewById(R.id.btnPrevNuts);
         tvTitleNuts = findViewById(R.id.tvTitleNuts);
 
         nutsList = new ArrayList<>();
@@ -100,6 +102,14 @@ public class Nuts extends AppCompatActivity {
         rvNuts.setAdapter(adapter);
 
         updateTitle.run();
+
+        btnPrev.setOnClickListener(v -> {
+            Intent intent = new Intent(Nuts.this, Sweeteners.class);
+            intent.putExtra("GOAL", selectedGoal);
+            intent.putExtra("CUP_SIZE", cupSize);
+            startActivity(intent);
+            finish();
+        });
 
         btnFinish.setOnClickListener(v -> {
             int selectedCount = 0;

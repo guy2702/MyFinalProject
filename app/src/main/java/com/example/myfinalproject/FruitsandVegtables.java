@@ -28,6 +28,7 @@ public class FruitsandVegtables extends AppCompatActivity {
     private TextView textView;
     private RecyclerView rvItems;
     private Button btnNext;
+    private Button btnPrev;
     private ItemAdapter adapter;
     private ArrayList<Item> itemList;
 
@@ -49,6 +50,7 @@ public class FruitsandVegtables extends AppCompatActivity {
         textView = findViewById(R.id.textView);
         rvItems = findViewById(R.id.rvFruitsandVegetables);
         btnNext = findViewById(R.id.btnNext);
+        btnPrev = findViewById(R.id.btnPrev);
 
         goal = getIntent().getStringExtra("GOAL");
         cupSize = getIntent().getIntExtra("CUP_SIZE", 0);
@@ -98,6 +100,8 @@ public class FruitsandVegtables extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
             }
         });
+
+        btnPrev.setOnClickListener(v -> finish());
 
         btnNext.setOnClickListener(v -> {
             int totalAmount = 0;

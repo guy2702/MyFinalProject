@@ -22,6 +22,8 @@ public class ShakeDetails extends AppCompatActivity {
 
         tvShakeDetails = findViewById(R.id.tvShakeDetails);
 
+        boolean isAdminView = getIntent().getBooleanExtra("isAdminView", false);
+
         Shake shake = ShakeSelectionManager.getCurrentViewedShake();
 
         if (shake == null || shake.getItems() == null || shake.getItems().isEmpty()) {
@@ -30,6 +32,16 @@ public class ShakeDetails extends AppCompatActivity {
         }
 
         StringBuilder builder = new StringBuilder();
+
+        if (isAdminView) {
+            String userName = (shake.getUserName() != null && !shake.getUserName().isEmpty())
+                    ? shake.getUserName()
+                    : "משתמש לא מזוהה";
+
+            builder.append("שייק של: ").append(userName).append("\n\n");
+            builder.append("מספר שייק: ").append(shake.getShakeId()).append("\n\n");
+        }
+
         builder.append("רכיבי השייק:\n\n");
 
         double totalCalories = 0;
@@ -39,7 +51,8 @@ public class ShakeDetails extends AppCompatActivity {
         double totalSugar = 0;
 
         for (Item item : shake.getItems()) {
-            builder.append(item.getName())
+            builder.append("• ")
+                    .append(item.getName())
                     .append(" - ")
                     .append(item.getAmount())
                     .append(" גרם\n");

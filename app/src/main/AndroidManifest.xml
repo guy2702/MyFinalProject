@@ -17,12 +17,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyFinalProject">
-
-
+>
+    >
+        <activity
+            android:name=".AdminAllShakes"
+            android:exported="false" />
         <activity
             android:name=".ShakeDetails"
             android:exported="false" />
-
         <activity
             android:name=".UserShake"
             android:exported="false" />

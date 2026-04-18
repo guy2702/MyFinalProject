@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="#F7F4FF"
     android:padding="20dp"
-    tools:context=".UserShake">
+    tools:context=".AdminAllShakes">
 
     <View
         android:id="@+id/topBackground"
@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="36dp"
         android:gravity="center"
-        android:text="השייקים שלי"
+        android:text="כל השייקים"
         android:textColor="#FFFFFF"
         android:textSize="30sp"
         android:textStyle="bold"
@@ -38,7 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:gravity="center"
-        android:text="כל השייקים ששמרת במקום אחד"
+        android:text="צפייה בכל השייקים שנוצרו ועל ידי איזה משתמש"
         android:textColor="#E9E1FF"
         android:textSize="15sp"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
@@ -49,9 +49,7 @@
         android:id="@+id/cardShakes"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="4dp"
         android:layout_marginTop="28dp"
-        android:layout_marginEnd="4dp"
         android:layout_marginBottom="20dp"
         app:cardCornerRadius="28dp"
         app:cardElevation="10dp"
@@ -63,8 +61,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
             android:background="#FFFFFF"
+            android:orientation="vertical"
             android:padding="16dp">
 
             <TextView
@@ -78,20 +76,21 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tvListHint"
+                android:id="@+id/tvEmpty"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="12dp"
                 android:gravity="center"
-                android:text="לחץ על שייק כדי לראות פרטים"
+                android:text="אין עדיין שייקים להצגה"
                 android:textColor="#8A84A3"
-                android:textSize="14sp" />
+                android:textSize="15sp"
+                android:visibility="gone" />
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvUserShakes"
+                android:id="@+id/rvAllShakes"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="14dp"
                 android:layout_weight="1"
                 android:clipToPadding="false"
                 android:paddingBottom="8dp" />

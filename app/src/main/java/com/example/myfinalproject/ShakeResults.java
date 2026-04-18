@@ -3,6 +3,7 @@ package com.example.myfinalproject;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +27,8 @@ public class ShakeResults extends AppCompatActivity {
     private TextView tvResults;
     private DatabaseService databaseService;
     private Shake newShake;
+    private Button btnBackToNuts;
+    private Button btnHomeNoSave;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +43,8 @@ public class ShakeResults extends AppCompatActivity {
         });
 
         tvResults = findViewById(R.id.tvResults);
+        btnBackToNuts = findViewById(R.id.btnBackToNuts);
+        btnHomeNoSave = findViewById(R.id.btnHomeNoSave);
         databaseService = DatabaseService.getInstance();
 
         ArrayList<Item> selectedItems = ShakeSelectionManager.getAllSelectedItems();
@@ -51,7 +56,7 @@ public class ShakeResults extends AppCompatActivity {
         newShake = new Shake(shakeId, selectedItems);
 
         String text =
-                "תוצאות השייק:\n\n" +
+                "תוצאות השייק\n\n" +
                         "קלוריות: " + String.format(Locale.getDefault(), "%.1f", result.calories) + "\n" +
                         "חלבון: " + String.format(Locale.getDefault(), "%.1f", result.protein) + " גרם\n" +
                         "פחמימות: " + String.format(Locale.getDefault(), "%.1f", result.carbs) + " גרם\n" +
@@ -59,6 +64,19 @@ public class ShakeResults extends AppCompatActivity {
                         "סוכרים: " + String.format(Locale.getDefault(), "%.1f", result.sugar) + " גרם";
 
         tvResults.setText(text);
+
+        btnBackToNuts.setOnClickListener(v -> {
+            Intent intent = new Intent(ShakeResults.this, Nuts.class);
+            startActivity(intent);
+            finish();
+        });
+
+        btnHomeNoSave.setOnClickListener(v -> {
+            ShakeSelectionManager.clearAll();
+            Intent intent = new Intent(ShakeResults.this, UserHome.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        });
     }
 
     public void goSaveShake(View view) {

@@ -28,6 +28,7 @@ public class ProtienSupplements extends AppCompatActivity {
     private ItemAdapter adapter;
     private ArrayList<Item> supplementsList;
     private Button btnFinish;
+    private Button btnPrev;
     private TextView tvTitleSupplements;
 
     private String selectedGoal;
@@ -56,6 +57,7 @@ public class ProtienSupplements extends AppCompatActivity {
 
         rvSupplements = findViewById(R.id.rvSupplements);
         btnFinish = findViewById(R.id.btnFinishSupplements);
+        btnPrev = findViewById(R.id.btnPrevSupplements);
         tvTitleSupplements = findViewById(R.id.tvTitleSupplements);
 
         supplementsList = new ArrayList<>();
@@ -100,6 +102,14 @@ public class ProtienSupplements extends AppCompatActivity {
         rvSupplements.setAdapter(adapter);
 
         updateTitle.run();
+
+        btnPrev.setOnClickListener(v -> {
+            Intent intent = new Intent(ProtienSupplements.this, liquids.class);
+            intent.putExtra("GOAL", selectedGoal);
+            intent.putExtra("CUP_SIZE", cupSize);
+            startActivity(intent);
+            finish();
+        });
 
         btnFinish.setOnClickListener(v -> {
             int selectedCount = 0;

@@ -34,6 +34,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/btnFinishSupplements" />
 
+    <!-- המשך בצד שמאל -->
     <Button
         android:id="@+id/btnFinishSupplements"
         android:layout_width="wrap_content"
@@ -45,7 +46,20 @@
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
         android:backgroundTint="#1565C0"
+        android:layout_marginStart="24dp"
+        android:layout_marginBottom="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- קודם בצד ימין -->
+    <Button
+        android:id="@+id/btnPrevSupplements"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="הקודם"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

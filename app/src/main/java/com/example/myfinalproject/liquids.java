@@ -28,6 +28,7 @@ public class liquids extends AppCompatActivity {
     private ItemAdapter adapter;
     private ArrayList<Item> liquidsList;
     private Button btnFinish;
+    private Button btnPrev;
     private TextView tvTitleLiquids;
 
     private String selectedGoal;
@@ -47,7 +48,8 @@ public class liquids extends AppCompatActivity {
 
         tvTitleLiquids = findViewById(R.id.tvTitleLiquids);
         rvLiquids = findViewById(R.id.rvLiquids);
-        btnFinish = findViewById(R.id.btnFinishLiquids);
+        btnFinish = findViewById(R.id.btnNextLiquids);
+        btnPrev = findViewById(R.id.btnPrevLiquids);
 
         selectedGoal = getIntent().getStringExtra("GOAL");
         cupSize = getIntent().getIntExtra("CUP_SIZE", 400);
@@ -100,6 +102,14 @@ public class liquids extends AppCompatActivity {
         rvLiquids.setAdapter(adapter);
 
         updateTitle.run();
+
+        btnPrev.setOnClickListener(v -> {
+            Intent intent = new Intent(liquids.this, FruitsandVegtables.class);
+            intent.putExtra("GOAL", selectedGoal);
+            intent.putExtra("CUP_SIZE", cupSize);
+            startActivity(intent);
+            finish();
+        });
 
         btnFinish.setOnClickListener(v -> {
             int selectedCount = 0;

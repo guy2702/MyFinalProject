@@ -5,30 +5,104 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp">
+    android:background="#F5F7FB"
+    android:padding="24dp"
+    tools:context=".ShakeResults">
 
   <TextView
-      android:id="@+id/tvResults"
+      android:id="@+id/tvPageTitle"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
       android:gravity="center"
-      android:text="תוצאות"
-      android:textSize="22sp"
+      android:text="השייק שבנית"
+      android:textColor="#0D1B2A"
+      android:textSize="28sp"
       android:textStyle="bold"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
+  <androidx.cardview.widget.CardView
+      android:id="@+id/cardResults"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="24dp"
+      android:layout_marginBottom="24dp"
+      app:cardCornerRadius="24dp"
+      app:cardElevation="8dp"
+      app:layout_constraintBottom_toTopOf="@+id/btnSaveShake"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/tvPageTitle">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+      <TextView
+          android:id="@+id/tvResults"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:gravity="center"
+          android:lineSpacingExtra="10dp"
+          android:text="תוצאות"
+          android:textColor="#1B263B"
+          android:textSize="22sp"
+          android:textStyle="bold" />
+    </LinearLayout>
+
+  </androidx.cardview.widget.CardView>
+
   <Button
       android:id="@+id/btnSaveShake"
-      android:layout_width="wrap_content"
+      android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:layout_marginEnd="121dp"
-      android:layout_marginBottom="55dp"
-      android:text="שמור"
-
+      android:layout_marginBottom="12dp"
+      android:backgroundTint="#1565C0"
       android:onClick="goSaveShake"
+      android:paddingTop="14dp"
+      android:paddingBottom="14dp"
+      android:text="שמור את השייק"
+      android:textColor="@android:color/white"
+      android:textSize="17sp"
+      android:textStyle="bold"
+      app:layout_constraintBottom_toTopOf="@+id/btnHomeNoSave"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent" />
+
+  <Button
+      android:id="@+id/btnHomeNoSave"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="12dp"
+      android:backgroundTint="#90A4AE"
+      android:paddingTop="14dp"
+      android:paddingBottom="14dp"
+      android:text="חזרה לדף הבית בלי לשמור"
+      android:textColor="@android:color/white"
+      android:textSize="16sp"
+      android:textStyle="bold"
+      app:layout_constraintBottom_toTopOf="@+id/btnBackToNuts"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent" />
+
+  <Button
+      android:id="@+id/btnBackToNuts"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:backgroundTint="#E3F2FD"
+      android:paddingTop="14dp"
+      android:paddingBottom="14dp"
+      android:text="חזרה לאגוזים"
+      android:textColor="#1565C0"
+      android:textSize="16sp"
+      android:textStyle="bold"
       app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toEndOf="parent" />
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
