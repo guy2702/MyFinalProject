@@ -2,6 +2,9 @@ package com.example.myfinalproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
@@ -20,13 +23,19 @@ public class Items extends AppCompatActivity {
 
     private RecyclerView rvItems;
     private ItemAdapter adapter;
-    private ArrayList<Item> itemList;
+    private EditText etSearch;
+
+    // רשימה ראשית שומרת את כל הנתונים מ-Firebase
+    private ArrayList<Item> masterItemList;
+    // רשימת התצוגה היא זו שמועברת לאדפטר ומשתנה לפי החיפוש
+    private ArrayList<Item> displayItemList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_items);
 
+        // טיפול בשוליים (Insets)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.items), (v, insets) -> {
             v.setPadding(
                     insets.getInsets(WindowInsetsCompat.Type.systemBars()).left,
@@ -38,10 +47,13 @@ public class Items extends AppCompatActivity {
         });
 
         rvItems = findViewById(R.id.rvItems);
+        etSearch = findViewById(R.id.etSearch);
 
-        itemList = new ArrayList<>();
+        masterItemList = new ArrayList<>();
+        displayItemList = new ArrayList<>();
 
-        adapter = new ItemAdapter(itemList, item -> {
+        // אנחנו מעבירים לאדפטר רק את רשימת התצוגה
+        adapter = new ItemAdapter(displayItemList, item -> {
             Intent intent = new Intent(Items.this, ItemId.class);
             intent.putExtra("itemId", item.getId());
             startActivity(intent);
@@ -50,12 +62,28 @@ public class Items extends AppCompatActivity {
         rvItems.setLayoutManager(new LinearLayoutManager(this));
         rvItems.setAdapter(adapter);
 
+        // מאזין לשורת החיפוש - מופעל בכל פעם שהמשתמש מקליד או מוחק אות
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterItems(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // האזנה לנתונים מ-Firebase
         DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
             @Override
             public void onCompleted(List<Item> items) {
-                itemList.clear();
-                itemList.addAll(items);
-                adapter.notifyDataSetChanged();
+                masterItemList.clear();
+                masterItemList.addAll(items);
+                // ברגע שהנתונים מגיעים, נסנן אותם לפי מה שכתוב כרגע בחיפוש (אם כתוב)
+                filterItems(etSearch.getText().toString());
             }
 
             @Override
@@ -63,5 +91,26 @@ public class Items extends AppCompatActivity {
                 e.printStackTrace();
             }
         });
+    }
+
+    // פונקציית הסינון
+    private void filterItems(String text) {
+        displayItemList.clear();
+
+        // אם תיבת החיפוש ריקה, נציג את כל הפריטים
+        if (text == null || text.trim().isEmpty()) {
+            displayItemList.addAll(masterItemList);
+        } else {
+            // אם יש טקסט, נחפש אותו בשמות של הפריטים
+            String searchText = text.toLowerCase().trim();
+            for (Item item : masterItemList) {
+                if (item.getName() != null && item.getName().toLowerCase().contains(searchText)) {
+                    displayItemList.add(item);
+                }
+            }
+        }
+
+        // מעדכנים את האדפטר שהרשימה השתנתה
+        adapter.notifyDataSetChanged();
     }
 }

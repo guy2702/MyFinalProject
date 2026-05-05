@@ -65,9 +65,6 @@
             android:name=".AdminPage"
             android:exported="false" />
         <activity
-            android:name=".homepage"
-            android:exported="false" />
-        <activity
             android:name=".Items"
             android:exported="false" />
         <activity

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Patterns; // נוסף לבדיקת אימייל
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Button;
@@ -36,14 +37,18 @@ public class register extends AppCompatActivity implements View.OnClickListener 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this); // מומלץ להעביר את זה לפני setContentView, אם כי לא קריטי
         setContentView(R.layout.activity_register);
-        EdgeToEdge.enable(this);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        // שינוי קל ב-padding: ודא ש-R.id.main הוא ה-Root הראשי ב-XML שלך
+        View rootLayout = findViewById(R.id.main);
+        if (rootLayout != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return insets;
+            });
+        }
 
         sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         databaseService = DatabaseService.getInstance();
@@ -65,7 +70,7 @@ public class register extends AppCompatActivity implements View.OnClickListener 
     public void onClick(View v) {
         int id = v.getId();
 
-        if (id == btnRegister.getId()) {
+        if (id == R.id.btn_register_register) { // השוואה ל-R.id ישירה קריאה יותר
             String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
             String fName = etFName.getText().toString().trim();
@@ -76,7 +81,7 @@ public class register extends AppCompatActivity implements View.OnClickListener 
 
             registerUser(fName, lName, phone, email, password);
 
-        } else if (id == tvLogin.getId()) {
+        } else if (id == R.id.tv_register_login) {
             // כאשר המשתמש לוחץ "יש לי משתמש" – נפתח מסך login
             Intent loginIntent = new Intent(register.this, login.class);
             startActivity(loginIntent);
@@ -84,28 +89,47 @@ public class register extends AppCompatActivity implements View.OnClickListener 
         }
     }
 
+    /**
+     * בדיקת תקינות קלט משופרת: שימוש ב-setError במקום Toasts, ו-Patterns לבדיקת אימייל.
+     */
     private boolean checkInput(String email, String password, String fName, String lName, String phone) {
-        if (email.isEmpty() || !email.contains("@")) {
-            Toast.makeText(this, "אימייל לא תקין", Toast.LENGTH_SHORT).show();
-            return false;
+        boolean isVaild = true; // משתנה עזר
+
+        // בדיקת אימייל
+        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            etEmail.setError("אימייל לא תקין"); // UX משופר
+            isVaild = false;
         }
+
+        // בדיקת סיסמה
         if (password.length() < 6) {
-            Toast.makeText(this, "הסיסמה חייבת להכיל לפחות 6 תווים", Toast.LENGTH_SHORT).show();
-            return false;
+            etPassword.setError("הסיסמה חייבת להכיל לפחות 6 תווים"); // UX משופר
+            isVaild = false;
         }
-        if (fName.isEmpty() || lName.isEmpty()) {
-            Toast.makeText(this, "יש להזין שם פרטי ומשפחה", Toast.LENGTH_SHORT).show();
-            return false;
+
+        // בדיקת שמות
+        if (fName.isEmpty()) {
+            etFName.setError("שדה חובה");
+            isVaild = false;
         }
-        if (phone.isEmpty()) {
-            Toast.makeText(this, "טלפון לא תקין", Toast.LENGTH_SHORT).show();
-            return false;
+        if (lName.isEmpty()) {
+            etLName.setError("שדה חובה");
+            isVaild = false;
         }
-        return true;
+
+        // בדיקת טלפון - הוספתי בדיקת אורך מינימלית בסיסית
+        if (phone.isEmpty() || phone.length() < 9) {
+            etPhone.setError("טלפון לא תקין (לפחות 9 ספרות)");
+            isVaild = false;
+        }
+
+        return isVaild;
     }
 
     private void registerUser(String fname, String lname, String phone, String email, String password) {
         // ברירת מחדל: משתמש רגיל (לא מנהל)
+        // הערה: וודא שהבנאי של User מקבל את הסיסמה רק לצורך העברה ל-Firebase,
+        // ואתה לא שומר אותה כטקסט גלוי במסד הנתונים (Firebase RTDB/Firestore).
         User user = new User(null, fname, lname, phone, email, password, false);
         createUserInDatabase(user);
     }
@@ -116,10 +140,15 @@ public class register extends AppCompatActivity implements View.OnClickListener 
             public void onCompleted(String uid) {
                 Log.d(TAG, "User created successfully with UID: " + uid);
 
-                // שמירה ב-SharedPreferences
+                // --- שינוי אבטחה מהותי ---
+                // Firebase Auth מנהל את החיבור (session).
+                // לאחר הצלחה של createNewUser, המשתמש כבר מחובר.
+                // אין צורך לשמור את הסיסמה כטקסט גלוי ב-SharedPreferences.
+
+                // שמירה ב-SharedPreferences (רק של האימייל, אם רוצים "לזכור" אותו למסך הבא)
                 SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString("email", user.getEmail());
-                editor.putString("password", user.getPassword());
+                editor.putString("last_registered_email", user.getEmail()); // השתמש במפתח ברור יותר
+                // editor.putString("password", user.getPassword()); // << הסרנו כדי למנוע חור אבטחה >>
                 editor.apply();
 
                 // פתיחת מסך הראשי
@@ -131,7 +160,8 @@ public class register extends AppCompatActivity implements View.OnClickListener 
             @Override
             public void onFailed(Exception e) {
                 Log.e(TAG, "Failed to register user", e);
-                Toast.makeText(register.this, "נכשל ביצירת משתמש", Toast.LENGTH_SHORT).show();
+                // עדיף להציג את הודעת השגיאה הממשית מה-Firebase במידת האפשר
+                Toast.makeText(register.this, "נכשל ביצירת משתמש: " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }

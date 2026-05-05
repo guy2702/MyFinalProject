@@ -1,161 +1,233 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F2F2F2"
     tools:context=".AddItem">
 
     <ImageView
         android:id="@+id/backgroundImage"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:src="@drawable/back4"
-        android:scaleType="fitXY"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/backhome1"
+        android:scaleType="centerCrop"
+        android:alpha="0.2"
         android:contentDescription="רקע"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <LinearLayout
-        android:id="@+id/container"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp"
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Name -->
-        <EditText
-            android:id="@+id/inputName"
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="שם המוצר"
-            android:textSize="18sp" />
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginBottom="40dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
 
-        <RadioGroup
-            android:id="@+id/rgGoal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginTop="8dp">
-
-            <RadioButton
-                android:id="@+id/rbMuscle"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/container"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="מסה" />
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:background="#FFFFFF">
 
-            <RadioButton
-                android:id="@+id/rbCut"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="חיטוב"
-                android:layout_marginStart="24dp" />
-        </RadioGroup>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="הוספת מוצר חדש"
+                    android:textSize="26sp"
+                    android:textStyle="bold"
+                    android:textColor="#2C3E50"
+                    android:layout_marginBottom="24dp"
+                    android:gravity="center"/>
 
-        <!-- Type -->
-        <Spinner
-            android:id="@+id/spinnerType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="15dp" />
+                <EditText
+                    android:id="@+id/inputName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="שם המוצר"
+                    android:textSize="16sp"
+                    android:padding="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:backgroundTint="#1181D4FA"
+                    android:textColor="#000000"
+                    android:textColorHint="#99000000"
+                    android:background="@android:drawable/editbox_background_normal"/>
 
-        <!-- Calories -->
-        <EditText
-            android:id="@+id/inputCalories"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="קלוריות"
-            android:inputType="numberDecimal"
-            android:layout_marginTop="10dp" />
+                <RadioGroup
+                    android:id="@+id/rgGoal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="16dp">
 
-        <!-- Protein -->
-        <EditText
-            android:id="@+id/inputProtein"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="חלבון"
-            android:inputType="numberDecimal"
-            android:layout_marginTop="10dp" />
+                    <RadioButton
+                        android:id="@+id/rbMuscle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:text="מסה" />
 
-        <!-- Fat -->
-        <EditText
-            android:id="@+id/inputFat"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="שומן"
-            android:inputType="numberDecimal"
-            android:layout_marginTop="10dp" />
+                    <RadioButton
+                        android:id="@+id/rbCut"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:text="חיטוב"
+                        android:layout_marginStart="32dp" />
+                </RadioGroup>
 
-        <!-- Carbs -->
-        <EditText
-            android:id="@+id/inputCarbs"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="פחמימות"
-            android:inputType="numberDecimal"
-            android:layout_marginTop="10dp" />
+                <Spinner
+                    android:id="@+id/spinnerType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:background="@android:drawable/btn_dropdown"
+                    android:padding="16dp" />
 
-        <!-- Sugar -->
-        <EditText
-            android:id="@+id/inputSugar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="סוכר"
-            android:inputType="numberDecimal"
-            android:layout_marginTop="10dp" />
+                <EditText
+                    android:id="@+id/inputCalories"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="קלוריות"
+                    android:inputType="numberDecimal"
+                    android:textSize="16sp"
+                    android:padding="16dp"
+                    android:layout_marginBottom="12dp"
+                    android:backgroundTint="#11E1F5FE"
+                    android:textColor="#000000"
+                    android:background="@android:drawable/editbox_background_normal" />
 
-        <!-- Add Item -->
-        <Button
-            android:id="@+id/btnAddItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="הוסף מוצר"
-            android:textSize="18sp"
-            android:backgroundTint="#E0D2A08C"
-            android:layout_marginTop="25dp" />
+                <EditText
+                    android:id="@+id/inputProtein"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="חלבון (גרם)"
+                    android:inputType="numberDecimal"
+                    android:textSize="16sp"
+                    android:padding="16dp"
+                    android:layout_marginBottom="12dp"
+                    android:backgroundTint="#11E1F5FE"
+                    android:textColor="#000000"
+                    android:background="@android:drawable/editbox_background_normal" />
 
-        <!-- Image Preview (BOTTOM) -->
-        <ImageView
-            android:id="@+id/itemImage"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_launcher_foreground"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="10dp"
-            android:contentDescription="תמונה" />
+                <EditText
+                    android:id="@+id/inputFat"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="שומן (גרם)"
+                    android:inputType="numberDecimal"
+                    android:textSize="16sp"
+                    android:padding="16dp"
+                    android:layout_marginBottom="12dp"
+                    android:backgroundTint="#11E1F5FE"
+                    android:textColor="#000000"
+                    android:background="@android:drawable/editbox_background_normal" />
 
-        <!-- Camera & Gallery Buttons (BOTTOM) -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+                <EditText
+                    android:id="@+id/inputCarbs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="פחמימות (גרם)"
+                    android:inputType="numberDecimal"
+                    android:textSize="16sp"
+                    android:padding="16dp"
+                    android:layout_marginBottom="12dp"
+                    android:backgroundTint="#11E1F5FE"
+                    android:textColor="#000000"
+                    android:background="@android:drawable/editbox_background_normal" />
 
-            <Button
-                android:id="@+id/btnCamera"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:backgroundTint="#E0D2A08C"
-                android:text="מצלמה" />
+                <EditText
+                    android:id="@+id/inputSugar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="סוכר (גרם)"
+                    android:inputType="numberDecimal"
+                    android:textSize="16sp"
+                    android:padding="16dp"
+                    android:layout_marginBottom="24dp"
+                    android:backgroundTint="#11E1F5FE"
+                    android:textColor="#000000"
+                    android:background="@android:drawable/editbox_background_normal" />
 
-            <Button
-                android:id="@+id/btnGallery"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
-                android:backgroundTint="#E0D2A08C"
-                android:text="גלריה" />
-        </LinearLayout>
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
 
-    </LinearLayout>
+                    <ImageView
+                        android:id="@+id/itemImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_launcher_foreground"
+                        android:contentDescription="תמונת המוצר" />
+                </androidx.cardview.widget.CardView>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="32dp">
+
+                    <Button
+                        android:id="@+id/btnCamera"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:backgroundTint="#B3E5FC"
+                        android:textColor="#000000"
+                        android:textStyle="bold"
+                        android:text="מצלמה" />
+
+                    <Space
+                        android:layout_width="16dp"
+                        android:layout_height="wrap_content" />
+
+                    <Button
+                        android:id="@+id/btnGallery"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:backgroundTint="#81D4FA"
+                        android:textColor="#000000"
+                        android:textStyle="bold"
+                        android:text="גלריה" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnAddItem"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="הוסף מוצר"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:paddingVertical="14dp"
+                    android:backgroundTint="#3DA1C8"
+                    android:textColor="#FFFFFF" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

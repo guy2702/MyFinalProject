@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast; // הוספתי לבדיקה
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -113,11 +114,15 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
 
         holder.etAmount.addTextChangedListener(holder.amountWatcher);
 
+        // --- הוספתי כאן חיווי לחיצה ---
         holder.itemView.setOnClickListener(v -> {
             int pos = holder.getAdapterPosition();
             if (pos == RecyclerView.NO_POSITION) return;
 
             Item clickedItem = items.get(pos);
+
+            // חיווי על המסך שהלחיצה אכן נקלטה!
+            // Toast.makeText(v.getContext(), "מעביר לפריט...", Toast.LENGTH_SHORT).show();
 
             if (isSelectionMode) {
                 clickedItem.setSelected(!clickedItem.isSelected());

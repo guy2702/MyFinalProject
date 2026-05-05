@@ -6,128 +6,148 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F2F2F2"
     tools:context=".register">
 
-    <!-- רקע מלא -->
     <ImageView
         android:id="@+id/backgroundImage"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:contentDescription="רקע"
-        android:src="@drawable/back1"
+        android:src="@drawable/backhome1"
+        android:alpha="0.3"
+        android:contentDescription="רקע מטושטש של פירות להכנת שייקים בריאותיים"
+        android:clickable="false"
+        android:focusable="false"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- כותרת -->
     <TextView
         android:id="@+id/textTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="הרשמה"
-        android:textSize="28sp"
+        android:textSize="32sp"
         android:textStyle="bold"
         android:gravity="center"
-        android:textColor="#B71C1C"
+        android:textColor="#2C3E50"
+        android:layout_marginTop="60dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="40dp"/>
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- שדות קלט -->
-    <EditText
-        android:id="@+id/firstname"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:id="@+id/inputContainer"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="First Name"
-        android:inputType="text"
-        android:padding="16dp"
+        android:orientation="vertical"
+        android:paddingHorizontal="40dp"
+        android:layout_marginTop="40dp"
         app:layout_constraintTop_toBottomOf="@id/textTitle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
-        android:layout_marginHorizontal="32dp"/>
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <EditText
-        android:id="@+id/lastname"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Last Name"
-        android:inputType="text"
-        android:padding="16dp"
-        app:layout_constraintTop_toBottomOf="@id/firstname"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp"
-        android:layout_marginHorizontal="32dp"/>
+        <EditText
+            android:id="@+id/firstname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="שם פרטי"
+            android:inputType="textPersonName"
+            android:gravity="start|center_vertical"
+            android:padding="16dp"
+            android:layout_marginBottom="10dp"
+            android:textColor="#000000"
+            android:textColorHint="#88000000"
+            android:backgroundTint="#1181D4FA"
+            android:background="@android:drawable/editbox_background_normal"/>
 
-    <EditText
-        android:id="@+id/email"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Email"
-        android:inputType="textEmailAddress"
-        android:padding="16dp"
-        app:layout_constraintTop_toBottomOf="@id/lastname"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp"
-        android:layout_marginHorizontal="32dp"/>
+        <EditText
+            android:id="@+id/lastname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="שם משפחה"
+            android:inputType="textPersonName"
+            android:gravity="start|center_vertical"
+            android:padding="16dp"
+            android:layout_marginBottom="10dp"
+            android:textColor="#000000"
+            android:textColorHint="#88000000"
+            android:backgroundTint="#114FC3F7"
+            android:background="@android:drawable/editbox_background_normal"/>
 
-    <EditText
-        android:id="@+id/phone"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Phone"
-        android:inputType="phone"
-        android:padding="16dp"
-        app:layout_constraintTop_toBottomOf="@id/email"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp"
-        android:layout_marginHorizontal="32dp"/>
+        <EditText
+            android:id="@+id/email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="אימייל"
+            android:inputType="textEmailAddress"
+            android:gravity="start|center_vertical"
+            android:padding="16dp"
+            android:layout_marginBottom="10dp"
+            android:textColor="#000000"
+            android:textColorHint="#88000000"
+            android:backgroundTint="#11E1F5FE"
+            android:background="@android:drawable/editbox_background_normal"/>
 
-    <EditText
-        android:id="@+id/password"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Password"
-        android:inputType="textPassword"
-        android:padding="16dp"
-        app:layout_constraintTop_toBottomOf="@id/phone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp"
-        android:layout_marginHorizontal="32dp"/>
+        <EditText
+            android:id="@+id/phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="טלפון"
+            android:inputType="phone"
+            android:gravity="start|center_vertical"
+            android:padding="16dp"
+            android:layout_marginBottom="10dp"
+            android:textColor="#000000"
+            android:textColorHint="#88000000"
+            android:backgroundTint="#11B3E5FC"
+            android:background="@android:drawable/editbox_background_normal"/>
 
-    <!-- כפתור הרשמה -->
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="סיסמה"
+            android:inputType="textPassword"
+            android:gravity="start|center_vertical"
+            android:padding="16dp"
+            android:layout_marginBottom="10dp"
+            android:textColor="#000000"
+            android:textColorHint="#88000000"
+            android:backgroundTint="#11E0F7FA"
+            android:background="@android:drawable/editbox_background_normal"/>
+
+    </LinearLayout>
+
     <Button
         android:id="@+id/btn_register_register"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="הירשם"
-        android:paddingHorizontal="32dp"
-        android:paddingVertical="12dp"
-        android:backgroundTint="#B71C1C"
-        android:textColor="#FFFFFF"
-        app:layout_constraintTop_toBottomOf="@id/password"
-        app:layout_constraintStart_toStartOf="parent"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:paddingVertical="14dp"
+        android:layout_marginHorizontal="40dp"
+        android:layout_marginTop="32dp"
+        android:backgroundTint="#4481D4FA"
+        android:textColor="#000000"
+        app:layout_constraintTop_toBottomOf="@id/inputContainer" app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20dp"
-        android:layout_marginHorizontal="32dp"/>
+        android:contentDescription="לחצן להרשמה לאפליקציה FitShake"/>
 
-    <!-- טקסט קישור להתחברות -->
     <TextView
         android:id="@+id/tv_register_login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="כבר יש לך משתמש? לחץ כאן"
         android:textSize="16sp"
-        android:textColor="@android:color/holo_red_dark"
+        android:textColor="#34495E"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
         app:layout_constraintTop_toBottomOf="@id/btn_register_register"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        app:layout_constraintEnd_toEndOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
