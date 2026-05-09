@@ -15,61 +15,66 @@ import java.util.ArrayList;
 
 public class AdminAllShakesAdapter extends RecyclerView.Adapter<AdminAllShakesAdapter.ShakeViewHolder> {
 
-    public interface OnShakeClickListener {
-        void onShakeClick(Shake shake);
+    private final ArrayList<Shake> shakes;
+    private final OnItemClickListener listener;
+
+    public interface OnItemClickListener {
+        void onItemClick(Shake shake);
     }
 
-    private ArrayList<Shake> shakeList;
-    private OnShakeClickListener listener;
-
-    public AdminAllShakesAdapter(ArrayList<Shake> shakeList, OnShakeClickListener listener) {
-        this.shakeList = shakeList;
+    public AdminAllShakesAdapter(ArrayList<Shake> shakes, OnItemClickListener listener) {
+        this.shakes = shakes;
         this.listener = listener;
     }
 
     @NonNull
     @Override
     public ShakeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.activity_item_admin_shake, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_item_admin_shake, parent, false);
         return new ShakeViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ShakeViewHolder holder, int position) {
-        Shake shake = shakeList.get(position);
+        Shake shake = shakes.get(position);
 
-        holder.tvShakeName.setText("שייק מספר " + (position + 1));
+        // שם המשתמש שיצר את השייק
+        String userName = shake.getUserName() != null ? shake.getUserName() : "משתמש לא ידוע";
 
-        String userName = (shake.getUserName() != null && !shake.getUserName().isEmpty())
-                ? shake.getUserName()
-                : "משתמש לא מזוהה";
+        // נציג "השייק של X" בתור הכותרת
+        holder.tvShakeName.setText("השייק של " + userName);
 
-        holder.tvCreatedBy.setText("נוצר על ידי: " + userName);
+        // הגדרת המזהה (ID) במערכת לפי הפונקציה getShakeId() שיש במודל שלך
+        String shakeId = shake.getShakeId() != null ? shake.getShakeId() : "לא ידוע";
+        if (shakeId.length() > 6) {
+            shakeId = shakeId.substring(0, 6) + "..."; // מציג מזהה מקוצר שייראה טוב
+        }
+        holder.tvShakeId.setText("מזהה: " + shakeId);
 
-        int itemsCount = shake.getItems() != null ? shake.getItems().size() : 0;
-        holder.tvItemsCount.setText("כמות רכיבים: " + itemsCount);
+        // הגדרת יוצר השייק (טקסט קטן יותר למטה)
+        holder.tvShakeCreator.setText(userName);
 
+        // טיפול בלחיצה על הכרטיסייה - מוביל לדף המרכיבים!
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onShakeClick(shake);
+                listener.onItemClick(shake);
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return shakeList.size();
+        return shakes.size();
     }
 
     static class ShakeViewHolder extends RecyclerView.ViewHolder {
-        TextView tvShakeName, tvCreatedBy, tvItemsCount;
+        TextView tvShakeName, tvShakeId, tvShakeCreator;
 
         public ShakeViewHolder(@NonNull View itemView) {
             super(itemView);
             tvShakeName = itemView.findViewById(R.id.tvShakeName);
-            tvCreatedBy = itemView.findViewById(R.id.tvCreatedBy);
-            tvItemsCount = itemView.findViewById(R.id.tvItemsCount);
+            tvShakeId = itemView.findViewById(R.id.tvShakeId);
+            tvShakeCreator = itemView.findViewById(R.id.tvShakeCreator);
         }
     }
 }

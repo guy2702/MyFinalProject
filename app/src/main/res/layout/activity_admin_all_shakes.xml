@@ -1,114 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F7F4FF"
-    android:padding="20dp"
-    tools:context=".AdminAllShakes">
+    android:background="#F2F2F2">
 
-    <View
-        android:id="@+id/topBackground"
-        android:layout_width="0dp"
-        android:layout_height="180dp"
-        android:background="#6C4DFF"
+    <!-- תמונת רקע שקופה לאחידות -->
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/backhome"
+        android:scaleType="centerCrop"
+        android:alpha="0.2"
+        android:clickable="false"
+        android:focusable="false"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- כותרת המסך -->
     <TextView
         android:id="@+id/tvTitle"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
-        android:gravity="center"
-        android:text="כל השייקים"
-        android:textColor="#FFFFFF"
-        android:textSize="30sp"
+        android:layout_marginTop="40dp"
+        android:text="ניהול שייקים"
+        android:textColor="#2C3E50"
+        android:textSize="28sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- טקסט שיוצג רק אם אין שייקים בכלל -->
     <TextView
-        android:id="@+id/tvSubtitle"
-        android:layout_width="0dp"
+        android:id="@+id/tvEmpty"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
-        android:text="צפייה בכל השייקים שנוצרו ועל ידי איזה משתמש"
-        android:textColor="#E9E1FF"
-        android:textSize="15sp"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        android:text="אין כרגע שייקים במערכת"
+        android:textColor="#34495E"
+        android:textSize="18sp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardShakes"
+    <!-- הרשימה שתציג את כל השייקים -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvAllShakes"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="28dp"
-        android:layout_marginBottom="20dp"
-        app:cardCornerRadius="28dp"
-        app:cardElevation="10dp"
-        app:layout_constraintTop_toBottomOf="@id/topBackground"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginHorizontal="16dp"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
         app:layout_constraintBottom_toTopOf="@id/btnBack"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#FFFFFF"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:id="@+id/tvListTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="רשימת השייקים"
-                android:textColor="#2B1D52"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvEmpty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:gravity="center"
-                android:text="אין עדיין שייקים להצגה"
-                android:textColor="#8A84A3"
-                android:textSize="15sp"
-                android:visibility="gone" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvAllShakes"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginTop="14dp"
-                android:layout_weight="1"
-                android:clipToPadding="false"
-                android:paddingBottom="8dp" />
-        </LinearLayout>
-
-    </androidx.cardview.widget.CardView>
-
+    <!-- כפתור חזור בסגנון התכלת -->
     <Button
         android:id="@+id/btnBack"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:backgroundTint="#6C4DFF"
-        android:paddingTop="15dp"
-        android:paddingBottom="15dp"
-        android:text="חזרה"
-        android:textColor="#FFFFFF"
-        android:textSize="17sp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="#81D4FA"
+        android:paddingVertical="14dp"
+        android:text="חזור למסך הקודם"
+        android:textColor="#000000"
+        android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

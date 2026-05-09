@@ -1,45 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
-    app:cardCornerRadius="18dp"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="16dp"
     app:cardElevation="4dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FAF9FF"
-        android:orientation="vertical"
+        android:background="#FFFFFF"
         android:padding="16dp">
 
         <TextView
+            android:id="@+id/tvShakeId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#E9E1FF"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:text="מזהה: 12345"
+            android:textColor="#6C4DFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
             android:id="@+id/tvShakeName"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="שייק"
+            android:layout_marginTop="12dp"
+            android:text="שם השייק"
             android:textColor="#2B1D52"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvShakeId" />
+
+        <LinearLayout
+            android:id="@+id/creatorLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvShakeName">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text='נוצר ע"י: '
+                android:textColor="#8A84A3"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvShakeCreator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="user@email.com"
+                android:textColor="#6C4DFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/tvCreatedBy"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="נוצר על ידי:"
-            android:textColor="#5F5A72"
-            android:textSize="15sp" />
+            android:layout_marginTop="16dp"
+            android:text="לחץ לצפייה במרכיבים ופרטים מלאים ➔"
+            android:textColor="#4CAF50"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/creatorLayout" />
 
-        <TextView
-            android:id="@+id/tvItemsCount"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="כמות רכיבים:"
-            android:textColor="#7C7691"
-            android:textSize="14sp" />
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.cardview.widget.CardView>
