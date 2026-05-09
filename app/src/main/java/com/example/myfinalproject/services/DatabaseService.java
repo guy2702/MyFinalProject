@@ -488,7 +488,21 @@ public class DatabaseService {
         return generateNewId(SHAKES_PATH);
     }
 
-    public void deleteShake(@NotNull final String shakeId, @Nullable final DatabaseCallback<Void> callback) {
-        deleteData(SHAKES_PATH + "/" + shakeId, callback);
+    public void deleteShake(@NotNull final String shakeId, @NotNull final String userId, @Nullable final DatabaseCallback<Void> callback) {
+        // מחיקה מרשימת השייקים הכללית של המערכת (למנהל)
+        deleteData(SHAKES_PATH + "/" + shakeId, new DatabaseCallback<Void>() {
+            @Override
+            public void onCompleted(Void object) {
+                // מחיקה גם מרשימת השייקים האישית של המשתמש (כדי שזה לא יופיע אצלו)
+                deleteData(USERS_PATH_SHAKE + "/" + userId + "/" + shakeId, callback);
+            }
+
+            @Override
+            public void onFailed(Exception e) {
+                if (callback != null) {
+                    callback.onFailed(e);
+                }
+            }
+        });
     }
-    }
+}

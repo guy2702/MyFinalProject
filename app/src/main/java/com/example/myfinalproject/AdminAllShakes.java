@@ -52,8 +52,12 @@ public class AdminAllShakes extends AppCompatActivity {
         adapter = new AdminAllShakesAdapter(shakeList, shake -> {
             ShakeSelectionManager.setCurrentViewedShake(shake);
 
+            // חישוב מספר השייק (המיקום שלו ברשימה + 1 כדי שיתחיל מ-1 ולא מ-0)
+            int shakeNumber = shakeList.indexOf(shake) + 1;
+
             Intent intent = new Intent(AdminAllShakes.this, ShakeDetails.class);
             intent.putExtra("isAdminView", true);
+            intent.putExtra("SHAKE_NUMBER", shakeNumber); // העברת המספר למסך הפרטים
             startActivity(intent);
         });
 

@@ -2,6 +2,7 @@ package com.example.myfinalproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -11,6 +12,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.myfinalproject.model.User;
+import com.example.myfinalproject.services.DatabaseService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -36,11 +39,34 @@ public class UserHome extends AppCompatActivity {
         btnMyShakes = findViewById(R.id.btnMyShakes);
         btnLogout = findViewById(R.id.btnLogout);
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        if (user != null && user.getEmail() != null) {
-            String name = user.getEmail().split("@")[0];
-            tvWelcome.setText("ברוך הבא, " + name);
+        if (firebaseUser != null) {
+            // טקסט זמני עד שהנתונים יגיעו
+            tvWelcome.setText("טוען נתונים...");
+
+            // משיכת פרטי המשתמש מהמסד לפי ה-UID
+            DatabaseService.getInstance().getUser(firebaseUser.getUid(), new DatabaseService.DatabaseCallback<User>() {
+                @Override
+                public void onCompleted(User user) {
+                    if (user != null && user.getFname() != null && !user.getFname().isEmpty()) {
+                        // אם נמצא השם הפרטי של המשתמש - נציג אותו
+                        tvWelcome.setText("ברוך הבא, " + user.getFname());
+                    } else {
+                        // גיבוי: אם אין שם, נציג את האימייל
+                        String nameFallback = firebaseUser.getEmail() != null ? firebaseUser.getEmail().split("@")[0] : "";
+                        tvWelcome.setText("ברוך הבא, " + nameFallback);
+                    }
+                }
+
+                @Override
+                public void onFailed(Exception e) {
+                    // גיבוי במקרה של שגיאה במשיכת הנתונים
+                    Log.e("UserHome", "Error fetching user data", e);
+                    String nameFallback = firebaseUser.getEmail() != null ? firebaseUser.getEmail().split("@")[0] : "";
+                    tvWelcome.setText("ברוך הבא, " + nameFallback);
+                }
+            });
         } else {
             tvWelcome.setText("ברוך הבא");
         }

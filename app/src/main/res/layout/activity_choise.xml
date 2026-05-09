@@ -4,150 +4,212 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:background="#F2F2F2">
 
+    <!-- תמונת רקע שקופה לאחידות בכל האפליקציה -->
     <ImageView
         android:id="@+id/backgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/backhome1"
+        android:scaleType="centerCrop"
+        android:alpha="0.2"
+        android:clickable="false"
+        android:focusable="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/back5"
+        android:fillViewport="true"
+        android:clipToPadding="false"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <TextView
-        android:id="@+id/tvWelcome"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
-        android:text="שלום, משתמש!"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="#083D85"
-        android:gravity="center"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <TextView
-        android:id="@+id/tvGoal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
-        android:text="בחר מטרה:"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="#083D85"
-        app:layout_constraintTop_toBottomOf="@id/tvWelcome"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <RadioGroup
-        android:id="@+id/rgGoal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@id/tvGoal"
+        app:layout_constraintBottom_toTopOf="@id/bottomButtonsLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <RadioButton
-            android:id="@+id/rbMuscle"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="מסה"
-            android:textSize="18sp"
-            android:textColor="#083D85"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp" />
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:gravity="center_horizontal">
 
-        <RadioButton
-            android:id="@+id/rbCut"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="חיטוב"
-            android:textSize="18sp"
-            android:textColor="#083D85"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp" />
-    </RadioGroup>
+            <!-- כותרת ראשית -->
+            <TextView
+                android:id="@+id/tvWelcome"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="32dp"
+                android:text="שלום, משתמש!"
+                android:textColor="#2C3E50"
+                android:textSize="28sp"
+                android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/tvChooseSize"
-        android:layout_width="wrap_content"
+            <!-- כרטיסיית בחירת מטרה -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="6dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFFFFF"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:id="@+id/tvGoal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="מה המטרה שלך?"
+                        android:textColor="#34495E"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <RadioGroup
+                        android:id="@+id/rgGoal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="vertical">
+
+                        <RadioButton
+                            android:id="@+id/rbMuscle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="מסה (בניית שריר)"
+                            android:textSize="18sp"
+                            android:textColor="#2C3E50"
+                            android:paddingVertical="8dp"
+                            android:buttonTint="#0288D1"/>
+
+                        <RadioButton
+                            android:id="@+id/rbCut"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="חיטוב (ירידה באחוזי שומן)"
+                            android:textSize="18sp"
+                            android:textColor="#2C3E50"
+                            android:paddingVertical="8dp"
+                            android:buttonTint="#0288D1"/>
+                    </RadioGroup>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- כרטיסיית בחירת גודל כוס -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="6dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFFFFF"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:id="@+id/tvChooseSize"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="בחר גודל כוס:"
+                        android:textColor="#34495E"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <RadioGroup
+                        android:id="@+id/rgSize"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="vertical">
+
+                        <RadioButton
+                            android:id="@+id/rb200"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="קטנה - 200 מ״ל"
+                            android:textSize="18sp"
+                            android:textColor="#2C3E50"
+                            android:paddingVertical="8dp"
+                            android:buttonTint="#0288D1"/>
+
+                        <RadioButton
+                            android:id="@+id/rb400"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="בינונית - 400 מ״ל"
+                            android:textSize="18sp"
+                            android:textColor="#2C3E50"
+                            android:paddingVertical="8dp"
+                            android:buttonTint="#0288D1"/>
+
+                        <RadioButton
+                            android:id="@+id/rb600"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="גדולה - 600 מ״ל"
+                            android:textSize="18sp"
+                            android:textColor="#2C3E50"
+                            android:paddingVertical="8dp"
+                            android:buttonTint="#0288D1"/>
+                    </RadioGroup>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- אזור כפתורי ניווט בטוח (Button רגיל) -->
+    <LinearLayout
+        android:id="@+id/bottomButtonsLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="84dp"
-        android:text="בחר גודל כוס:"
-        android:textColor="#083D85"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.545"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rgGoal" />
-
-    <RadioGroup
-        android:id="@+id/rgSize"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@id/tvChooseSize"
+        android:orientation="horizontal"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="16dp"
+        android:weightSum="2"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <RadioButton
-            android:id="@+id/rb200"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="200 גרם"
+        <!-- כפתור הבא - תכלת בולט -->
+        <Button
+            android:id="@+id/btnNext"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="המשך"
+            android:textColor="#000000"
             android:textSize="18sp"
-            android:textColor="#083D85"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp" />
+            android:textStyle="bold"
+            android:backgroundTint="#81D4FA" />
 
-        <RadioButton
-            android:id="@+id/rb400"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="400 גרם"
+        <!-- כפתור חזור - תכלת בהיר -->
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="חזור"
+            android:textColor="#0288D1"
             android:textSize="18sp"
-            android:textColor="#083D85"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp" />
+            android:textStyle="bold"
+            android:backgroundTint="#E1F5FE" />
 
-        <RadioButton
-            android:id="@+id/rb600"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="600 גרם"
-            android:textSize="18sp"
-            android:textColor="#083D85"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp" />
-    </RadioGroup>
-
-    <Button
-        android:id="@+id/btnNext"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="הבא"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/btnBack"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="קודם"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

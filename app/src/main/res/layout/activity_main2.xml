@@ -1,42 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F2F2F2"
-    android:padding="24dp">
+    android:background="#F2F2F2">
 
+    <!-- תמונת רקע באותה שקיפות כמו שאר האפליקציה -->
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/backhome1"
+        android:scaleType="centerCrop"
+        android:alpha="0.2"
+        android:clickable="false"
+        android:focusable="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- כותרת עליונה -->
     <LinearLayout
-        android:orientation="vertical"
+        android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal">
+        android:orientation="vertical"
+        android:paddingTop="40dp"
+        android:paddingBottom="16dp"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <TextView
-            android:id="@+id/textViewAbout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="אודות"
+            android:textColor="#34495E"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="שייק בריאותי 🍹"
+            android:textColor="#2C3E50"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- אזור טקסט גליל בתוך כרטיסייה צפה -->
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="24dp"
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout"
+        app:layout_constraintBottom_toTopOf="@id/btnBackAbout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#000000"
-            android:textSize="18sp"
-            android:lineSpacingExtra="6dp"
-            android:padding="16dp"
-            android:background="#FFFFFF"
-            android:elevation="4dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="24dp"
-            android:scrollbars="vertical"
-            android:backgroundTint="#FFFFFF"
-            android:clipToOutline="true"
-            android:outlineProvider="background"/>
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp"
+            android:layout_margin="4dp">
 
-        <Button
-            android:layout_width="200dp"
-            android:layout_height="50dp"
-            android:text="חזור"
-            android:backgroundTint="#009688"
-            android:textColor="#FFFFFF"
-            android:layout_marginTop="16dp"
-            android:onClick="finishActivity"/>
+            <TextView
+                android:id="@+id/textViewAbout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="24dp"
+                android:textColor="#2C3E50"
+                android:textSize="18sp"
+                android:lineSpacingExtra="8dp"
+                android:background="#FFFFFF" />
+        </androidx.cardview.widget.CardView>
+    </ScrollView>
 
-    </LinearLayout>
-</ScrollView>
+    <!-- כפתור חזור בטוח בסגנון התכלת -->
+    <Button
+        android:id="@+id/btnBackAbout"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="32dp"
+        android:text="חזור למסך הראשי"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:backgroundTint="#81D4FA"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

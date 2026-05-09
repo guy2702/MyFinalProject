@@ -2,6 +2,7 @@ package com.example.myfinalproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -31,53 +32,68 @@ public class UserShake extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_user_shake);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        try {
+            setContentView(R.layout.activity_user_shake);
 
-        btnBack = findViewById(R.id.btnBack);
-        rvUserShakes = findViewById(R.id.rvUserShakes);
-        shakeList = new ArrayList<>();
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return insets;
+            });
 
-        btnBack.setOnClickListener(v -> {
-            Intent intent = new Intent(UserShake.this, UserHome.class);
-            startActivity(intent);
+            btnBack = findViewById(R.id.btnBack);
+            rvUserShakes = findViewById(R.id.rvUserShakes);
+            shakeList = new ArrayList<>();
+
+            btnBack.setOnClickListener(v -> {
+                Intent intent = new Intent(UserShake.this, UserHome.class);
+                startActivity(intent);
+                finish();
+            });
+
+            adapter = new UserShakeAdapter(shakeList, shake -> {
+                try {
+                    ShakeSelectionManager.setCurrentViewedShake(shake);
+                    Intent intent = new Intent(UserShake.this, ShakeDetails.class);
+                    intent.putExtra("isAdminView", false);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Log.e("SHAKE_CLICK", "Error opening shake details", e);
+                    Toast.makeText(UserShake.this, "שגיאה בפתיחת פרטי השייק", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            rvUserShakes.setLayoutManager(new LinearLayoutManager(this));
+            rvUserShakes.setAdapter(adapter);
+
+            String uid = FirebaseAuth.getInstance().getUid();
+            if (uid == null) {
+                Toast.makeText(this, "המשתמש לא מחובר", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            DatabaseService.getInstance().listenToUserShakesRealtime(uid,
+                    new DatabaseService.DatabaseCallback<List<Shake>>() {
+                        @Override
+                        public void onCompleted(List<Shake> shakes) {
+                            shakeList.clear();
+                            if (shakes != null) {
+                                shakeList.addAll(shakes);
+                            }
+                            adapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onFailed(Exception e) {
+                            Toast.makeText(UserShake.this, "שגיאה בטעינת השייקים מהמסד", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "שגיאה בטעינת המסך. נסה שוב.", Toast.LENGTH_SHORT).show();
             finish();
-        });
-
-        adapter = new UserShakeAdapter(shakeList, shake -> {
-            ShakeSelectionManager.setCurrentViewedShake(shake);
-            Intent intent = new Intent(UserShake.this, ShakeDetails.class);
-            intent.putExtra("isAdminView", false);
-            startActivity(intent);
-        });
-
-        rvUserShakes.setLayoutManager(new LinearLayoutManager(this));
-        rvUserShakes.setAdapter(adapter);
-
-        String uid = FirebaseAuth.getInstance().getUid();
-        if (uid == null) {
-            Toast.makeText(this, "המשתמש לא מחובר", Toast.LENGTH_SHORT).show();
-            return;
         }
-
-        DatabaseService.getInstance().listenToUserShakesRealtime(uid,
-                new DatabaseService.DatabaseCallback<List<Shake>>() {
-                    @Override
-                    public void onCompleted(List<Shake> shakes) {
-                        shakeList.clear();
-                        shakeList.addAll(shakes);
-                        adapter.notifyDataSetChanged();
-                    }
-
-                    @Override
-                    public void onFailed(Exception e) {
-                        Toast.makeText(UserShake.this, "שגיאה בטעינת השייקים", Toast.LENGTH_SHORT).show();
-                    }
-                });
     }
 }

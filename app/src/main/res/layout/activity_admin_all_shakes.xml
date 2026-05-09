@@ -11,7 +11,7 @@
         android:id="@+id/backgroundImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/backhome"
+        android:src="@drawable/backhome1"
         android:scaleType="centerCrop"
         android:alpha="0.2"
         android:clickable="false"

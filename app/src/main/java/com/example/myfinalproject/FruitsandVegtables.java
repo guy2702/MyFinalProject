@@ -39,119 +39,128 @@ public class FruitsandVegtables extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fruitsand_vegtables);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        try {
+            setContentView(R.layout.activity_fruitsand_vegtables);
 
-        textView = findViewById(R.id.textView);
-        rvItems = findViewById(R.id.rvFruitsandVegetables);
-        btnNext = findViewById(R.id.btnNext);
-        btnPrev = findViewById(R.id.btnPrev);
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return insets;
+            });
 
-        goal = getIntent().getStringExtra("GOAL");
-        cupSize = getIntent().getIntExtra("CUP_SIZE", 0);
+            textView = findViewById(R.id.textView);
+            rvItems = findViewById(R.id.rvFruitsandVegetables);
+            btnNext = findViewById(R.id.btnNext);
+            btnPrev = findViewById(R.id.btnPrev);
 
-        fruitsVegAmount = SmoothieCalculator.getCategoryAmount(
-                goal,
-                cupSize,
-                SmoothieCalculator.TYPE_FRUITS_VEGETABLES
-        );
+            goal = getIntent().getStringExtra("GOAL");
+            cupSize = getIntent().getIntExtra("CUP_SIZE", 0);
 
-        String goalText = "";
-        if ("MUSCLE".equalsIgnoreCase(goal)) {
-            goalText = "מסה";
-        } else if ("CUT".equalsIgnoreCase(goal)) {
-            goalText = "חיטוב";
+            fruitsVegAmount = SmoothieCalculator.getCategoryAmount(
+                    goal,
+                    cupSize,
+                    SmoothieCalculator.TYPE_FRUITS_VEGETABLES
+            );
+
+            String goalText = "";
+            if ("MUSCLE".equalsIgnoreCase(goal)) {
+                goalText = "בניית מסה";
+            } else if ("CUT".equalsIgnoreCase(goal)) {
+                goalText = "חיטוב";
+            }
+
+            // טקסט מעוצב וברור למשתמש
+            textView.setText("בחר פירות וירקות\nכמות נדרשת למטרה שלך (" + goalText + "): " + fruitsVegAmount + " גרם");
+
+            itemList = new ArrayList<>();
+            adapter = new ItemAdapter(itemList, item -> {});
+            adapter.setSelectionMode(true);
+
+            rvItems.setLayoutManager(new LinearLayoutManager(this));
+            rvItems.setAdapter(adapter);
+
+            DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
+                @Override
+                public void onCompleted(List<Item> items) {
+                    itemList.clear();
+
+                    for (Item item : items) {
+                        if (item == null) continue;
+
+                        if (isFruitVegetable(item) && matchesGoal(item, goal)) {
+                            itemList.add(item);
+                        }
+                    }
+
+                    adapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onFailed(Exception e) {
+                    Toast.makeText(FruitsandVegtables.this,
+                            "שגיאה בטעינת הנתונים מהמסד",
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            btnPrev.setOnClickListener(v -> finish());
+
+            btnNext.setOnClickListener(v -> {
+                int totalAmount = 0;
+                int selectedCount = 0;
+
+                for (Item item : adapter.getItems()) {
+                    if (item.isSelected()) {
+                        selectedCount++;
+
+                        if (item.getAmount() <= 0) {
+                            Toast.makeText(FruitsandVegtables.this,
+                                    "יש להזין כמות לכל פריט שנבחר",
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        totalAmount += item.getAmount();
+                    }
+                }
+
+                if (selectedCount == 0) {
+                    Toast.makeText(FruitsandVegtables.this,
+                            "יש לבחור לפחות פריט אחד",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Log.d("FRUITS_AMOUNT", "total=" + totalAmount + " allowed=" + fruitsVegAmount);
+
+                if (totalAmount != fruitsVegAmount) {
+                    Toast.makeText(FruitsandVegtables.this,
+                            "הכמות שבחרת: " + totalAmount + " גרם\nיש לבחור בדיוק: " + fruitsVegAmount + " גרם",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                try {
+                    ShakeSelectionManager.setCategoryItems("fruits_vegetables", adapter.getItems());
+
+                    Intent intent = new Intent(FruitsandVegtables.this, liquids.class);
+                    intent.putExtra("GOAL", goal);
+                    intent.putExtra("CUP_SIZE", cupSize);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Log.e("LIQUIDS_ERROR", "Crash opening liquids", e);
+                    Toast.makeText(FruitsandVegtables.this,
+                            "שגיאה במעבר למסך הנוזלים",
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "שגיאה בטעינת המסך, נסה שוב", Toast.LENGTH_SHORT).show();
+            finish();
         }
-
-        textView.setText("בחר פירות וירקות  " + fruitsVegAmount + " גרם\nמטרה: " + goalText);
-
-        itemList = new ArrayList<>();
-        adapter = new ItemAdapter(itemList, item -> {});
-        adapter.setSelectionMode(true);
-
-        rvItems.setLayoutManager(new LinearLayoutManager(this));
-        rvItems.setAdapter(adapter);
-
-        DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
-            @Override
-            public void onCompleted(List<Item> items) {
-                itemList.clear();
-
-                for (Item item : items) {
-                    if (item == null) continue;
-
-                    if (isFruitVegetable(item) && matchesGoal(item, goal)) {
-                        itemList.add(item);
-                    }
-                }
-
-                adapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onFailed(Exception e) {
-                Toast.makeText(FruitsandVegtables.this,
-                        "שגיאה בטעינת הנתונים",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        btnPrev.setOnClickListener(v -> finish());
-
-        btnNext.setOnClickListener(v -> {
-            int totalAmount = 0;
-            int selectedCount = 0;
-
-            for (Item item : adapter.getItems()) {
-                if (item.isSelected()) {
-                    selectedCount++;
-
-                    if (item.getAmount() <= 0) {
-                        Toast.makeText(FruitsandVegtables.this,
-                                "יש להזין כמות לכל פריט שנבחר",
-                                Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    totalAmount += item.getAmount();
-                }
-            }
-
-            if (selectedCount == 0) {
-                Toast.makeText(FruitsandVegtables.this,
-                        "יש לבחור לפחות פריט אחד",
-                        Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            Log.d("FRUITS_AMOUNT", "total=" + totalAmount + " allowed=" + fruitsVegAmount);
-
-            if (totalAmount != fruitsVegAmount) {
-                Toast.makeText(FruitsandVegtables.this,
-                        "הכמות אינה תקינה",
-                        Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            try {
-                ShakeSelectionManager.setCategoryItems("fruits_vegetables", adapter.getItems());
-
-                Intent intent = new Intent(FruitsandVegtables.this, liquids.class);
-                intent.putExtra("GOAL", goal);
-                intent.putExtra("CUP_SIZE", cupSize);
-                startActivity(intent);
-            } catch (Exception e) {
-                Log.e("LIQUIDS_ERROR", "Crash opening liquids", e);
-                Toast.makeText(FruitsandVegtables.this,
-                        "שגיאה במעבר לנוזלים",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private boolean isFruitVegetable(Item item) {

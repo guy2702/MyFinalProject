@@ -6,46 +6,55 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F7F4FF"
+    android:background="#F2F2F2"
     tools:context=".UserHome">
 
-    <View
-        android:id="@+id/topBackground"
-        android:layout_width="0dp"
-        android:layout_height="260dp"
-        android:background="#6C4DFF"
+    <!-- תמונת רקע שקופה לאחידות בכל האפליקציה -->
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/backhome1"
+        android:scaleType="centerCrop"
+        android:alpha="0.2"
+        android:clickable="false"
+        android:focusable="false"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- טקסט עליון עדין -->
     <TextView
         android:id="@+id/tvHello"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="48dp"
         android:text="שלום"
-        android:textColor="#EDE7FF"
+        android:textColor="#34495E"
         android:textSize="18sp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- כותרת ראשית כהה -->
     <TextView
         android:id="@+id/tvWelcome"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
         android:gravity="center"
         android:text="ברוך הבא, משתמש"
-        android:textColor="#FFFFFF"
+        android:textColor="#2C3E50"
         android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/tvHello"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- תת-כותרת -->
     <TextView
         android:id="@+id/tvSubtitle"
         android:layout_width="0dp"
@@ -55,22 +64,23 @@
         android:layout_marginEnd="32dp"
         android:gravity="center"
         android:text="מכינים שייק בריא ומדויק לפי המטרה שלך"
-        android:textColor="#E6DEFF"
+        android:textColor="#34495E"
         android:textSize="16sp"
         app:layout_constraintTop_toBottomOf="@id/tvWelcome"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- כרטיסיית הפעולות לבנה וצפה -->
     <androidx.cardview.widget.CardView
         android:id="@+id/mainCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="40dp"
         android:layout_marginEnd="20dp"
-        app:cardCornerRadius="28dp"
-        app:cardElevation="10dp"
-        app:layout_constraintTop_toBottomOf="@id/topBackground"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="6dp"
+        app:layout_constraintTop_toBottomOf="@id/tvSubtitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -87,7 +97,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="מה תרצה לעשות היום?"
-                android:textColor="#2B1D52"
+                android:textColor="#2C3E50"
                 android:textSize="22sp"
                 android:textStyle="bold" />
 
@@ -98,51 +108,52 @@
                 android:layout_marginTop="8dp"
                 android:gravity="center"
                 android:text="בחר אפשרות ותמשיך בקלות"
-                android:textColor="#7B7590"
+                android:textColor="#7F8C8D"
                 android:textSize="15sp" />
 
+            <!-- כפתור פעולה ראשי - תכלת מודגש -->
             <Button
                 android:id="@+id/btnStartShake"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="28dp"
-                android:backgroundTint="#6C4DFF"
-                android:paddingTop="16dp"
-                android:paddingBottom="16dp"
+                android:backgroundTint="#81D4FA"
+                android:paddingVertical="14dp"
                 android:text="התחל בהכנת השייק"
-                android:textColor="#FFFFFF"
+                android:textColor="#000000"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <!-- כפתור פעולה משני - תכלת בהיר יותר -->
             <Button
                 android:id="@+id/btnMyShakes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:backgroundTint="#2EB67D"
-                android:paddingTop="16dp"
-                android:paddingBottom="16dp"
+                android:backgroundTint="#B3E5FC"
+                android:paddingVertical="14dp"
                 android:text="השייקים שלי"
-                android:textColor="#FFFFFF"
+                android:textColor="#000000"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <!-- כפתור התנתקות - תכלת ממש עדין (שיראה שונה מכפתורי פעולה) -->
             <Button
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:backgroundTint="#2196F3"
-                android:paddingTop="14dp"
-                android:paddingBottom="14dp"
+                android:backgroundTint="#E1F5FE"
+                android:paddingVertical="12dp"
                 android:text="התנתק"
-                android:textColor="#FFFFFF"
+                android:textColor="#0288D1"
                 android:textSize="16sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
 
+    <!-- טקסט תחתון -->
     <TextView
         android:id="@+id/tvBottomNote"
         android:layout_width="0dp"
@@ -152,7 +163,7 @@
         android:layout_marginBottom="20dp"
         android:gravity="center"
         android:text="Smoothie Builder"
-        android:textColor="#A49BB8"
+        android:textColor="#95A5A6"
         android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"

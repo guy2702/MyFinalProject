@@ -3,10 +3,10 @@ package com.example.myfinalproject;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View; // חשוב: הוספת ה-Import הזה
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast; // חשוב: לבדיקת אבטחה
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,18 +14,19 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.myfinalproject.Items;
-import com.google.firebase.auth.FirebaseAuth; // חשוב: לבדיקת אבטחה
+import com.example.myfinalproject.model.User;
+import com.example.myfinalproject.services.DatabaseService;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
-// --- שינוי: הוספת Implements לניהול קליקים מרוכז ---
 public class AdminPage extends AppCompatActivity implements View.OnClickListener {
 
-    private static final String TAG = "AdminPage"; // להוספת לוגים
+    private static final String TAG = "AdminPage";
 
     private Button btnAddItem, btnItems, btnUsers, btnAllShakes, btnLogout;
     private TextView tvGreeting;
 
-    private FirebaseAuth mAuth; // משתנה לבדיקת אבטחה
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +34,6 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_admin_page);
 
-        // שינוי קטן בקבלת ה-root כדי למנוע קריסה אם ה-ID ב-XML שונה
         View rootLayout = findViewById(R.id.main);
         if (rootLayout != null) {
             ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
@@ -43,26 +43,47 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
             });
         }
 
-        mAuth = FirebaseAuth.getInstance(); // אתחול Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
 
         btnAddItem = findViewById(R.id.btnAddItem);
         btnItems = findViewById(R.id.btnItems);
         btnUsers = findViewById(R.id.btnUserTable);
         btnAllShakes = findViewById(R.id.btnAllShakes);
         btnLogout = findViewById(R.id.btnLogout);
+        tvGreeting = findViewById(R.id.tvGreeting);
 
-        // --- תיקון הפתרון לקריסה: אתחול tvGreeting כאן! ---
-        tvGreeting = findViewById(R.id.tvGreeting); // וודא ששורה זו קיימת ואינה בהערה
+        FirebaseUser currentUser = mAuth.getCurrentUser();
 
-        String userName = getIntent().getStringExtra("USER_NAME");
-        // עכשיו tvGreeting מאותחל, שורות אלו יעבדו ללא קריסה
-        if (userName != null) {
-            tvGreeting.setText("שלום " + userName + "!");
+        if (currentUser != null) {
+            // טקסט זמני עד שהנתונים יגיעו
+            tvGreeting.setText("טוען נתונים...");
+
+            // משיכת פרטי המנהל מהמסד לפי ה-UID
+            DatabaseService.getInstance().getUser(currentUser.getUid(), new DatabaseService.DatabaseCallback<User>() {
+                @Override
+                public void onCompleted(User user) {
+                    if (user != null && user.getFname() != null && !user.getFname().isEmpty()) {
+                        // אם נמצא השם הפרטי - נציג אותו
+                        tvGreeting.setText("שלום " + user.getFname() + " (מנהל)!");
+                    } else {
+                        // גיבוי: אם אין שם, נציג את חיתוך האימייל
+                        String nameFallback = currentUser.getEmail() != null ? currentUser.getEmail().split("@")[0] : "מנהל";
+                        tvGreeting.setText("שלום " + nameFallback + "!");
+                    }
+                }
+
+                @Override
+                public void onFailed(Exception e) {
+                    // גיבוי במקרה של שגיאה במשיכת הנתונים
+                    Log.e(TAG, "Error fetching admin data", e);
+                    String nameFallback = currentUser.getEmail() != null ? currentUser.getEmail().split("@")[0] : "מנהל";
+                    tvGreeting.setText("שלום " + nameFallback + "!");
+                }
+            });
         } else {
-            tvGreeting.setText("שלום מנהל!"); // ברירת מחדל אם אין שם
+            tvGreeting.setText("שלום מנהל!");
         }
 
-        // --- שינוי: הגדרת ClickListeners באמצעות מתודה אחת ---
         btnAddItem.setOnClickListener(this);
         btnItems.setOnClickListener(this);
         btnUsers.setOnClickListener(this);
@@ -73,17 +94,14 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
     @Override
     protected void onStart() {
         super.onStart();
-        // --- שיפור UX/אבטחה: בדיקה אם המשתמש עדיין מחובר ---
         if (mAuth.getCurrentUser() == null) {
-            // אם המשתמש לא מחובר ב-Firebase Auth, ננתב אותו בחזרה למסך הכניסה
             Intent intent = new Intent(AdminPage.this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
-            finish(); // סגירת דף המנהל
+            finish();
         }
     }
 
-    // --- שינוי: ניהול קליקים מרוכז ונקי ---
     @Override
     public void onClick(View v) {
         int id = v.getId();
@@ -102,7 +120,6 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
     }
 
     private void handleLogout() {
-        // --- שיפור אבטחה: ניתוק מ-Firebase Auth ---
         mAuth.signOut();
         Log.d(TAG, "Admin logged out.");
 

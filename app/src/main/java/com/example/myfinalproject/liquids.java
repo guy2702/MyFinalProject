@@ -2,6 +2,7 @@ package com.example.myfinalproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,136 +39,139 @@ public class liquids extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_liquids);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        try {
+            setContentView(R.layout.activity_liquids);
 
-        tvTitleLiquids = findViewById(R.id.tvTitleLiquids);
-        rvLiquids = findViewById(R.id.rvLiquids);
-        btnFinish = findViewById(R.id.btnNextLiquids);
-        btnPrev = findViewById(R.id.btnPrevLiquids);
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return insets;
+            });
 
-        selectedGoal = getIntent().getStringExtra("GOAL");
-        cupSize = getIntent().getIntExtra("CUP_SIZE", 400);
+            tvTitleLiquids = findViewById(R.id.tvTitleLiquids);
+            rvLiquids = findViewById(R.id.rvLiquids);
+            btnFinish = findViewById(R.id.btnNextLiquids);
+            btnPrev = findViewById(R.id.btnPrevLiquids);
 
-        if (selectedGoal == null) {
-            Toast.makeText(this, "שגיאה בקבלת המטרה", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
+            selectedGoal = getIntent().getStringExtra("GOAL");
+            cupSize = getIntent().getIntExtra("CUP_SIZE", 400);
 
-        allowedGrams = SmoothieCalculator.getCategoryAmount(
-                selectedGoal,
-                cupSize,
-                SmoothieCalculator.TYPE_LIQUIDS
-        );
-
-        final String goalText;
-        if ("MUSCLE".equalsIgnoreCase(selectedGoal)) {
-            goalText = "מסה";
-        } else if ("CUT".equalsIgnoreCase(selectedGoal)) {
-            goalText = "חיטוב";
-        } else {
-            goalText = "";
-        }
-
-        liquidsList = new ArrayList<>();
-
-        Runnable updateTitle = () -> {
-            // התחלת חישוב הכותרת
-            String title = "בחר נוזל בסיס  " + allowedGrams + " גרם\n";
-
-            // הוספת שורת המטרה
-            if (!goalText.isEmpty()) {
-                title += "מטרה: " + goalText + "\n";
-            }
-
-            // *** התיקון נמצא כאן: מחקתי את שורת הקוד שהוסיפה את ה"לכל פריט" ***
-            // *** title += "לכל פריט: " + perItemGrams + " גרם"; ***
-
-            // עדכון ה-TextView עם הכותרת הסופית
-            tvTitleLiquids.setText(title);
-        };
-
-        adapter = new ItemAdapter(liquidsList, item -> {});
-        adapter.setSelectionMode(true);
-
-        rvLiquids.setLayoutManager(new LinearLayoutManager(this));
-        rvLiquids.setAdapter(adapter);
-
-        updateTitle.run();
-
-        btnPrev.setOnClickListener(v -> {
-            Intent intent = new Intent(liquids.this, FruitsandVegtables.class);
-            intent.putExtra("GOAL", selectedGoal);
-            intent.putExtra("CUP_SIZE", cupSize);
-            startActivity(intent);
-            finish();
-        });
-
-        btnFinish.setOnClickListener(v -> {
-            int selectedCount = 0;
-            int totalAmount = 0;
-
-            for (Item item : adapter.getItems()) {
-                if (item.isSelected()) {
-                    selectedCount++;
-
-                    if (item.getAmount() <= 0) {
-                        Toast.makeText(this, "יש להזין כמות לכל נוזל שנבחר", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    totalAmount += item.getAmount();
-                }
-            }
-
-            if (selectedCount == 0) {
-                Toast.makeText(this, "חובה לבחור לפחות נוזל אחד", Toast.LENGTH_SHORT).show();
+            if (selectedGoal == null) {
+                Toast.makeText(this, "שגיאה בקבלת המטרה", Toast.LENGTH_SHORT).show();
+                finish();
                 return;
             }
 
-            if (totalAmount != allowedGrams) {
-                Toast.makeText(this, "הכמות אינה תקינה", Toast.LENGTH_SHORT).show();
-                return;
+            allowedGrams = SmoothieCalculator.getCategoryAmount(
+                    selectedGoal,
+                    cupSize,
+                    SmoothieCalculator.TYPE_LIQUIDS
+            );
+
+            final String goalText;
+            if ("MUSCLE".equalsIgnoreCase(selectedGoal)) {
+                goalText = "בניית מסה";
+            } else if ("CUT".equalsIgnoreCase(selectedGoal)) {
+                goalText = "חיטוב";
+            } else {
+                goalText = "";
             }
 
-            ShakeSelectionManager.setCategoryItems("liquids", adapter.getItems());
+            liquidsList = new ArrayList<>();
 
-            Intent intent = new Intent(liquids.this, ProtienSupplements.class);
-            intent.putExtra("GOAL", selectedGoal);
-            intent.putExtra("CUP_SIZE", cupSize);
-            startActivity(intent);
-        });
+            Runnable updateTitle = () -> {
+                // עיצוב כותרת ברור למשתמש
+                String title = "בחר נוזל בסיס\nכמות נדרשת למטרה שלך (" + goalText + "): " + allowedGrams + " מ״ל";
+                tvTitleLiquids.setText(title);
+            };
 
-        DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
-            @Override
-            public void onCompleted(List<Item> items) {
-                liquidsList.clear();
+            adapter = new ItemAdapter(liquidsList, item -> {});
+            adapter.setSelectionMode(true);
 
-                for (Item item : items) {
-                    if (item == null) continue;
+            rvLiquids.setLayoutManager(new LinearLayoutManager(this));
+            rvLiquids.setAdapter(adapter);
 
-                    if (isLiquid(item) && matchesGoal(item, selectedGoal)) {
-                        item.setSelected(false);
-                        item.setAmount(0);
-                        liquidsList.add(item);
+            updateTitle.run();
+
+            btnPrev.setOnClickListener(v -> {
+                Intent intent = new Intent(liquids.this, FruitsandVegtables.class);
+                intent.putExtra("GOAL", selectedGoal);
+                intent.putExtra("CUP_SIZE", cupSize);
+                startActivity(intent);
+                finish();
+            });
+
+            btnFinish.setOnClickListener(v -> {
+                int selectedCount = 0;
+                int totalAmount = 0;
+
+                for (Item item : adapter.getItems()) {
+                    if (item.isSelected()) {
+                        selectedCount++;
+
+                        if (item.getAmount() <= 0) {
+                            Toast.makeText(this, "יש להזין כמות לכל נוזל שנבחר", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        totalAmount += item.getAmount();
                     }
                 }
 
-                adapter.notifyDataSetChanged();
-                updateTitle.run();
-            }
+                if (selectedCount == 0) {
+                    Toast.makeText(this, "חובה לבחור לפחות נוזל אחד", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            @Override
-            public void onFailed(Exception e) {
-                Toast.makeText(liquids.this, "שגיאה בטעינת הנוזלים", Toast.LENGTH_SHORT).show();
-            }
-        });
+                if (totalAmount != allowedGrams) {
+                    Toast.makeText(this, "הכמות שבחרת: " + totalAmount + " מ״ל\nיש לבחור בדיוק: " + allowedGrams + " מ״ל", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                try {
+                    ShakeSelectionManager.setCategoryItems("liquids", adapter.getItems());
+
+                    Intent intent = new Intent(liquids.this, ProtienSupplements.class);
+                    intent.putExtra("GOAL", selectedGoal);
+                    intent.putExtra("CUP_SIZE", cupSize);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Log.e("PROTIEN_ERROR", "Crash opening protein supplements", e);
+                    Toast.makeText(liquids.this, "שגיאה במעבר למסך הבא", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
+                @Override
+                public void onCompleted(List<Item> items) {
+                    liquidsList.clear();
+
+                    for (Item item : items) {
+                        if (item == null) continue;
+
+                        if (isLiquid(item) && matchesGoal(item, selectedGoal)) {
+                            item.setSelected(false);
+                            item.setAmount(0);
+                            liquidsList.add(item);
+                        }
+                    }
+
+                    adapter.notifyDataSetChanged();
+                    updateTitle.run();
+                }
+
+                @Override
+                public void onFailed(Exception e) {
+                    Toast.makeText(liquids.this, "שגיאה בטעינת הנוזלים", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "שגיאה בטעינת המסך. נסה שוב.", Toast.LENGTH_SHORT).show();
+            finish();
+        }
     }
 
     private boolean isLiquid(Item item) {

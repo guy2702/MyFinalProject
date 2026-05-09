@@ -29,8 +29,8 @@ public class ShakeResults extends AppCompatActivity {
     private Shake newShake;
     private Button btnBackToNuts;
     private Button btnHomeNoSave;
+    private Button btnSaveShake;
 
-    // הווספת משתנים לקריאת המטרה וגודל הכוס
     private String selectedGoal;
     private int cupSize;
 
@@ -38,69 +38,83 @@ public class ShakeResults extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_shake_results);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        try {
+            setContentView(R.layout.activity_shake_results);
 
-        tvResults = findViewById(R.id.tvResults);
-        btnBackToNuts = findViewById(R.id.btnBackToNuts);
-        btnHomeNoSave = findViewById(R.id.btnHomeNoSave);
-        databaseService = DatabaseService.getInstance();
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return insets;
+            });
 
-        // 1. קריאת הנתונים מה-Intent שהתחיל את האקטיביטי
-        selectedGoal = getIntent().getStringExtra("GOAL");
-        cupSize = getIntent().getIntExtra("CUP_SIZE", 400);
+            tvResults = findViewById(R.id.tvResults);
+            btnBackToNuts = findViewById(R.id.btnBackToNuts);
+            btnHomeNoSave = findViewById(R.id.btnHomeNoSave);
+            btnSaveShake = findViewById(R.id.btnSaveShake);
+            databaseService = DatabaseService.getInstance();
 
-        ArrayList<Item> selectedItems = ShakeSelectionManager.getAllSelectedItems();
+            selectedGoal = getIntent().getStringExtra("GOAL");
+            cupSize = getIntent().getIntExtra("CUP_SIZE", 400);
 
-        NutritionCalculator.NutritionResult result =
-                NutritionCalculator.calculate(selectedItems);
+            ArrayList<Item> selectedItems = ShakeSelectionManager.getAllSelectedItems();
 
-        String shakeId = databaseService.generateShakeId();
-        newShake = new Shake(shakeId, selectedItems);
+            NutritionCalculator.NutritionResult result =
+                    NutritionCalculator.calculate(selectedItems);
 
-        String text =
-                "תוצאות השייק\n\n" +
-                        "קלוריות: " + String.format(Locale.getDefault(), "%.1f", result.calories) + "\n" +
-                        "חלבון: " + String.format(Locale.getDefault(), "%.1f", result.protein) + " גרם\n" +
-                        "פחמימות: " + String.format(Locale.getDefault(), "%.1f", result.carbs) + " גרם\n" +
-                        "שומנים: " + String.format(Locale.getDefault(), "%.1f", result.fat) + " גרם\n" +
-                        "סוכרים: " + String.format(Locale.getDefault(), "%.1f", result.sugar) + " גרם";
+            String shakeId = databaseService.generateShakeId();
+            newShake = new Shake(shakeId, selectedItems);
 
-        tvResults.setText(text);
+            // טקסט מסודר וקריא
+            String text =
+                    "📊 הערכים התזונתיים שלך:\n\n" +
+                            "🔥 קלוריות: " + String.format(Locale.getDefault(), "%.1f", result.calories) + "\n\n" +
+                            "💪 חלבון: " + String.format(Locale.getDefault(), "%.1f", result.protein) + " גרם\n\n" +
+                            "🌾 פחמימות: " + String.format(Locale.getDefault(), "%.1f", result.carbs) + " גרם\n\n" +
+                            "🥑 שומנים: " + String.format(Locale.getDefault(), "%.1f", result.fat) + " גרם\n\n" +
+                            "🍭 סוכרים: " + String.format(Locale.getDefault(), "%.1f", result.sugar) + " גרם";
 
-        btnBackToNuts.setOnClickListener(v -> {
-            Intent intent = new Intent(ShakeResults.this, Nuts.class);
-            // 2. העברת הנתונים בחזרה כשחוזרים ל-Nuts
-            intent.putExtra("GOAL", selectedGoal); // העברת המטרה
-            intent.putExtra("CUP_SIZE", cupSize);   // העברת גודל הכוס
-            startActivity(intent);
+            tvResults.setText(text);
+
+            btnBackToNuts.setOnClickListener(v -> {
+                Intent intent = new Intent(ShakeResults.this, Nuts.class);
+                intent.putExtra("GOAL", selectedGoal);
+                intent.putExtra("CUP_SIZE", cupSize);
+                startActivity(intent);
+                finish();
+            });
+
+            btnHomeNoSave.setOnClickListener(v -> {
+                ShakeSelectionManager.clearAll();
+                Intent intent = new Intent(ShakeResults.this, UserHome.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            });
+
+            // האזנה לכפתור השמירה ישירות מהקוד - הכי בטוח
+            btnSaveShake.setOnClickListener(v -> goSaveShake());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "שגיאה בטעינת המסך. נסה שוב.", Toast.LENGTH_SHORT).show();
             finish();
-        });
-
-        btnHomeNoSave.setOnClickListener(v -> {
-            ShakeSelectionManager.clearAll();
-            Intent intent = new Intent(ShakeResults.this, UserHome.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-        });
+        }
     }
 
-    public void goSaveShake(View view) {
+    private void goSaveShake() {
         if (newShake == null) {
             Toast.makeText(this, "שגיאה ביצירת שייק", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        btnSaveShake.setEnabled(false); // חסימת לחיצה כפולה
+        btnSaveShake.setText("שומר...");
+
         databaseService.createNewShake(newShake, new DatabaseService.DatabaseCallback<Void>() {
             @Override
             public void onCompleted(Void object) {
                 runOnUiThread(() -> {
-                    Toast.makeText(ShakeResults.this, "השייק נשמר בהצלחה", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ShakeResults.this, "השייק נשמר בהצלחה!", Toast.LENGTH_SHORT).show();
 
                     ShakeSelectionManager.clearAll();
 
@@ -112,9 +126,11 @@ public class ShakeResults extends AppCompatActivity {
 
             @Override
             public void onFailed(Exception e) {
-                runOnUiThread(() ->
-                        Toast.makeText(ShakeResults.this, "שגיאה בשמירה", Toast.LENGTH_SHORT).show()
-                );
+                runOnUiThread(() -> {
+                    btnSaveShake.setEnabled(true);
+                    btnSaveShake.setText("שמור את השייק");
+                    Toast.makeText(ShakeResults.this, "שגיאה בשמירה: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
             }
         });
     }

@@ -6,12 +6,12 @@
     android:layout_height="match_parent"
     android:background="#F2F2F2">
 
-    <!-- תמונת רקע באותה שקיפות כמו מסך ההרשמה/משתמש -->
+    <!-- תמונת רקע באותה שקיפות -->
     <ImageView
         android:id="@+id/backgroundImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/backhome"
+        android:src="@drawable/backhome1"
         android:scaleType="centerCrop"
         android:alpha="0.2"
         android:clickable="false"
@@ -63,7 +63,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="#FFFFFF"
+                    android:background="#FFF9C4"
                     android:orientation="vertical"
                     android:padding="20dp">
 
@@ -81,7 +81,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:textColor="#2C3E50"
-                        android:textSize="16sp" />
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -153,17 +154,30 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- כפתור מחיקת שייק (יוצג רק למנהל מהקוד) -->
+            <Button
+                android:id="@+id/btnDeleteShake"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginBottom="12dp"
+                android:text="מחק שייק זה"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:backgroundTint="#B3E5FC"
+                android:visibility="gone" />
+
             <!-- כפתור חזור בטוח עם סגנון התכלת -->
             <Button
                 android:id="@+id/btnBackFromDetails"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
+                android:layout_marginBottom="24dp"
                 android:text="חזור למסך הקודם"
                 android:textColor="#000000"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:paddingVertical="12dp"
-                android:backgroundTint="#81D4FA" />
+                android:backgroundTint="#43C6F2" />
 
         </LinearLayout>
     </ScrollView>

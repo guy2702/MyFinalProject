@@ -1,62 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F7F4FF"
-    android:padding="20dp"
+    android:background="#F2F2F2"
     tools:context=".UserShake">
 
-    <View
-        android:id="@+id/topBackground"
-        android:layout_width="0dp"
-        android:layout_height="180dp"
-        android:background="#6C4DFF"
+    <!-- תמונת רקע שקופה (backhome1) לאחידות -->
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/backhome1"
+        android:scaleType="centerCrop"
+        android:alpha="0.2"
+        android:clickable="false"
+        android:focusable="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- פאנל עליון עם כותרת והסבר -->
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="36dp"
+        android:paddingBottom="16dp"
+        android:gravity="center"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
-        android:gravity="center"
-        android:text="השייקים שלי"
-        android:textColor="#FFFFFF"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="השייקים שלי"
+            android:textColor="#2C3E50"
+            android:textSize="28sp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/tvSubtitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
-        android:text="כל השייקים ששמרת במקום אחד"
-        android:textColor="#E9E1FF"
-        android:textSize="15sp"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <TextView
+            android:id="@+id/tvSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="כל השייקים ששמרת במקום אחד"
+            android:textColor="#34495E"
+            android:textSize="16sp" />
+    </LinearLayout>
 
+    <!-- אזור מרכזי - הרשימה בתוך כרטיסייה לבנה -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardShakes"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="28dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginBottom="20dp"
-        app:cardCornerRadius="28dp"
-        app:cardElevation="10dp"
-        app:layout_constraintTop_toBottomOf="@id/topBackground"
-        app:layout_constraintBottom_toTopOf="@id/btnBack"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="6dp"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout"
+        app:layout_constraintBottom_toTopOf="@id/bottomButtonsLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -73,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="רשימת השייקים"
-                android:textColor="#2B1D52"
+                android:textColor="#2C3E50"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -81,10 +91,10 @@
                 android:id="@+id/tvListHint"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="4dp"
                 android:gravity="center"
                 android:text="לחץ על שייק כדי לראות פרטים"
-                android:textColor="#8A84A3"
+                android:textColor="#7F8C8D"
                 android:textSize="14sp" />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -99,20 +109,28 @@
 
     </androidx.cardview.widget.CardView>
 
-    <Button
-        android:id="@+id/btnBack"
-        android:layout_width="0dp"
+    <!-- אזור תחתון - כפתור חזרה בטוח (Button רגיל) -->
+    <LinearLayout
+        android:id="@+id/bottomButtonsLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:backgroundTint="#6C4DFF"
-        android:paddingTop="15dp"
-        android:paddingBottom="15dp"
-        android:text="חזרה"
-        android:textColor="#FFFFFF"
-        android:textSize="17sp"
-        android:textStyle="bold"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingBottom="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="חזרה"
+            android:textColor="#0288D1"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:backgroundTint="#E1F5FE" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
