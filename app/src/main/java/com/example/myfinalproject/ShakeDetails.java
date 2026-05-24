@@ -1,5 +1,11 @@
 package com.example.myfinalproject;
 
+/**
+ * מטרת העמוד: עמוד זה מציג למשתמש את הפירוט המלא של שייק ספציפי שנשמר.
+ * העמוד מאפשר הצגת מרכיבים, חישוב ערכים תזונתיים מחדש, ובמידה ומדובר באדמין -
+ * צפייה בפרטי המשתמש שיצר את השייק ואפשרות למחיקת השייק ממסד הנתונים.
+ */
+
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.View;
@@ -34,7 +40,7 @@ public class ShakeDetails extends AppCompatActivity {
         try {
             setContentView(R.layout.activity_shake_details);
 
-            // חיבור רכיבי ה-UI
+            // חיבור רכיבי ה-UI לקבצי ה-XML
             cardAdminInfo = findViewById(R.id.cardAdminInfo);
             tvAdminDetails = findViewById(R.id.tvAdminDetails);
             tvIngredients = findViewById(R.id.tvIngredients);
@@ -42,12 +48,13 @@ public class ShakeDetails extends AppCompatActivity {
             btnBackFromDetails = findViewById(R.id.btnBackFromDetails);
             btnDeleteShake = findViewById(R.id.btnDeleteShake);
 
-            // לחיצה על כפתור חזור
+            // לחיצה על כפתור חזור סוגרת את המסך הנוכחי
             btnBackFromDetails.setOnClickListener(v -> finish());
 
             boolean isAdminView = getIntent().getBooleanExtra("isAdminView", false);
             Shake shake = ShakeSelectionManager.getCurrentViewedShake();
 
+            // וולידציה למקרה שהנתונים לא עברו בצורה תקינה
             if (shake == null || shake.getItems() == null || shake.getItems().isEmpty()) {
                 tvIngredients.setText("לא נמצאו פרטים על השייק.");
                 tvNutrition.setText("אין נתונים.");
@@ -111,7 +118,7 @@ public class ShakeDetails extends AppCompatActivity {
                     }
                 });
 
-                // לחיצה על כפתור מחיקה
+                // לחיצה על כפתור מחיקה פותחת דיאלוג אישור
                 btnDeleteShake.setOnClickListener(v -> showDeleteConfirmationDialog(shake.getShakeId(), shake.getUserId()));
 
             } else {
@@ -123,6 +130,7 @@ public class ShakeDetails extends AppCompatActivity {
             StringBuilder ingredientsBuilder = new StringBuilder();
             double totalCalories = 0, totalProtein = 0, totalCarbs = 0, totalFat = 0, totalSugar = 0;
 
+            // לולאה העוברת על כל המרכיבים ומחשבת את הערכים המצטברים
             for (Item item : shake.getItems()) {
                 if (item != null) {
                     ingredientsBuilder.append("• ")
@@ -170,7 +178,7 @@ public class ShakeDetails extends AppCompatActivity {
                         @Override
                         public void onCompleted(Void object) {
                             Toast.makeText(ShakeDetails.this, "השייק נמחק בהצלחה", Toast.LENGTH_SHORT).show();
-                            finish(); // חזרה לרשימה
+                            finish(); // חזרה לרשימה לאחר מחיקה
                         }
 
                         @Override

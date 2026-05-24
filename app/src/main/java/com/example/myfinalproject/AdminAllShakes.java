@@ -1,5 +1,11 @@
 package com.example.myfinalproject;
 
+/**
+ * מחלקה זו אחראית על ניהול מסך הצגת כל השייקים שהורכבו במערכת (עבור מנהל).
+ * העמוד מציג רשימה של שייקים ב-RecyclerView ומאפשר למנהל לצפות בפרטים מלאים
+ * של כל שייק שנבחר.
+ */
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -25,9 +31,10 @@ import java.util.List;
 
 public class AdminAllShakes extends AppCompatActivity {
 
+    // רכיבי ממשק המשתמש (UI) להצגת רשימת השייקים
     private RecyclerView rvAllShakes;
     private Button btnBack;
-    private TextView tvEmpty;
+    private TextView tvEmpty; // מוצג במידה ואין שייקים להצגה
     private AdminAllShakesAdapter adapter;
     private ArrayList<Shake> shakeList;
 
@@ -37,46 +44,55 @@ public class AdminAllShakes extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_admin_all_shakes);
 
+        // הגדרת Padding דינמי למסך כדי להתחשב בסרגלי המערכת (System Bars)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
+        // אתחול רכיבי הממשק מה-XML
         rvAllShakes = findViewById(R.id.rvAllShakes);
         btnBack = findViewById(R.id.btnBack);
         tvEmpty = findViewById(R.id.tvEmpty);
 
         shakeList = new ArrayList<>();
 
+        // אתחול ה-Adapter והגדרת מאזין לחיצה על כל שייק ברשימה
         adapter = new AdminAllShakesAdapter(shakeList, shake -> {
+            // שמירת השייק הנבחר ב-Manager לצורך מעבר למסך הפרטים
             ShakeSelectionManager.setCurrentViewedShake(shake);
 
-            // חישוב מספר השייק (המיקום שלו ברשימה + 1 כדי שיתחיל מ-1 ולא מ-0)
+            // חישוב מספר השייק (מיקום ברשימה + 1 כדי שיהיה מספר סודר שמתחיל מ-1)
             int shakeNumber = shakeList.indexOf(shake) + 1;
 
+            // מעבר למסך פרטי השייק (ShakeDetails) עם דגל המציין שזו תצוגת מנהל
             Intent intent = new Intent(AdminAllShakes.this, ShakeDetails.class);
             intent.putExtra("isAdminView", true);
-            intent.putExtra("SHAKE_NUMBER", shakeNumber); // העברת המספר למסך הפרטים
+            intent.putExtra("SHAKE_NUMBER", shakeNumber);
             startActivity(intent);
         });
 
+        // הגדרת LayoutManager לתצוגת הרשימה
         rvAllShakes.setLayoutManager(new LinearLayoutManager(this));
         rvAllShakes.setAdapter(adapter);
 
+        // כפתור חזרה למסך הניהול הראשי
         btnBack.setOnClickListener(v -> {
             Intent intent = new Intent(AdminAllShakes.this, AdminPage.class);
             startActivity(intent);
             finish();
         });
 
+        // שליפת רשימת כל השייקים מה-Database
         DatabaseService.getInstance().getShakeList(new DatabaseService.DatabaseCallback<List<Shake>>() {
             @Override
             public void onCompleted(List<Shake> object) {
                 shakeList.clear();
                 shakeList.addAll(object);
-                adapter.notifyDataSetChanged();
+                adapter.notifyDataSetChanged(); // עדכון ה-Adapter בנתונים החדשים
 
+                // בדיקה האם הרשימה ריקה והצגת טקסט מתאים במידת הצורך
                 if (shakeList.isEmpty()) {
                     tvEmpty.setVisibility(View.VISIBLE);
                 } else {
@@ -86,6 +102,7 @@ public class AdminAllShakes extends AppCompatActivity {
 
             @Override
             public void onFailed(Exception e) {
+                // הצגת הודעת שגיאה במקרה של תקלה בטעינה
                 Toast.makeText(AdminAllShakes.this, "שגיאה בטעינת השייקים", Toast.LENGTH_SHORT).show();
             }
         });

@@ -1,27 +1,41 @@
 package com.example.myfinalproject.model;
 
+/**
+ * מחלקה המייצגת פריט בודד (Item) במערכת (כמו פרי, ירק, אגוזים וכו').
+ * המחלקה מכילה את כל הנתונים התזונתיים של הפריט וכן את מצב הבחירה שלו
+ * על ידי המשתמש בתהליך הרכבת השייק.
+ */
+
 import androidx.annotation.NonNull;
 
 public class Item {
 
     private String id;
     private String name;
-    private String type;
-    private String goal;
+    private String type; // קטגוריית הפריט (למשל: "פירות", "ירקות")
+    private String goal; // מטרה תזונתית משויכת (למשל: "מסה" או "חיטוב")
 
+    // ערכים תזונתיים ל-100 גרם
     private double calories;
     private double protein;
     private double fat;
     private double carbs;
     private double sugar = 0;
 
-    private String pic;
+    private String pic; // מחרוזת בפורמט Base64 המייצגת את תמונת הפריט
 
+    // משתני עזר לניהול בחירה על ידי המשתמש
     private boolean selected = false;
-    private int amount = 0;
+    private int amount = 0; // כמות בגרמים שהמשתמש בחר
 
+    /**
+     * בנאי ריק (Default Constructor) – חובה לצורך עבודה עם Firebase Realtime Database.
+     */
     public Item() {}
 
+    /**
+     * בנאי מלא לאתחול פריט חדש.
+     */
     public Item(String id, String name, String type, String goal,
                 double calories, double protein, double fat, double carbs,
                 double sugar, String pic) {
@@ -37,14 +51,10 @@ public class Item {
         this.pic = pic;
     }
 
-    public String getId() {
-        return id;
-    }
+    // --- Getters & Setters ---
 
-    // ✅ FIX חשוב
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -85,3 +95,5 @@ public class Item {
         return "Item{name='" + name + "', type='" + type + "', amount=" + amount + "}";
     }
 }
+// הוספנו הערות Javadoc כדי להסביר את מבנה המחלקה והשדות.
+// המחלקה מייצגת את האובייקט הבסיסי ביותר במערכת המוצרים.

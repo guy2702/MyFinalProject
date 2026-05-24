@@ -1,5 +1,11 @@
 package com.example.myfinalproject;
 
+/**
+ * מטרת העמוד: הצגת דף "אודות" (About) למשתמש.
+ * דף זה מספק מידע תמציתי על מטרת האפליקציה, היכולות המרכזיות שלה (חישוב ערכים תזונתיים לפי מטרה),
+ * והערך המוסף שהיא מעניקה למשתמש בתהליך הכנת השייקים.
+ */
+
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -13,27 +19,30 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity2 extends AppCompatActivity {
 
+    // רכיבי ממשק משתמש (UI) להצגת הטקסט וכפתור החזרה
     private TextView textViewAbout;
     private Button btnBackAbout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        EdgeToEdge.enable(this); // הפעלת מצב Edge-to-Edge לעיצוב מודרני מקצה לקצה
 
         try {
             setContentView(R.layout.activity_main2);
 
+            // הגדרת מאזין ל-WindowInsets כדי לוודא שהטקסט לא מוסתר ע"י סרגלי המערכת (System Bars)
             ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
                 Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
                 v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
                 return insets;
             });
 
+            // קישור הרכיבים מה-XML לקוד ה-Java
             textViewAbout = findViewById(R.id.textViewAbout);
             btnBackAbout = findViewById(R.id.btnBackAbout);
 
-            // טקסט האודות מעוצב עם אמוג'י ומרווחים שמתאימים לעיצוב החדש
+            // בניית תוכן האודות: שימוש ב-String דינמי כדי להציג את הערך המוסף של האפליקציה למשתמשים
             String aboutText = "ברוכים הבאים לאפליקציית 'שייק בריאותי'! 🍹\n\n" +
                     "האפליקציה מאפשרת לכם להכין שייקים מותאמים אישית לפי המטרות התזונתיות שלכם:\n\n" +
                     "💪 בניית מסה\n" +
@@ -44,10 +53,11 @@ public class MainActivity2 extends AppCompatActivity {
 
             textViewAbout.setText(aboutText);
 
-            // האזנה לכפתור חזרה
+            // כפתור חזרה לדף הקודם (משתמש ב-finish כדי לסגור את ה-Activity הנוכחית ולחזור למסך הקודם ב-Stack)
             btnBackAbout.setOnClickListener(v -> finish());
 
         } catch (Exception e) {
+            // טיפול בשגיאות טעינה למניעת קריסה (Crash) והצגת הודעה למשתמש
             e.printStackTrace();
             Toast.makeText(this, "שגיאה בטעינת מסך אודות", Toast.LENGTH_SHORT).show();
             finish();

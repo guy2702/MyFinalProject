@@ -1,5 +1,11 @@
 package com.example.myfinalproject;
 
+/**
+ * מחלקה זו מנהלת את דף הבית של מנהל המערכת (AdminPage).
+ * הדף מרכז את כל פעולות הניהול הזמינות למנהל (Admin), כגון:
+ * הוספת מוצרים, צפייה בפריטים, ניהול משתמשים וצפייה בשייקים שהורכבו.
+ */
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,11 +27,14 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class AdminPage extends AppCompatActivity implements View.OnClickListener {
 
+    // תגית לוג לניפוי שגיאות
     private static final String TAG = "AdminPage";
 
+    // כפתורי הניווט של המנהל ותגית הברכה
     private Button btnAddItem, btnItems, btnUsers, btnAllShakes, btnLogout;
     private TextView tvGreeting;
 
+    // מופע של Firebase Authentication לניהול התחברות/יציאה
     private FirebaseAuth mAuth;
 
     @Override
@@ -34,6 +43,7 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_admin_page);
 
+        // התאמת ה-Layout לתצוגה במכשירי אנדרואיד עם סרגלי מערכת (System Bars)
         View rootLayout = findViewById(R.id.main);
         if (rootLayout != null) {
             ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
@@ -45,6 +55,7 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
 
         mAuth = FirebaseAuth.getInstance();
 
+        // אתחול הכפתורים ותגית הטקסט מה-XML
         btnAddItem = findViewById(R.id.btnAddItem);
         btnItems = findViewById(R.id.btnItems);
         btnUsers = findViewById(R.id.btnUserTable);
@@ -54,19 +65,19 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
+        // בדיקה האם יש משתמש מחובר ושליפת פרטיו מה-Database
         if (currentUser != null) {
-            // טקסט זמני עד שהנתונים יגיעו
             tvGreeting.setText("טוען נתונים...");
 
-            // משיכת פרטי המנהל מהמסד לפי ה-UID
+            // שליפת פרטי המנהל מהמסד כדי להציג את שמו הפרטי
             DatabaseService.getInstance().getUser(currentUser.getUid(), new DatabaseService.DatabaseCallback<User>() {
                 @Override
                 public void onCompleted(User user) {
                     if (user != null && user.getFname() != null && !user.getFname().isEmpty()) {
-                        // אם נמצא השם הפרטי - נציג אותו
+                        // הצגת שם המנהל בברכה
                         tvGreeting.setText("שלום " + user.getFname() + " (מנהל)!");
                     } else {
-                        // גיבוי: אם אין שם, נציג את חיתוך האימייל
+                        // גיבוי למקרה שאין שם - מציג את חלק האימייל לפני ה-@
                         String nameFallback = currentUser.getEmail() != null ? currentUser.getEmail().split("@")[0] : "מנהל";
                         tvGreeting.setText("שלום " + nameFallback + "!");
                     }
@@ -74,16 +85,18 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
 
                 @Override
                 public void onFailed(Exception e) {
-                    // גיבוי במקרה של שגיאה במשיכת הנתונים
+                    // טיפול בשגיאה במידה והשליפה נכשלה
                     Log.e(TAG, "Error fetching admin data", e);
                     String nameFallback = currentUser.getEmail() != null ? currentUser.getEmail().split("@")[0] : "מנהל";
                     tvGreeting.setText("שלום " + nameFallback + "!");
                 }
             });
         } else {
+            // ברירת מחדל אם המשתמש אינו מאומת
             tvGreeting.setText("שלום מנהל!");
         }
 
+        // הגדרת מאזיני לחיצה לכפתורים
         btnAddItem.setOnClickListener(this);
         btnItems.setOnClickListener(this);
         btnUsers.setOnClickListener(this);
@@ -94,6 +107,7 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
     @Override
     protected void onStart() {
         super.onStart();
+        // אבטחה: מוודא שהמשתמש מחובר; אם לא, מחזיר אותו למסך הראשי
         if (mAuth.getCurrentUser() == null) {
             Intent intent = new Intent(AdminPage.this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -102,6 +116,9 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
         }
     }
 
+    /**
+     * ניהול ניווט בין המסכים השונים בהתאם לכפתור שנלחץ.
+     */
     @Override
     public void onClick(View v) {
         int id = v.getId();
@@ -115,14 +132,18 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
         } else if (id == R.id.btnAllShakes) {
             startActivity(new Intent(AdminPage.this, AdminAllShakes.class));
         } else if (id == R.id.btnLogout) {
-            handleLogout();
+            handleLogout(); // ביצוע התנתקות
         }
     }
 
+    /**
+     * פונקציה לביצוע התנתקות מהמערכת (Sign Out) וניקוי המחסנית.
+     */
     private void handleLogout() {
         mAuth.signOut();
         Log.d(TAG, "Admin logged out.");
 
+        // חזרה למסך הראשי וניקוי פעילויות פתוחות
         Intent intent = new Intent(AdminPage.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

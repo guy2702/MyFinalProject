@@ -1,16 +1,26 @@
 package com.example.myfinalproject;
 
+/**
+ * מחלקה זו מנהלת את תהליך ההתחברות של המשתמש לאפליקציה.
+ * התהליך כולל:
+ * 1. איסוף נתונים משדות הקלט (Email, Password).
+ * 2. וולידציה של הנתונים כדי למנוע קלט שגוי.
+ * 3. תקשורת עם Firebase Authentication לאימות המשתמש.
+ * 4. שליפת פרטי המשתמש מ-DatabaseService לקבלת הרשאות.
+ * 5. ניתוב המשתמש למסך הנכון (Admin/User) על בסיס הרשאות אלו.
+ */
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.Patterns; // נוסף לבדיקת אימייל תקנית
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar; // מומלץ להוסיף ב-XML
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,30 +37,35 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class login extends AppCompatActivity implements View.OnClickListener {
 
+    // תגית לוג עבור ניפוי שגיאות (Debugging)
     private static final String TAG = "LoginActivity";
 
+    // רכיבי ממשק המשתמש של דף ההתחברות
     private EditText etEmail, etPassword;
     private Button btnLogin;
     private TextView tvRegister;
-    private ProgressBar progressBar; // רכיב חיווי טעינה
+    private ProgressBar progressBar;
 
+    // שירותי תשתית: בסיס נתונים ושירות אימות משתמשים
     private DatabaseService databaseService;
     private FirebaseAuth mAuth;
 
-    // עדיף להשתמש במפתח ייחודי לשמירת אימייל וסיסמה לצורך ה-UI
+    // הגדרות עבור SharedPreferences לשמירת נתונים מקומית על המכשיר
     public static final String MyPREFERENCES = "MyPrefs";
     public static final String KEY_LAST_EMAIL = "last_logged_email";
-    public static final String KEY_LAST_PASSWORD = "last_logged_password"; // נוסף מפתח לשמירת הסיסמה
+    public static final String KEY_LAST_PASSWORD = "last_logged_password";
     SharedPreferences sharedPreferences;
 
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // הגדרת מצב מסך מלא המשתרע מעבר ל-System Bars
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
 
-        // שינוי קטן בקבלת ה-root כדי למנוע קריסה אם ה-ID ב-XML שונה
+        // הגדרת מאזין לשינויים בגודל החלון כדי לטפל נכונה ב-System Bars
         View rootLayout = findViewById(R.id.main);
         if (rootLayout != null) {
             ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
@@ -60,90 +75,74 @@ public class login extends AppCompatActivity implements View.OnClickListener {
             });
         }
 
+        // אתחול מופעי השירותים השונים
         sharedPreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
-
         databaseService = DatabaseService.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        // --- תיקון הפתרון לקריסה: עדכון ה-IDs לחדשים שהגדרנו ב-XML ---
-
-        // ה-ID הישן (R.id.email_login_login) הוסר מה-XML שלך.
-        // ה-ID החדש הוא emailInput
+        // קישור רכיבי הממשק מה-XML למשתני המחלקה ב-Java
         etEmail = findViewById(R.id.emailInput);
-
-        // ה-ID הישן (R.id.password_login_login) הוסר מה-XML שלך.
-        // ה-ID החדש הוא passwordInput
         etPassword = findViewById(R.id.passwordInput);
-
-        // IDs אלו קיימים ב-XML ששלחת
         btnLogin = findViewById(R.id.loginBtn);
         tvRegister = findViewById(R.id.registerText);
-
-        // וודא שקיים ProgressBar ב-XML שלך עם ה-ID הזה
         progressBar = findViewById(R.id.loginProgressBar);
 
-        // --- שינוי 1: שאיבת אימייל וסיסמה שמורים ---
+        // טעינת אימייל וסיסמה שנשמרו מההתחברות הקודמת במידה וקיימים
         String savedEmail = sharedPreferences.getString(KEY_LAST_EMAIL, "");
         etEmail.setText(savedEmail);
-
-        // החזרנו את הפעולה לקריאת הסיסמה השמורה
         String savedPassword = sharedPreferences.getString(KEY_LAST_PASSWORD, "");
-        etPassword.setText(savedPassword); // הפעלנו שורה זו מחדש
+        etPassword.setText(savedPassword);
 
+        // רישום מאזיני לחיצה לכפתורים
         btnLogin.setOnClickListener(this);
         tvRegister.setOnClickListener(this);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // --- שינוי 2: ביטול Auto-Login ---
-
-        /* מחקנו/ביטלנו את הלוגיקה הבאה כדי שהמשתמש יישאר במסך הלוגין
-            גם אם הוא מחובר ב-Firebase, ויתקדם רק בלחיצה על כפתור ההתחברות.
-
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            Log.d(TAG, "User already logged in, fetching data...");
-            // אם המשתמש מחובר ב-Auth, ניקח את הנתונים שלו וננתב אותו
-            fetchUserDataAndNavigate(currentUser.getUid());
-        }
-        */
-    }
-
+    /**
+     * פונקציה המגיבה ללחיצות על כפתורי הממשק.
+     * מפרידה בין לחיצה על כפתור ההתחברות לבין ניווט למסך ההרשמה.
+     */
     @Override
     public void onClick(View v) {
         int id = v.getId();
 
-        if (id == R.id.loginBtn) { // השוואה ישירה ל-ID קריאה יותר
+        // בדיקה האם המשתמש לחץ על כפתור ההתחברות (Login)
+        if (id == R.id.loginBtn) {
             String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
+            // אימות קלט מוקדם (Validation)
             if (!checkInput(email, password)) return;
 
-            // --- שינוי 3: שמירת אימייל וסיסמה ---
+            // שמירת נתוני המשתמש ב-SharedPreferences לשימוש עתידי (חווית משתמש)
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(KEY_LAST_EMAIL, email);
-            // הפעלנו מחדש את השורה ששומרת את הסיסמה (עם המפתח החדש)
             editor.putString(KEY_LAST_PASSWORD, password);
             editor.apply();
 
+            // ביצוע תהליך ההתחברות השרתי
             loginUser(email, password);
 
         } else if (id == R.id.registerText) {
+            // ניווט למסך הרשמה מבלי לסיים את המסך הנוכחי (כדי לאפשר חזרה)
             Intent registerIntent = new Intent(login.this, register.class);
             startActivity(registerIntent);
-            // לא עושים finish() כדי שהמשתמש יוכל לחזור למסך הלוגין מההרשמה
         }
     }
 
+    /**
+     * פונקציה לבדיקת תקינות הקלט.
+     * מוודאת שהאימייל תואם לפורמט סטנדרטי ושסיסמה באורך של לפחות 6 תווים.
+     * מחזירה true אם תקין, false אחרת.
+     */
     private boolean checkInput(String email, String password) {
-        // שימוש ב-Patterns לבדיקת פורמט אימייל תקני
+        // בדיקת תקינות אימייל באמצעות תבניות מובנות של אנדרואיד
         if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etEmail.setError("נא להכניס אימייל תקין");
             etEmail.requestFocus();
             return false;
         }
+        // בדיקת אורך סיסמה למניעת סיסמאות חלשות מדי
         if (password.isEmpty() || password.length() < 6) {
             etPassword.setError("הסיסמה חייבת להיות לפחות 6 תווים");
             etPassword.requestFocus();
@@ -152,29 +151,31 @@ public class login extends AppCompatActivity implements View.OnClickListener {
         return true;
     }
 
+    /**
+     * פונקציה המבצעת את ההתחברות בפועל מול Firebase Authentication.
+     * מנהלת חיווי טעינה למשתמש ומונעת פעולות כפולות בזמן המתנה לתגובה.
+     */
     private void loginUser(String email, String password) {
-        // הצגת גלגל טעינה וביטול יכולת לחיצה על הכפתור
+        // הצגת ProgressBar למשתמש כדי שיידע שהאפליקציה בטעינה
         if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
-        btnLogin.setEnabled(false);
+        btnLogin.setEnabled(false); // ביטול לחיצה על כפתור בזמן תהליך אסינכרוני
 
+        // קריאה לשירות האימות של Firebase
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
-                    // בכל מקרה (הצלחה או כישלון), נבטל את מצב הטעינה
+                    // סיום הצגת ה-ProgressBar לאחר קבלת תשובה מהשרת
                     if (progressBar != null) progressBar.setVisibility(View.GONE);
                     btnLogin.setEnabled(true);
 
+                    // טיפול בתוצאת ההתחברות
                     if (task.isSuccessful()) {
                         FirebaseUser firebaseUser = mAuth.getCurrentUser();
-                        if (firebaseUser == null) {
-                            // מקרה קצה חריג
-                            Toast.makeText(login.this, "שגיאה לא צפויה, נסה שוב", Toast.LENGTH_SHORT).show();
-                            return;
+                        if (firebaseUser != null) {
+                            // לאחר אימות הזהות, נדרשת משיכת נתוני המשתמש מהמסד
+                            fetchUserDataAndNavigate(firebaseUser.getUid());
                         }
-                        String uid = firebaseUser.getUid();
-                        fetchUserDataAndNavigate(uid);
-
                     } else {
-                        // שגיאה כללית כדי לא לתת רמז מה לא נכון (אימייל או סיסמה)
+                        // הודעת שגיאה כללית למשתמש במידה וההתחברות נכשלה
                         etPassword.setError("אימייל או סיסמה שגויים");
                         etPassword.requestFocus();
                         Log.e(TAG, "Login failed", task.getException());
@@ -183,54 +184,48 @@ public class login extends AppCompatActivity implements View.OnClickListener {
     }
 
     /**
-     * פונקציית עזר לשליפת נתוני משתמש מה-Database וניתוח למסך המתאים.
-     * משמשת בלחיצה על כפתור ההתחברות.
+     * פונקציה השולפת את פרטי המשתמש מבסיס הנתונים (Realtime Database/Firestore).
+     * מנתחת את הנתונים ומחליטה לאיזה מסך לנווט (Admin או User).
      */
     private void fetchUserDataAndNavigate(String uid) {
-        // חיווי טעינה
         if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
 
+        // משיכת נתוני משתמש לפי ה-UID הייחודי
         databaseService.getUser(uid, new DatabaseService.DatabaseCallback<User>() {
             @Override
             public void onCompleted(User user) {
                 if (progressBar != null) progressBar.setVisibility(View.GONE);
 
+                // טיפול במקרה חריג בו המשתמש קיים ב-Auth אך לא בבסיס הנתונים
                 if (user == null) {
-                    Log.e(TAG, "User not found in DB for UID: " + uid);
-                    // אם המשתמש מחובר ב-Auth אבל לא קיים ב-DB, זו שגיאת מערכת חמורה.
-                    // מומלץ לנתק אותו ולהחזיר למסך לוגין.
                     mAuth.signOut();
-                    Toast.makeText(login.this, "שגיאה בנתוני משתמש. נסה להירשם שוב.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(login.this, "שגיאה בנתוני משתמש.", Toast.LENGTH_LONG).show();
                     return;
                 }
 
-                Log.d(TAG, "Login success, user: " + user.getId() + ", isAdmin: " + user.isAdmin());
-
-                // --- שינוי 4: לוגיקת ניתוב מבוסס תפקיד (Role-based navigation) ---
+                // ניתוב מבוסס תפקיד (Role-based navigation)
+                // כאן אנחנו מחליטים לפי דגל ה-Admin האם המשתמש מנהל או משתמש רגיל
                 Intent intent;
                 if (user.isAdmin()) {
-                    // 1. אם הוא מנהל (isAdmin == true) -> ניקח אותו ל-AdminPage
                     intent = new Intent(login.this, AdminPage.class);
                 } else {
-                    // 2. אם הוא משתמש רגיל (else) -> ניקח אותו ל-UserHome
-                    // שינינו בחזרה מ-UserPage.class ל-UserHome.class
                     intent = new Intent(login.this, UserHome.class);
                 }
 
-                // העברת שם המשתמש (חווית משתמש - "שלום פלוני")
+                // העברת שם המשתמש למסך היעד לצורך התאמה אישית
                 intent.putExtra("USER_NAME", user.getFname());
 
-                // ניקוי המחסנית כדי שלחיצה על 'אחורה' לא תחזיר למסך הלוגין
+                // ניקוי המחסנית (Stack) כדי שלא יהיה ניתן לחזור אחורה למסך הלוגין
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
-                finish(); // סגירת מסך הלוגין
+                finish(); // סגירת הפעילות הנוכחית
             }
 
             @Override
             public void onFailed(Exception e) {
+                // טיפול בשגיאות תקשורת או שגיאות בסיס נתונים
                 if (progressBar != null) progressBar.setVisibility(View.GONE);
-                Log.e(TAG, "Failed to get user data from DB", e);
-                mAuth.signOut(); // ננתק כדי שלא יתקע במצב לא תקין
+                mAuth.signOut();
                 Toast.makeText(login.this, "שגיאה בתקשורת: " + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
             }
         });

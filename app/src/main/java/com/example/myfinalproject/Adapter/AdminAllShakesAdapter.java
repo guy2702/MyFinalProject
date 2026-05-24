@@ -1,5 +1,10 @@
 package com.example.myfinalproject.Adapter;
 
+/**
+ * מחלקה זו (Adapter) אחראית על ניהול והצגת רשימת כל השייקים הקיימים במערכת עבור מנהל המערכת.
+ * היא מחברת בין אובייקטי ה-Shake לבין תצוגת הכרטיסייה (ViewHolder) במסך הניהול.
+ */
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,10 +23,16 @@ public class AdminAllShakesAdapter extends RecyclerView.Adapter<AdminAllShakesAd
     private final ArrayList<Shake> shakes;
     private final OnItemClickListener listener;
 
+    /**
+     * ממשק להאזנה ללחיצות על שייק ספציפי בטבלת הניהול.
+     */
     public interface OnItemClickListener {
         void onItemClick(Shake shake);
     }
 
+    /**
+     * בנאי המתאם המקבל את רשימת השייקים והמאזין.
+     */
     public AdminAllShakesAdapter(ArrayList<Shake> shakes, OnItemClickListener listener) {
         this.shakes = shakes;
         this.listener = listener;
@@ -30,6 +41,7 @@ public class AdminAllShakesAdapter extends RecyclerView.Adapter<AdminAllShakesAd
     @NonNull
     @Override
     public ShakeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // טעינת ה-Layout המעוצב לכל שורה ברשימת המנהל
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_item_admin_shake, parent, false);
         return new ShakeViewHolder(view);
     }
@@ -38,23 +50,23 @@ public class AdminAllShakesAdapter extends RecyclerView.Adapter<AdminAllShakesAd
     public void onBindViewHolder(@NonNull ShakeViewHolder holder, int position) {
         Shake shake = shakes.get(position);
 
-        // שם המשתמש שיצר את השייק
+        // שם המשתמש שיצר את השייק - טיפול בערך null
         String userName = shake.getUserName() != null ? shake.getUserName() : "משתמש לא ידוע";
 
-        // נציג "השייק של X" בתור הכותרת
+        // הצגת כותרת הפריט
         holder.tvShakeName.setText("השייק של " + userName);
 
-        // הגדרת המזהה (ID) במערכת לפי הפונקציה getShakeId() שיש במודל שלך
+        // קיצור המזהה הייחודי לצורך הצגה אסתטית בטבלה
         String shakeId = shake.getShakeId() != null ? shake.getShakeId() : "לא ידוע";
         if (shakeId.length() > 6) {
-            shakeId = shakeId.substring(0, 6) + "..."; // מציג מזהה מקוצר שייראה טוב
+            shakeId = shakeId.substring(0, 6) + "...";
         }
         holder.tvShakeId.setText("מזהה: " + shakeId);
 
-        // הגדרת יוצר השייק (טקסט קטן יותר למטה)
+        // הגדרת טקסט המציג את שם יוצר השייק בפרטי הפריט
         holder.tvShakeCreator.setText(userName);
 
-        // טיפול בלחיצה על הכרטיסייה - מוביל לדף המרכיבים!
+        // טיפול בלחיצה על הכרטיסייה - מעבר לפרטי השייק המלאים
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onItemClick(shake);
@@ -67,6 +79,9 @@ public class AdminAllShakesAdapter extends RecyclerView.Adapter<AdminAllShakesAd
         return shakes.size();
     }
 
+    /**
+     * מחלקה פנימית לניהול תצוגת כל שורה ברשימת השייקים של המנהל.
+     */
     static class ShakeViewHolder extends RecyclerView.ViewHolder {
         TextView tvShakeName, tvShakeId, tvShakeCreator;
 

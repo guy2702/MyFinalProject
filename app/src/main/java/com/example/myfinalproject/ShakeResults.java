@@ -1,8 +1,12 @@
 package com.example.myfinalproject;
 
+/**
+ * מטרת העמוד: הצגת סיכום הערכים התזונתיים של השייק שהמשתמש הרכיב,
+ * מתן אפשרות למשתמש לחזור לעריכה, לבטל את הפעולה או לשמור את השייק הסופי בבסיס הנתונים.
+ */
+
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,6 +26,7 @@ import com.example.myfinalproject.services.DatabaseService;
 import java.util.ArrayList;
 import java.util.Locale;
 
+// מחלקה זו מציגה את סיכום הערכים התזונתיים של השייק שהורכב ומאפשרת שמירתו בבסיס הנתונים
 public class ShakeResults extends AppCompatActivity {
 
     private TextView tvResults;
@@ -42,6 +47,7 @@ public class ShakeResults extends AppCompatActivity {
         try {
             setContentView(R.layout.activity_shake_results);
 
+            // הגדרת Padding למניעת חפיפה עם רכיבי המערכת (System Bars)
             ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
                 Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
                 v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -54,18 +60,19 @@ public class ShakeResults extends AppCompatActivity {
             btnSaveShake = findViewById(R.id.btnSaveShake);
             databaseService = DatabaseService.getInstance();
 
+            // שליפת הגדרות השייק מהמסכים הקודמים
             selectedGoal = getIntent().getStringExtra("GOAL");
             cupSize = getIntent().getIntExtra("CUP_SIZE", 400);
 
+            // חישוב הערכים התזונתיים של כל הרכיבים שנבחרו באמצעות NutritionCalculator
             ArrayList<Item> selectedItems = ShakeSelectionManager.getAllSelectedItems();
+            NutritionCalculator.NutritionResult result = NutritionCalculator.calculate(selectedItems);
 
-            NutritionCalculator.NutritionResult result =
-                    NutritionCalculator.calculate(selectedItems);
-
+            // יצירת אובייקט Shake חדש עם מזהה ייחודי
             String shakeId = databaseService.generateShakeId();
             newShake = new Shake(shakeId, selectedItems);
 
-            // טקסט מסודר וקריא
+            // בניית טקסט הסיכום והצגתו למשתמש
             String text =
                     "📊 הערכים התזונתיים שלך:\n\n" +
                             "🔥 קלוריות: " + String.format(Locale.getDefault(), "%.1f", result.calories) + "\n\n" +
@@ -76,6 +83,7 @@ public class ShakeResults extends AppCompatActivity {
 
             tvResults.setText(text);
 
+            // חזרה לעריכת אגוזים
             btnBackToNuts.setOnClickListener(v -> {
                 Intent intent = new Intent(ShakeResults.this, Nuts.class);
                 intent.putExtra("GOAL", selectedGoal);
@@ -84,6 +92,7 @@ public class ShakeResults extends AppCompatActivity {
                 finish();
             });
 
+            // ביטול פעולה וחזרה לדף הבית
             btnHomeNoSave.setOnClickListener(v -> {
                 ShakeSelectionManager.clearAll();
                 Intent intent = new Intent(ShakeResults.this, UserHome.class);
@@ -91,7 +100,6 @@ public class ShakeResults extends AppCompatActivity {
                 startActivity(intent);
             });
 
-            // האזנה לכפתור השמירה ישירות מהקוד - הכי בטוח
             btnSaveShake.setOnClickListener(v -> goSaveShake());
 
         } catch (Exception e) {
@@ -101,13 +109,15 @@ public class ShakeResults extends AppCompatActivity {
         }
     }
 
+    // פונקציה לניהול שמירת השייק בבסיס הנתונים בצורה אסינכרונית
     private void goSaveShake() {
         if (newShake == null) {
             Toast.makeText(this, "שגיאה ביצירת שייק", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        btnSaveShake.setEnabled(false); // חסימת לחיצה כפולה
+        // מניעת לחיצות כפולות על כפתור השמירה
+        btnSaveShake.setEnabled(false);
         btnSaveShake.setText("שומר...");
 
         databaseService.createNewShake(newShake, new DatabaseService.DatabaseCallback<Void>() {
@@ -115,9 +125,7 @@ public class ShakeResults extends AppCompatActivity {
             public void onCompleted(Void object) {
                 runOnUiThread(() -> {
                     Toast.makeText(ShakeResults.this, "השייק נשמר בהצלחה!", Toast.LENGTH_SHORT).show();
-
-                    ShakeSelectionManager.clearAll();
-
+                    ShakeSelectionManager.clearAll(); // ניקוי הבחירות לאחר שמירה מוצלחת
                     Intent intent = new Intent(ShakeResults.this, UserHome.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);

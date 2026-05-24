@@ -93,6 +93,7 @@ public class DatabaseService {
     /// @param callback the callback to call when the operation is completed
     /// @see DatabaseCallback
     private void writeData(@NotNull final String path, @NotNull final Object data, final @Nullable DatabaseCallback<Void> callback) {
+        // מתודה גנרית לכתיבת אובייקטים לכל נתיב ב-Firebase
         readData(path).setValue(data, (error, ref) -> {
             if (error != null) {
                 if (callback == null) return;
@@ -109,6 +110,7 @@ public class DatabaseService {
     /// @param callback the callback to call when the operation is completed
     /// @see DatabaseCallback
     private void deleteData(@NotNull final String path, @Nullable final DatabaseCallback<Void> callback) {
+        // מחיקת נתונים מנתיב ספציפי ודיווח על התוצאה דרך ה-Callback
         readData(path).removeValue((error, ref) -> {
             if (error != null) {
                 if (callback == null) return;
@@ -135,6 +137,7 @@ public class DatabaseService {
     /// @see DatabaseCallback
     /// @see Class
     private <T> void getData(@NotNull final String path, @NotNull final Class<T> clazz, @NotNull final DatabaseCallback<T> callback) {
+        // שליפת אובייקט יחיד לפי מחלקה (POJO)
         readData(path).get().addOnCompleteListener(task -> {
             if (!task.isSuccessful()) {
                 Log.e(TAG, "Error getting data", task.getException());
@@ -151,6 +154,7 @@ public class DatabaseService {
     /// @param clazz the class of the objects to return
     /// @param callback the callback to call when the operation is completed
     private <T> void getDataList(@NotNull final String path, @NotNull final Class<T> clazz, @NotNull final DatabaseCallback<List<T>> callback) {
+        // המרה של צומת בסיס הנתונים לרשימה של אובייקטים
         readData(path).get().addOnCompleteListener(task -> {
             if (!task.isSuccessful()) {
                 Log.e(TAG, "Error getting data", task.getException());
@@ -184,6 +188,7 @@ public class DatabaseService {
     /// @param callback the callback to call when the operation is completed
     /// @see DatabaseReference#runTransaction(Transaction.Handler)
     private <T> void runTransaction(@NotNull final String path, @NotNull final Class<T> clazz, @NotNull UnaryOperator<T> function, @NotNull final DatabaseCallback<T> callback) {
+        // ביצוע שינוי אטומי במסד הנתונים למניעת התנגשויות (Race Conditions)
         readData(path).runTransaction(new Transaction.Handler() {
             @NonNull
             @Override
@@ -235,6 +240,7 @@ public class DatabaseService {
     /// @see User
     public void createNewUser(@NotNull final User user,
                               @Nullable final DatabaseCallback<String> callback) {
+        // יצירת משתמש ב-Firebase Auth ושמירת הנתונים ב-Realtime Database
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         mAuth.createUserWithEmailAndPassword(user.getEmail(), user.getPassword())
                 .addOnCompleteListener(task -> {
@@ -277,6 +283,7 @@ public class DatabaseService {
 
 
     public void updateUser(@NotNull final User user, @Nullable final DatabaseCallback<Void> callback) {
+        // עדכון פרטי משתמש באמצעות טרנזקציה לשמירה על אמינות המידע
         runTransaction(USERS_PATH + "/" + user.getId(), User.class, currentUser -> user, new DatabaseCallback<User>() {
             @Override
             public void onCompleted(User object) {
@@ -299,7 +306,7 @@ public class DatabaseService {
     // region item section
 
     public void createNewShake(@NotNull final Shake shake, @Nullable final DatabaseCallback<Void> callback) {
-
+        // יצירת שייק חדש, כולל שליפת שם המשתמש מה-DB כדי להציגו בצורה ברורה במערכת הניהול
         String uid = FirebaseAuth.getInstance().getUid();
 
         if (uid == null) {
@@ -380,6 +387,7 @@ public class DatabaseService {
 
     /// --- הוספת תמיכה ב-Realtime Listener --- ///
     public void listenToItemsRealtime(@NotNull final DatabaseCallback<List<Item>> callback) {
+        // האזנה אקטיבית לשינויים בבסיס הנתונים (Real-time updates)
         readData(ITEMS_PATH).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -404,7 +412,7 @@ public class DatabaseService {
 
 
     public void listenToAllShakesForAdmin(@NotNull final DatabaseCallback<List<AdminShakeItem>> callback) {
-
+        // מתודה ייעודית למנהל המערכת לשליפת כל השייקים מכל המשתמשים בתצוגה אחידה
         readData(SHAKES_PATH).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -449,6 +457,7 @@ public class DatabaseService {
 
     public void listenToUserShakesRealtime(@NotNull final String uid,
                                            @NotNull final DatabaseCallback<List<Shake>> callback) {
+        // האזנה לשייקים של משתמש ספציפי בלבד (מסונן לפי UID)
         readData(USERS_PATH_SHAKE + "/" + uid).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -489,11 +498,11 @@ public class DatabaseService {
     }
 
     public void deleteShake(@NotNull final String shakeId, @NotNull final String userId, @Nullable final DatabaseCallback<Void> callback) {
-        // מחיקה מרשימת השייקים הכללית של המערכת (למנהל)
+        // מחיקה מפוצלת: גם מהרשימה הכללית וגם מהרשימה האישית של המשתמש
         deleteData(SHAKES_PATH + "/" + shakeId, new DatabaseCallback<Void>() {
             @Override
             public void onCompleted(Void object) {
-                // מחיקה גם מרשימת השייקים האישית של המשתמש (כדי שזה לא יופיע אצלו)
+                // מחיקה גם מרשימת השייקים האישית של המשתמש
                 deleteData(USERS_PATH_SHAKE + "/" + userId + "/" + shakeId, callback);
             }
 

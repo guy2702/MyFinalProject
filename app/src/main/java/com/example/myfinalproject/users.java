@@ -1,3 +1,8 @@
+// =================================================================================================
+// מטרת העמוד: ניהול וצפייה במשתמשי המערכת. העמוד מציג רשימה של כל המשתמשים הרשומים באפליקציה
+// ומאפשר למנהל (Admin) לבצע חיפוש מהיר וסינון של משתמשים לפי שם או מזהה.
+// =================================================================================================
+
 package com.example.myfinalproject;
 
 import android.os.Bundle;
@@ -21,15 +26,15 @@ import java.util.List;
 
 public class users extends AppCompatActivity {
 
-    private RecyclerView rvUsers;
-    private EditText etSearch;
-    private UsersAdapter adapter;
+    private RecyclerView rvUsers; // רכיב להצגת רשימת המשתמשים
+    private EditText etSearch;    // שדה טקסט לחיפוש משתמשים
+    private UsersAdapter adapter; // ה-Adapter שמנהל את תצוגת השורות
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_users);
+        EdgeToEdge.enable(this); // מאפשר תצוגה מקצה לקצה של המסך[cite: 1]
+        setContentView(R.layout.activity_users); // טעינת הממשק הגרפי[cite: 1]
 
         // הגנה על התוכן כדי שלא יוסתר מאחורי מערכת ההפעלה
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -40,25 +45,29 @@ public class users extends AppCompatActivity {
 
         rvUsers = findViewById(R.id.rvUsers);
         etSearch = findViewById(R.id.etSearch);
-        rvUsers.setLayoutManager(new LinearLayoutManager(this));
+        rvUsers.setLayoutManager(new LinearLayoutManager(this)); // הגדרת סידור רשימה אנכי[cite: 1]
 
+        // משיכת רשימת המשתמשים ממסד הנתונים[cite: 1]
         DatabaseService.getInstance().getUserList(new DatabaseService.DatabaseCallback<List<User>>() {
             @Override
             public void onCompleted(List<User> users) {
+                // לאחר קבלת הנתונים, חיבור הרשימה ל-Adapter[cite: 1]
                 adapter = new UsersAdapter(users);
                 rvUsers.setAdapter(adapter);
             }
 
             @Override
             public void onFailed(Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(); // טיפול במקרה של שגיאה בשליפת הנתונים[cite: 1]
             }
         });
 
+        // הוספת מאזין לחיפוש בזמן אמת[cite: 1]
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // בכל הקלדה, הפעלת פונקציית סינון (filter) ב-Adapter[cite: 1]
                 if(adapter != null) adapter.filter(s.toString());
             }
 

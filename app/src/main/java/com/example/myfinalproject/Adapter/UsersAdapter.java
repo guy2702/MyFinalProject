@@ -1,5 +1,11 @@
 package com.example.myfinalproject.Adapter;
 
+/**
+ * מחלקה זו (Adapter) מנהלת את תצוגת רשימת המשתמשים במערכת (RecyclerView).
+ * היא כוללת לוגיקת סינון (Filtering) בזמן אמת ומנגנון עדכון אופטימלי (DiffUtil)
+ * כדי לרענן את הרשימה רק בשינויים הרלוונטיים.
+ */
+
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -21,8 +27,8 @@ import java.util.List;
 
 public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHolder> {
 
-    private List<User> users;
-    private List<User> fullList;
+    private List<User> users;     // רשימת המשתמשים המוצגת כרגע
+    private List<User> fullList;  // העתק של הרשימה המלאה לצרכי סינון (Search)
 
     public UsersAdapter(List<User> users) {
         this.users = new ArrayList<>(users);
@@ -41,6 +47,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         User user = users.get(position);
 
+        // בניית מחרוזת שם מלא וטיפול בערכים ריקים
         String fullName = ((user.getFname() != null ? user.getFname() : "") + " " +
                 (user.getLname() != null ? user.getLname() : "")).trim();
         String email = user.getEmail() != null ? user.getEmail() : "";
@@ -50,12 +57,12 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         holder.tvEmail.setText(email);
         holder.tvPhone.setText(phone);
 
-        // לחיצה על פריט פותחת את UserDetails
+        // מעבר למסך פרטי משתמש בעת לחיצה
         holder.itemView.setOnClickListener(v -> {
             if (user != null) {
                 Context context = v.getContext();
                 Intent intent = new Intent(context, UserDetails.class);
-                intent.putExtra("user", user); // שולחים את האובייקט כולו
+                intent.putExtra("user", user); // העברת אובייקט המשתמש למסך הבא
                 context.startActivity(intent);
             } else {
                 Log.e("UsersAdapter", "Clicked user is null at position " + position);
@@ -64,11 +71,12 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
     }
 
     @Override
-    public int getItemCount() {
-        return users.size();
-    }
+    public int getItemCount() { return users.size(); }
 
-    // חיפוש
+    /**
+     * פונקציית סינון (Filter) למערכת החיפוש.
+     * מסננת את הרשימה לפי שם, אימייל או טלפון.
+     */
     public void filter(String query) {
         query = query.toLowerCase().trim();
         List<User> filteredList = new ArrayList<>();
@@ -88,6 +96,7 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
             }
         }
 
+        // שימוש ב-DiffUtil לעדכון אנימטיבי וחלק של הרשימה
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new UsersDiffCallback(this.users, filteredList));
         this.users.clear();
         this.users.addAll(filteredList);
@@ -105,6 +114,9 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
         }
     }
 
+    /**
+     * מחלקה לחישוב ההבדלים בין רשימות עבור DiffUtil.
+     */
     static class UsersDiffCallback extends DiffUtil.Callback {
         private final List<User> oldList;
         private final List<User> newList;
@@ -116,7 +128,6 @@ public class UsersAdapter extends RecyclerView.Adapter<UsersAdapter.UserViewHold
 
         @Override
         public int getOldListSize() { return oldList.size(); }
-
         @Override
         public int getNewListSize() { return newList.size(); }
 

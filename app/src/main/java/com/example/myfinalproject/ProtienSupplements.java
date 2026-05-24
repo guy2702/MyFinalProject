@@ -1,5 +1,11 @@
 package com.example.myfinalproject;
 
+/**
+ * מטרת העמוד: ניהול שלב בחירת תוספי החלבון עבור השייק.
+ * העמוד טוען בזמן אמת (Real-time) את רשימת תוספי החלבון הרלוונטיים למטרת המשתמש (מסה או חיטוב),
+ * מוודא שהמשתמש בחר כמות גרמים התואמת להנחיות המחושבות, ומאפשר ניווט לשלב הבא.
+ */
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -43,6 +49,7 @@ public class ProtienSupplements extends AppCompatActivity {
         try {
             setContentView(R.layout.activity_protien_supplements);
 
+            // קבלת הפרמטרים שנבחרו במסכים הקודמים (מטרה וגודל כוס)
             selectedGoal = getIntent().getStringExtra("GOAL");
             cupSize = getIntent().getIntExtra("CUP_SIZE", 400);
 
@@ -52,6 +59,7 @@ public class ProtienSupplements extends AppCompatActivity {
                 return;
             }
 
+            // הגדרת Padding למניעת חפיפה עם רכיבי המערכת
             ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
                 Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
                 v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -65,12 +73,14 @@ public class ProtienSupplements extends AppCompatActivity {
 
             supplementsList = new ArrayList<>();
 
+            // חישוב הכמות המותרת לתוספי חלבון לפי המטרה שנבחרה
             allowedGrams = SmoothieCalculator.getCategoryAmount(
                     selectedGoal,
                     cupSize,
                     SmoothieCalculator.TYPE_PROTEIN
             );
 
+            // הגדרת טקסט המטרה לתצוגה בכותרת
             final String goalText;
             if ("MUSCLE".equalsIgnoreCase(selectedGoal)) {
                 goalText = "בניית מסה";
@@ -80,12 +90,13 @@ public class ProtienSupplements extends AppCompatActivity {
                 goalText = "";
             }
 
+            // פונקציית עזר לעדכון הכותרת עם הנתונים המחושבים
             Runnable updateTitle = () -> {
-                // עיצוב כותרת ברור ואחיד
                 String title = "בחר תוספי חלבון\nכמות נדרשת למטרה שלך (" + goalText + "): " + allowedGrams + " גרם";
                 tvTitleSupplements.setText(title);
             };
 
+            // אתחול ה-Adapter המציג את רשימת התוספים
             adapter = new ItemAdapter(supplementsList, item -> {});
             adapter.setSelectionMode(true);
 
@@ -94,6 +105,7 @@ public class ProtienSupplements extends AppCompatActivity {
 
             updateTitle.run();
 
+            // כפתור חזור למסך הקודם
             btnPrev.setOnClickListener(v -> {
                 Intent intent = new Intent(ProtienSupplements.this, liquids.class);
                 intent.putExtra("GOAL", selectedGoal);
@@ -102,10 +114,12 @@ public class ProtienSupplements extends AppCompatActivity {
                 finish();
             });
 
+            // כפתור סיום - בדיקת תקינות הבחירה לפני מעבר למסך הבא
             btnFinish.setOnClickListener(v -> {
                 int selectedCount = 0;
                 int totalAmount = 0;
 
+                // חישוב הכמות הכוללת שבחר המשתמש ב-RecyclerView
                 for (Item item : adapter.getItems()) {
                     if (item.isSelected()) {
                         selectedCount++;
@@ -119,17 +133,20 @@ public class ProtienSupplements extends AppCompatActivity {
                     }
                 }
 
+                // וולידציה: חובה לבחור לפחות פריט אחד
                 if (selectedCount == 0) {
                     Toast.makeText(this, "חובה לבחור לפחות תוסף אחד", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                // וולידציה: הכמות הכוללת חייבת להתאים למכסה המחושבת
                 if (totalAmount != allowedGrams) {
                     Toast.makeText(this, "הכמות שבחרת: " + totalAmount + " גרם\nיש לבחור בדיוק: " + allowedGrams + " גרם", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 try {
+                    // שמירת הבחירות ב-Manager ומעבר למסך הבא (Sweeteners)
                     ShakeSelectionManager.setCategoryItems("protein", adapter.getItems());
 
                     Intent intent = new Intent(ProtienSupplements.this, Sweeteners.class);
@@ -142,11 +159,13 @@ public class ProtienSupplements extends AppCompatActivity {
                 }
             });
 
+            // משיכת רשימת התוספים ממסד הנתונים בזמן אמת
             DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
                 @Override
                 public void onCompleted(List<Item> items) {
                     supplementsList.clear();
 
+                    // סינון הרכיבים לפי סוג (חלבון) והתאמה למטרה (מסה/חיטוב)
                     for (Item item : items) {
                         if (item == null) continue;
 
@@ -174,6 +193,7 @@ public class ProtienSupplements extends AppCompatActivity {
         }
     }
 
+    // פונקציית עזר לסינון פריטים לפי סוג (חלבון/תוסף)
     private boolean isProteinSupplement(Item item) {
         String type = item.getType();
         if (type == null) return false;
@@ -186,6 +206,7 @@ public class ProtienSupplements extends AppCompatActivity {
                 || type.contains("תוסף");
     }
 
+    // פונקציית עזר לסינון פריטים לפי התאמה למטרת המשתמש
     private boolean matchesGoal(Item item, String goal) {
         String itemGoal = item.getGoal();
         if (itemGoal == null || goal == null) return false;

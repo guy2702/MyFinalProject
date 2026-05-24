@@ -19,15 +19,19 @@ import com.example.myfinalproject.services.DatabaseService;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * מחלקה זו (Activity) מציגה את מסך רשימת הפריטים במערכת.
+ * היא אחראית על שליפת הנתונים מ-Firebase, ניהול חיפוש דינמי והצגתם ב-RecyclerView.
+ */
 public class Items extends AppCompatActivity {
 
     private RecyclerView rvItems;
     private ItemAdapter adapter;
     private EditText etSearch;
 
-    // רשימה ראשית שומרת את כל הנתונים מ-Firebase
+    // רשימה ראשית השומרת את כל הנתונים כפי שהגיעו מ-Firebase
     private ArrayList<Item> masterItemList;
-    // רשימת התצוגה היא זו שמועברת לאדפטר ומשתנה לפי החיפוש
+    // רשימת התצוגה המועברת לאדפטר ומתעדכנת בהתאם לסינון/חיפוש
     private ArrayList<Item> displayItemList;
 
     @Override
@@ -35,7 +39,7 @@ public class Items extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_items);
 
-        // טיפול בשוליים (Insets)
+        // הגדרת טיפול בשוליים (Insets) כדי להתאים את הממשק למערכת ההפעלה (System Bars)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.items), (v, insets) -> {
             v.setPadding(
                     insets.getInsets(WindowInsetsCompat.Type.systemBars()).left,
@@ -52,7 +56,7 @@ public class Items extends AppCompatActivity {
         masterItemList = new ArrayList<>();
         displayItemList = new ArrayList<>();
 
-        // אנחנו מעבירים לאדפטר רק את רשימת התצוגה
+        // אתחול האדפטר עם רשימת התצוגה והגדרת מאזין למעבר למסך פרטי פריט
         adapter = new ItemAdapter(displayItemList, item -> {
             Intent intent = new Intent(Items.this, ItemId.class);
             intent.putExtra("itemId", item.getId());
@@ -69,6 +73,7 @@ public class Items extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // ביצוע סינון בזמן אמת תוך כדי הקלדה
                 filterItems(s.toString());
             }
 
@@ -76,13 +81,13 @@ public class Items extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // האזנה לנתונים מ-Firebase
+        // האזנה אקטיבית לנתונים מ-Firebase (סנכרון בזמן אמת)
         DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
             @Override
             public void onCompleted(List<Item> items) {
                 masterItemList.clear();
                 masterItemList.addAll(items);
-                // ברגע שהנתונים מגיעים, נסנן אותם לפי מה שכתוב כרגע בחיפוש (אם כתוב)
+                // ברגע שהנתונים מגיעים, נסנן אותם לפי מה שכתוב כרגע בחיפוש
                 filterItems(etSearch.getText().toString());
             }
 
@@ -93,15 +98,17 @@ public class Items extends AppCompatActivity {
         });
     }
 
-    // פונקציית הסינון
+    /**
+     * פונקציית סינון המעדכנת את הרשימה המוצגת (displayItemList) בהתאם למחרוזת החיפוש.
+     */
     private void filterItems(String text) {
         displayItemList.clear();
 
-        // אם תיבת החיפוש ריקה, נציג את כל הפריטים
+        // אם תיבת החיפוש ריקה, הצג את כל הפריטים הקיימים במערכת
         if (text == null || text.trim().isEmpty()) {
             displayItemList.addAll(masterItemList);
         } else {
-            // אם יש טקסט, נחפש אותו בשמות של הפריטים
+            // חיפוש חלקי של שם הפריט בתוך הרשימה הראשית
             String searchText = text.toLowerCase().trim();
             for (Item item : masterItemList) {
                 if (item.getName() != null && item.getName().toLowerCase().contains(searchText)) {
@@ -110,7 +117,7 @@ public class Items extends AppCompatActivity {
             }
         }
 
-        // מעדכנים את האדפטר שהרשימה השתנתה
+        // הודעה לאדפטר על כך שהנתונים השתנו כדי לרענן את ה-RecyclerView
         adapter.notifyDataSetChanged();
     }
 }
