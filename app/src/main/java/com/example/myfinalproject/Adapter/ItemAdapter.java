@@ -20,44 +20,32 @@ import com.example.myfinalproject.model.Item;
 import java.util.ArrayList;
 
 /**
- * מחלקה זו (Adapter) אחראית על ניהול והצגת רשימת פריטים (Items) ב-RecyclerView.
- * המחלקה תומכת במצב "בחירה" (Selection Mode), שבו המשתמש יכול לבחור פריטים ולהזין להם כמות.
+ * מחלקת ה-Adapter אחראית על חיבור הנתונים (מתוך רשימה) אל התצוגה (RecyclerView).
+ * כאן מתבצעת הלוגיקה של הצגת הפריט, צביעת הרקע לירוק בעת לחיצה, וקבלת הכמות המוקלדת.
  */
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder> {
 
-    /** רשימת הפריטים המוצגת ברשימה */
     private final ArrayList<Item> items;
-    /** ממשק למעקב אחר לחיצות משתמש על פריטים */
     private final OnItemClickListener listener;
-    /** משתנה המציין האם האפליקציה במצב בחירת רכיבים או בתצוגה רגילה */
+
+    // משתנה שקובע האם הרשימה נמצאת במצב "בחירה" (בו אפשר לסמן פריטים).
     private boolean isSelectionMode = false;
 
-    /**
-     * ממשק להגדרת פעולות לחיצה על פריט.
-     */
     public interface OnItemClickListener {
         void onItemClick(Item item);
     }
 
-    /**
-     * בנאי המחלקה לאתחול רשימת הפריטים והמאזין.
-     */
     public ItemAdapter(ArrayList<Item> items, OnItemClickListener listener) {
         this.items = items;
         this.listener = listener;
     }
 
-    /**
-     * מעדכן את מצב הבחירה של הפריטים ומנחה את ה-Adapter לרענן את התצוגה.
-     */
+    // פונקציה להפעלת מצב בחירה מרחוק (מופעלת למשל מתוך מסך פירות וירקות)
     public void setSelectionMode(boolean selectionMode) {
         this.isSelectionMode = selectionMode;
         notifyDataSetChanged();
     }
 
-    /**
-     * מחזיר את רשימת הפריטים הנוכחית.
-     */
     public ArrayList<Item> getItems() {
         return items;
     }
@@ -76,7 +64,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         holder.tvName.setText(item.getName() != null ? item.getName() : "-");
         holder.tvDescription.setText(item.getType() != null ? item.getType() : "-");
 
-        // המרת תמונה מ-Base64 ל-Bitmap והצגתה
+        // המרת תמונה (ממחרוזת Base64 השמורה במסד הנתונים) לתמונה המוצגת על המסך
         try {
             if (item.getPic() != null && !item.getPic().isEmpty()) {
                 holder.ivImage.setImageBitmap(ImageUtil.convertFrom64base(item.getPic()));
@@ -87,28 +75,43 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
             holder.ivImage.setImageResource(android.R.color.darker_gray);
         }
 
-        // ניקוי מאזין קודם כדי למנוע טעויות בעת טעינת התצוגה מחדש (Recycling)
+        // ניתוק זמני של המאזין להקלדה, כדי שלא יופעל בטעות בזמן שאנחנו טוענים את התצוגה
         if (holder.amountWatcher != null) {
             holder.etAmount.removeTextChangedListener(holder.amountWatcher);
         }
 
+        // טעינת הכמות הקיימת (אם יש) לתוך שדה ההקלדה
         holder.etAmount.setText(item.getAmount() > 0 ? String.valueOf(item.getAmount()) : "");
 
-        // הגדרת נראות שדה הכמות בהתאם למצב הבחירה
+        // =========================================================================
+        // הסבר: כאן מתרחש הקסם של ה"צביעה לירוק והצגת הכמות"!
+        // אם מצב הבחירה דלוק (isSelectionMode) והפריט ספציפית סומן (item.isSelected):
+        // =========================================================================
         if (isSelectionMode && item.isSelected()) {
-            holder.itemView.setBackgroundColor(Color.parseColor("#C8E6C9")); // צבע ירוק רך לבחירה
+            // 1. צובע את רקע השורה לצבע ירוק בהיר (#C8E6C9)
+            holder.itemView.setBackgroundColor(Color.parseColor("#C8E6C9"));
+            // 2. הופך את שדה הכמות (EditText) לגלוי (VISIBLE) כדי שהמשתמש יוכל להקליד
             holder.etAmount.setVisibility(View.VISIBLE);
             holder.etAmount.setEnabled(true);
         } else {
+            // אם הפריט לא מסומן:
+            // 1. מחזיר את הרקע ללבן רגיל
             holder.itemView.setBackgroundColor(Color.WHITE);
+            // 2. מסתיר את שדה הכמות בחזרה (GONE)
             holder.etAmount.setVisibility(View.GONE);
             holder.etAmount.setEnabled(false);
         }
 
-        // יצירת מאזין לעדכון הכמות בזמן אמת
+        // =========================================================================
+        // הסבר: "מאזין ההקלדה" (TextWatcher).
+        // תפקידו לעקוב בזמן אמת אחרי מה שהמשתמש מקליד בתוך שדה הגרמים.
+        // ברגע שהמשתמש מקליד מספר, ה-TextWatcher ישר לוקח את המספר ושומר אותו
+        // בתוך אובייקט ה-Item (setAmount).
+        // =========================================================================
         holder.amountWatcher = new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -117,39 +120,64 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
 
                 String text = s.toString().trim();
                 int amount = 0;
+
                 if (!text.isEmpty()) {
-                    try { amount = Integer.parseInt(text); } catch (Exception ignored) {}
+                    try {
+                        amount = Integer.parseInt(text); // הופך את הטקסט המוקלד למספר
+                    } catch (Exception ignored) {
+                    }
                 }
+
+                // שומר את הכמות באובייקט
                 items.get(pos).setAmount(amount);
             }
 
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+            }
         };
 
+        // מחברים את מאזין ההקלדה בחזרה לשדה
         holder.etAmount.addTextChangedListener(holder.amountWatcher);
 
-        // לחיצה על הפריט - שינוי מצב בחירה ועדכון מודל הנתונים
+        // =========================================================================
+        // הסבר: לחיצה על השורה (אירוע Click).
+        // מה קורה כשהמשתמש נוגע עם האצבע בפריט ברשימה?
+        // =========================================================================
         holder.itemView.setOnClickListener(v -> {
             int pos = holder.getAdapterPosition();
             if (pos == RecyclerView.NO_POSITION) return;
 
             Item clickedItem = items.get(pos);
+
             if (isSelectionMode) {
+                // הופך את המצב: אם לא היה מסומן - מסמן, ולהפך
                 clickedItem.setSelected(!clickedItem.isSelected());
-                if (!clickedItem.isSelected()) clickedItem.setAmount(0);
+
+                // אם המשתמש לחץ כדי *לבטל* את הסימון (להוריד את הירוק)
+                // אנחנו מאפסים לו גם את הכמות בחזרה ל-0
+                if (!clickedItem.isSelected()) {
+                    clickedItem.setAmount(0);
+                }
+
+                // הפקודה הכי חשובה כאן: מבקשת מה-Adapter לרענן ולצייר את השורה הזו מחדש!
+                // זה מה שגורם לקוד למעלה (זה שעושה את הרקע ירוק) לרוץ שוב ולעדכן את המסך באותו רגע.
                 notifyItemChanged(pos);
             }
-            if (listener != null) listener.onItemClick(clickedItem);
+
+            // מפעיל את מאזין הלחיצות החיצוני (למקרה שמסך האב רוצה לעשות משהו עם הלחיצה)
+            if (listener != null) {
+                listener.onItemClick(clickedItem);
+            }
         });
     }
 
     @Override
-    public int getItemCount() { return items.size(); }
+    public int getItemCount() {
+        return items.size();
+    }
 
-    /**
-     * מחלקת עזר השומרת הפניות לרכיבי התצוגה עבור כל שורה ב-RecyclerView.
-     */
+    // המחלקה שמקשרת בין משתני הקוד (TextView, ImageView) לרכיבים בקובץ ה-XML (item_row.xml)
     static class ItemViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvDescription;
         ImageView ivImage;

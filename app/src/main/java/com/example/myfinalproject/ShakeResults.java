@@ -68,7 +68,9 @@ public class ShakeResults extends AppCompatActivity {
             ArrayList<Item> selectedItems = ShakeSelectionManager.getAllSelectedItems();
             NutritionCalculator.NutritionResult result = NutritionCalculator.calculate(selectedItems);
 
-            // יצירת אובייקט Shake חדש עם מזהה ייחודי
+            // ==========================================
+// פה זה קורה! יצירת השייק ושיוך שלו למשתמש:
+// ==========================================
             String shakeId = databaseService.generateShakeId();
             newShake = new Shake(shakeId, selectedItems);
 

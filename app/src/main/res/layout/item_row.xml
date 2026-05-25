@@ -5,6 +5,7 @@
     android:orientation="horizontal"
     android:padding="12dp">
 
+
     <ImageView
         android:id="@+id/ivItemImage"
         android:layout_width="100dp"
@@ -30,8 +31,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
-
-
     </LinearLayout>
 
     <EditText
@@ -41,4 +40,5 @@
         android:hint="גרם"
         android:inputType="number"
         android:visibility="gone"/>
+
 </LinearLayout>

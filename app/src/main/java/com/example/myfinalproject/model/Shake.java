@@ -75,5 +75,3 @@ public class Shake implements Serializable {
         this.userName = userName;
     }
 }
-// הוספנו הערות Javadoc כדי להסביר את מטרת המחלקה והשדות שלה.
-// המבנה נשמר כפי שהיה, והקוד מוכן להגשה כחלק מתיק הפרויקט.

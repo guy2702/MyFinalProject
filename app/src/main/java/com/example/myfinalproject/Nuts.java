@@ -92,10 +92,9 @@ public class Nuts extends AppCompatActivity {
 
             // עדכון דינמי של הכותרת עם הערך המחושב
             Runnable updateTitle = () -> {
-                String title = "בחר אגוזים (רשות)\nכמות מקסימלית למטרה שלך (" + goalText + "): " + allowedGrams + " גרם";
+                String title = "בחר אגוזים\nכמות מקסימלית למטרה שלך (" + goalText + "): " + allowedGrams + " גרם";
                 tvTitleNuts.setText(title);
             };
-
             // ניהול רשימת האגוזים באמצעות RecyclerView ו-Adapter מותאם
             adapter = new ItemAdapter(nutsList, item -> {});
             adapter.setSelectionMode(true);
