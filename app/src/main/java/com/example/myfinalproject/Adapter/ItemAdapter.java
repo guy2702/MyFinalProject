@@ -20,27 +20,42 @@ import com.example.myfinalproject.model.Item;
 import java.util.ArrayList;
 
 /**
- * מחלקת ה-Adapter אחראית על חיבור הנתונים (מתוך רשימה) אל התצוגה (RecyclerView).
- * כאן מתבצעת הלוגיקה של הצגת הפריט, צביעת הרקע לירוק בעת לחיצה, וקבלת הכמות המוקלדת.
+ * --- מחלקת ItemAdapter (תבנית עיצוב Adapter Pattern) ---
+ * תפקיד: לשמש כ"גשר" (מתרגם) בין מקור הנתונים (הרשימה בזיכרון) לבין התצוגה (RecyclerView במסך).
+ * המחלקה יורשת מ-RecyclerView.Adapter ועובדת עם מודל של ViewHolder כדי לייעל ביצועים.
  */
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder> {
 
+    // מקור הנתונים (Data Source) - הרשימה שעליה האדפטר מסתכל
     private final ArrayList<Item> items;
+
+    // מאזין לחיצות שמאפשר להעביר אירועים החוצה ל-Activity (Callback)
     private final OnItemClickListener listener;
 
-    // משתנה שקובע האם הרשימה נמצאת במצב "בחירה" (בו אפשר לסמן פריטים).
+    // דגל (Flag) שקובע את הסטטוס (State) של הרשימה - האם ניתן לסמן פריטים (למשל בהרכבת שייק)
     private boolean isSelectionMode = false;
 
+    /**
+     * Interface (ממשק) - מגדיר "חוזה" מול ה-Activity.
+     * כל מי שמשתמש באדפטר יכול לממש את הפונקציה הזו כדי לדעת מתי לחצו על פריט.
+     */
     public interface OnItemClickListener {
         void onItemClick(Item item);
     }
 
+    /**
+     * בנאי (Constructor) - מופעל בזמן יצירת האדפטר (new ItemAdapter).
+     * כאן אנחנו מכניסים לאדפטר את הרשימה המקורית מה-Activity (פעולה הנקראת Dependency Injection).
+     */
     public ItemAdapter(ArrayList<Item> items, OnItemClickListener listener) {
         this.items = items;
         this.listener = listener;
     }
 
-    // פונקציה להפעלת מצב בחירה מרחוק (מופעלת למשל מתוך מסך פירות וירקות)
+    /**
+     * פונקציה לשינוי מצב האדפטר בזמן ריצה (למשל הדלקת אפשרות בחירה מרובה).
+     * notifyDataSetChanged() פוקד על המסך למחוק הכל ולצייר מחדש לפי החוקים החדשים.
+     */
     public void setSelectionMode(boolean selectionMode) {
         this.isSelectionMode = selectionMode;
         notifyDataSetChanged();
@@ -50,6 +65,10 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         return items;
     }
 
+    /**
+     * פעולת חובה 1: יצירת השורה הפיזית (מופעלת רק כמה פעמים בודדות עבור השורות שרואים על המסך).
+     * תהליך ה"ניפוח" (Inflate) - לוקח קובץ XML ובונה ממנו אובייקט View בזיכרון.
+     */
     @NonNull
     @Override
     public ItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -57,14 +76,20 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
         return new ItemViewHolder(view);
     }
 
+    /**
+     * פעולת חובה 2: חיבור הנתונים לתצוגה (Data Binding).
+     * מופעלת עבור כל שורה בנפרד, רגע לפני שהיא נגללת ונכנסת למסך.
+     */
     @Override
     public void onBindViewHolder(@NonNull ItemViewHolder holder, int position) {
+        // שליפת אובייקט הנתונים לפי המיקום הנוכחי שלו ברשימה
         Item item = items.get(position);
 
+        // השמת טקסטים תוך הגנה (Defensive Programming) מפני ערכי Null
         holder.tvName.setText(item.getName() != null ? item.getName() : "-");
         holder.tvDescription.setText(item.getType() != null ? item.getType() : "-");
 
-        // המרת תמונה (ממחרוזת Base64 השמורה במסד הנתונים) לתמונה המוצגת על המסך
+        // המרת תמונה (ממחרוזת Base64 השמורה במסד הנתונים) חזרה לתמונה דיגיטלית מסוג Bitmap
         try {
             if (item.getPic() != null && !item.getPic().isEmpty()) {
                 holder.ivImage.setImageBitmap(ImageUtil.convertFrom64base(item.getPic()));
@@ -75,43 +100,39 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
             holder.ivImage.setImageResource(android.R.color.darker_gray);
         }
 
-        // ניתוק זמני של המאזין להקלדה, כדי שלא יופעל בטעות בזמן שאנחנו טוענים את התצוגה
+        // =========================================================================
+        // מניעת באגים של מיחזור (Recycling):
+        // בגלל ששורות ממוחזרות בזמן גלילה, אנחנו חייבים לנתק מאזינים ישנים
+        // כדי שטקסט משורה אחת לא ייכתב בטעות לשורה אחרת בזיכרון.
+        // =========================================================================
         if (holder.amountWatcher != null) {
             holder.etAmount.removeTextChangedListener(holder.amountWatcher);
         }
 
-        // טעינת הכמות הקיימת (אם יש) לתוך שדה ההקלדה
+        // טעינת הכמות הקיימת באובייקט לתוך שדה ההקלדה
         holder.etAmount.setText(item.getAmount() > 0 ? String.valueOf(item.getAmount()) : "");
 
         // =========================================================================
-        // הסבר: כאן מתרחש הקסם של ה"צביעה לירוק והצגת הכמות"!
-        // אם מצב הבחירה דלוק (isSelectionMode) והפריט ספציפית סומן (item.isSelected):
+        // לוגיקת תצוגה חזותית - צביעה לירוק והצגת תיבת כמות:
+        // אם מצב הבחירה מופעל, וגם הפריט הספציפי הזה מסומן בזיכרון (isSelected)
         // =========================================================================
         if (isSelectionMode && item.isSelected()) {
-            // 1. צובע את רקע השורה לצבע ירוק בהיר (#C8E6C9)
-            holder.itemView.setBackgroundColor(Color.parseColor("#C8E6C9"));
-            // 2. הופך את שדה הכמות (EditText) לגלוי (VISIBLE) כדי שהמשתמש יוכל להקליד
-            holder.etAmount.setVisibility(View.VISIBLE);
+            holder.itemView.setBackgroundColor(Color.parseColor("#C8E6C9")); // צובע רקע לירוק
+            holder.etAmount.setVisibility(View.VISIBLE); // מציג את תיבת הטקסט (כמות)
             holder.etAmount.setEnabled(true);
         } else {
-            // אם הפריט לא מסומן:
-            // 1. מחזיר את הרקע ללבן רגיל
-            holder.itemView.setBackgroundColor(Color.WHITE);
-            // 2. מסתיר את שדה הכמות בחזרה (GONE)
-            holder.etAmount.setVisibility(View.GONE);
+            holder.itemView.setBackgroundColor(Color.WHITE); // מחזיר ללבן
+            holder.etAmount.setVisibility(View.GONE); // מעלים את תיבת הטקסט
             holder.etAmount.setEnabled(false);
         }
 
         // =========================================================================
-        // הסבר: "מאזין ההקלדה" (TextWatcher).
-        // תפקידו לעקוב בזמן אמת אחרי מה שהמשתמש מקליד בתוך שדה הגרמים.
-        // ברגע שהמשתמש מקליד מספר, ה-TextWatcher ישר לוקח את המספר ושומר אותו
-        // בתוך אובייקט ה-Item (setAmount).
+        // מאזין בזמן אמת להקלדת כמויות (TextWatcher):
+        // מקשיב למקלדת. כל מספר שמוקלד נשמר מיד בתוך האובייקט (Data Model).
         // =========================================================================
         holder.amountWatcher = new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -123,61 +144,83 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
 
                 if (!text.isEmpty()) {
                     try {
-                        amount = Integer.parseInt(text); // הופך את הטקסט המוקלד למספר
-                    } catch (Exception ignored) {
-                    }
+                        amount = Integer.parseInt(text); // המרת מחרוזת מוקלדת למספר (Integer)
+                    } catch (Exception ignored) {}
                 }
 
-                // שומר את הכמות באובייקט
+                // עדכון האובייקט בזיכרון בזמן אמת!
                 items.get(pos).setAmount(amount);
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-            }
+            public void afterTextChanged(Editable s) {}
         };
 
-        // מחברים את מאזין ההקלדה בחזרה לשדה
+        // חיבור מאזין ההקלדה לשדה הפיזי שבמסך
         holder.etAmount.addTextChangedListener(holder.amountWatcher);
 
         // =========================================================================
-        // הסבר: לחיצה על השורה (אירוע Click).
-        // מה קורה כשהמשתמש נוגע עם האצבע בפריט ברשימה?
+        // מאזין לחיצה על כל השורה (Click Listener):
+        // הקוד כאן מופעל באלפית השנייה שבה האצבע של המשתמש נוגעת בשורה במסך.
         // =========================================================================
         holder.itemView.setOnClickListener(v -> {
+
+            // 1. שמירת המיקום: שואל את המערכת "על איזה מספר שורה (אינדקס) המשתמש לחץ עכשיו?"
             int pos = holder.getAdapterPosition();
+
+            // 2. תכנות מגננתי (Defensive Programming):
+            // הגנה מקריסה! אם המשתמש לחץ בדיוק כשהשורה נמחקת או זזה, המיקום יהיה לא חוקי (NO_POSITION).
+            // ה-return עוצר את הפעולה מיד ומונע מהאפליקציה לקרוס (Crash).
             if (pos == RecyclerView.NO_POSITION) return;
 
+            // 3. שליפת הפריט: הולך לרשימה בזיכרון ושולף את האובייקט הספציפי לפי המיקום ששמרנו (pos)
             Item clickedItem = items.get(pos);
 
+            // אם אנחנו במצב של הרכבת שייק (מותר לסמן פריטים)
             if (isSelectionMode) {
-                // הופך את המצב: אם לא היה מסומן - מסמן, ולהפך
+
+                // 4. פעולת מתג (Toggle):
+                // משנה את התכונה בזיכרון להיפך ממה שהייתה קודם (נבחר <-> לא נבחר).
+                // ה-! (NOT) הופך false ל-true ולהיפך.
                 clickedItem.setSelected(!clickedItem.isSelected());
 
-                // אם המשתמש לחץ כדי *לבטל* את הסימון (להוריד את הירוק)
-                // אנחנו מאפסים לו גם את הכמות בחזרה ל-0
+                // 5. שמירה על היגיון (איפוס):
+                // אם המשתמש לחץ כדי *לבטל* בחירה (הוריד את ה-V), אנחנו מאפסים את הכמות ל-0.
+                // זה מונע באג שבו הפריט לא מסומן אבל נשארו לו "50 גרם" בזיכרון.
                 if (!clickedItem.isSelected()) {
                     clickedItem.setAmount(0);
                 }
 
-                // הפקודה הכי חשובה כאן: מבקשת מה-Adapter לרענן ולצייר את השורה הזו מחדש!
-                // זה מה שגורם לקוד למעלה (זה שעושה את הרקע ירוק) לרוץ שוב ולעדכן את המסך באותו רגע.
+                // 6. רענון חכם (Optimization - ייעול ביצועים):
+                // במקום לעשות notifyDataSetChanged שימחק ויצייר את *כל* הרשימה מחדש (מעמיס על המעבד),
+                // אנחנו אומרים לאדפטר: "תצייר מחדש *רק* את השורה במיקום pos".
+                // כשהיא תצויר מחדש, הקוד למעלה יזהה שהיא עכשיו נבחרה, ויצבע אותה מיד בירוק.
                 notifyItemChanged(pos);
             }
 
-            // מפעיל את מאזין הלחיצות החיצוני (למקרה שמסך האב רוצה לעשות משהו עם הלחיצה)
+            // 7. תקשורת החוצה (Callback):
+            // אם ה-Activity הראשי העביר לנו "מכשיר קשר" (listener),
+            // אנחנו שולחים לו הודעה: "היי, המשתמש לחץ על הפריט הזה, תעשה עם זה מה שאתה רוצה".
             if (listener != null) {
                 listener.onItemClick(clickedItem);
             }
         });
     }
 
+    /**
+     * פעולת חובה 3: אומרת ל-RecyclerView כמה שורות הוא צריך לייצר בסך הכל.
+     */
     @Override
     public int getItemCount() {
         return items.size();
     }
 
-    // המחלקה שמקשרת בין משתני הקוד (TextView, ImageView) לרכיבים בקובץ ה-XML (item_row.xml)
+    /**
+     * --- מחלקת ItemViewHolder ---
+     * תפקיד: אופטימיזציה (שיפור ביצועים) - "שומר התצוגה".
+     * פעולת findViewById היא כבדה למעבד. ה-ViewHolder עושה אותה רק פעם אחת,
+     * ושומר (Cache) את ההפניות לכל רכיבי ה-XML, מה שמאפשר גלילה חלקה של הרשימה.
+     */
     static class ItemViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvDescription;
         ImageView ivImage;

@@ -88,37 +88,51 @@ public class FruitsandVegtables extends AppCompatActivity {
             textView.setText("בחר פירות וירקות\nכמות נדרשת למטרה שלך (" + goalText + "): " + fruitsVegAmount + " גרם");
 
             // אתחול רשימת הפריטים וה-Adapter
+            // --- אתחול והגדרת ה-RecyclerView ---
+// יצירת "מיכל" (Data Model) לשמירת הנתונים בזיכרון המכשיר
             itemList = new ArrayList<>();
-            adapter = new ItemAdapter(itemList, item -> {});
-            adapter.setSelectionMode(true); // הפעלת מצב בחירה מרובה
 
+// יצירת ה-Adapter (הגשר בין ה-Data ל-UI). הפונקציה בתוך הסוגריים היא Callback ללחיצה.
+            adapter = new ItemAdapter(itemList, item -> {});
+
+// הגדרה ב-Adapter המאפשרת למשתמש לבחור יותר מפריט אחד ברשימה (Multiple Selection)
+            adapter.setSelectionMode(true);
+
+// אדריכל התצוגה - ה-LayoutManager קובע שהפריטים יסודרו בצורה אנכית (LinearLayout)
             rvItems.setLayoutManager(new LinearLayoutManager(this));
+
+// החיבור הסופי בין התצוגה (RecyclerView) לבין המתאם (Adapter)
             rvItems.setAdapter(adapter);
 
-            // האזנה לעדכונים מבסיס הנתונים בזמן אמת (Realtime)
+// --- האזנה לבסיס הנתונים בזמן אמת (Realtime Listener) ---
+// שימוש בתכנות אסינכרוני כדי להאזין לעדכונים מבלי לתקוע את ממשק המשתמש (UI Thread)
             DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
+
+                // פונקציה זו תופעל אוטומטית ברגע שהנתונים יגיעו מהשרת
                 @Override
                 public void onCompleted(List<Item> items) {
+                    // ניקוי הרשימה הישנה לפני מילוי בנתונים חדשים - מונע כפילויות בתצוגה
                     itemList.clear();
 
-                    // סינון הפריטים שמתאימים לקטגוריית פירות/ירקות ולאופי המטרה
+                    // לוגיקה עסקית (Business Logic): סינון הנתונים שהגיעו מה-Database
                     for (Item item : items) {
+                        // הגנה (Defensive Programming) - דילוג על אובייקטים ריקים
                         if (item == null) continue;
 
+                        // סינון לפי תנאים: האם זה פרי/ירק? והאם זה מתאים למטרה שהוגדרה?
                         if (isFruitVegetable(item) && matchesGoal(item, goal)) {
-                            itemList.add(item);
+                            itemList.add(item); // הוספת הפריט לרשימה שבזיכרון
                         }
                     }
 
-                    // עדכון הרשימה בתצוגה לאחר טעינת הנתונים
+                    // עדכון ה-Adapter שהנתונים השתנו כדי שירענן את התצוגה (UI Binding)
                     adapter.notifyDataSetChanged();
                 }
 
                 @Override
                 public void onFailed(Exception e) {
-                    Toast.makeText(FruitsandVegtables.this,
-                            "שגיאה בטעינת הנתונים מהמסד",
-                            Toast.LENGTH_SHORT).show();
+                    // טיפול בשגיאות תקשורת מול השרת
+                    Log.e("DatabaseError", "Failed to load items: " + e.getMessage());
                 }
             });
 
