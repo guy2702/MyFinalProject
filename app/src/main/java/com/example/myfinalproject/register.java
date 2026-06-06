@@ -104,24 +104,20 @@ public class register extends AppCompatActivity implements View.OnClickListener 
 
     /**
      * פונקציה לבדיקת תקינות הקלט (Validation).
-     * מוודאת שכל השדות מולאו ושפורמט האימייל והסיסמה תקינים.
      */
     private boolean checkInput(String email, String password, String fName, String lName, String phone) {
         boolean isVaild = true;
 
-        // שימוש ב-Patterns המובנה של אנדרואיד לבדיקת תקינות אימייל
         if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etEmail.setError("אימייל לא תקין");
             isVaild = false;
         }
 
-        // אבטחת סיסמה: אורך מינימלי של 6 תווים
         if (password.length() < 6) {
             etPassword.setError("הסיסמה חייבת להכיל לפחות 6 תווים");
             isVaild = false;
         }
 
-        // וידוא ששדות חובה לא ריקים
         if (fName.isEmpty()) {
             etFName.setError("שדה חובה");
             isVaild = false;
@@ -131,7 +127,6 @@ public class register extends AppCompatActivity implements View.OnClickListener 
             isVaild = false;
         }
 
-        // בדיקת אורך מספר טלפון
         if (phone.isEmpty() || phone.length() < 9) {
             etPhone.setError("טלפון לא תקין (לפחות 9 ספרות)");
             isVaild = false;
@@ -140,26 +135,21 @@ public class register extends AppCompatActivity implements View.OnClickListener 
         return isVaild;
     }
 
-    // יצירת אובייקט משתמש לפני שליחה למסד הנתונים
     private void registerUser(String fname, String lname, String phone, String email, String password) {
-        // המשתמש מוגדר כ-false בפרמטר האחרון (לא אדמין)
         User user = new User(null, fname, lname, phone, email, password, false);
         createUserInDatabase(user);
     }
 
-    // תקשורת מול DatabaseService ליצירת משתמש חדש
     private void createUserInDatabase(User user) {
         databaseService.createNewUser(user, new DatabaseService.DatabaseCallback<String>() {
             @Override
             public void onCompleted(String uid) {
                 Log.d(TAG, "User created successfully with UID: " + uid);
 
-                // שמירת מידע משתמש ב-SharedPreferences לשימוש עתידי
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("last_registered_email", user.getEmail());
                 editor.apply();
 
-                // מעבר למסך הראשי וניקוי הסטאק כדי למנוע חזרה לאחור
                 Intent intent = new Intent(register.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);

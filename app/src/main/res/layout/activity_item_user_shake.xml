@@ -1,25 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:padding="16dp"
     android:layout_marginBottom="8dp"
-    android:background="#EEEEEE">
+    android:background="#E1F5FE"
+    android:layoutDirection="ltr"> <ImageView
+    android:id="@+id/ivShakeIcon"
+    android:layout_width="60dp"
+    android:layout_height="60dp"
+    android:layout_alignParentRight="true"
+    android:layout_centerVertical="true"
+    android:src="@drawable/shake"
+    android:scaleType="centerCrop" />
 
-    <TextView
-        android:id="@+id/tvShakeName"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="שייק"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+        android:orientation="vertical"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@id/ivShakeIcon"
+        android:layout_marginRight="16dp"
+        android:gravity="left">
 
-    <TextView
-        android:id="@+id/tvShakeInfo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="מידע"
-        android:textSize="16sp" />
+        <TextView
+            android:id="@+id/tvShakeName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="שייק"
+            android:textColor="#1976D2"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/tvShakeInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="מידע"
+            android:textColor="#34495E"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+</RelativeLayout>

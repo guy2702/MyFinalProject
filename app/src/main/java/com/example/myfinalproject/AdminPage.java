@@ -9,8 +9,10 @@ package com.example.myfinalproject;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,14 +29,12 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class AdminPage extends AppCompatActivity implements View.OnClickListener {
 
-    // תגית לוג לניפוי שגיאות
     private static final String TAG = "AdminPage";
 
-    // כפתורי הניווט של המנהל ותגית הברכה
     private Button btnAddItem, btnItems, btnUsers, btnAllShakes, btnLogout;
     private TextView tvGreeting;
+    private TextView btnHamburgerMenu; // הוספנו את משתנה התפריט
 
-    // מופע של Firebase Authentication לניהול התחברות/יציאה
     private FirebaseAuth mAuth;
 
     @Override
@@ -43,7 +43,6 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_admin_page);
 
-        // התאמת ה-Layout לתצוגה במכשירי אנדרואיד עם סרגלי מערכת (System Bars)
         View rootLayout = findViewById(R.id.main);
         if (rootLayout != null) {
             ViewCompat.setOnApplyWindowInsetsListener(rootLayout, (v, insets) -> {
@@ -62,22 +61,19 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
         btnAllShakes = findViewById(R.id.btnAllShakes);
         btnLogout = findViewById(R.id.btnLogout);
         tvGreeting = findViewById(R.id.tvGreeting);
+        btnHamburgerMenu = findViewById(R.id.btnHamburgerMenu); // אתחול כפתור התפריט
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
-        // בדיקה האם יש משתמש מחובר ושליפת פרטיו מה-Database
         if (currentUser != null) {
             tvGreeting.setText("טוען נתונים...");
 
-            // שליפת פרטי המנהל מהמסד כדי להציג את שמו הפרטי
             DatabaseService.getInstance().getUser(currentUser.getUid(), new DatabaseService.DatabaseCallback<User>() {
                 @Override
                 public void onCompleted(User user) {
                     if (user != null && user.getFname() != null && !user.getFname().isEmpty()) {
-                        // הצגת שם המנהל בברכה
                         tvGreeting.setText("שלום " + user.getFname() + " (מנהל)!");
                     } else {
-                        // גיבוי למקרה שאין שם - מציג את חלק האימייל לפני ה-@
                         String nameFallback = currentUser.getEmail() != null ? currentUser.getEmail().split("@")[0] : "מנהל";
                         tvGreeting.setText("שלום " + nameFallback + "!");
                     }
@@ -85,29 +81,27 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
 
                 @Override
                 public void onFailed(Exception e) {
-                    // טיפול בשגיאה במידה והשליפה נכשלה
                     Log.e(TAG, "Error fetching admin data", e);
                     String nameFallback = currentUser.getEmail() != null ? currentUser.getEmail().split("@")[0] : "מנהל";
                     tvGreeting.setText("שלום " + nameFallback + "!");
                 }
             });
         } else {
-            // ברירת מחדל אם המשתמש אינו מאומת
             tvGreeting.setText("שלום מנהל!");
         }
 
-        // הגדרת מאזיני לחיצה לכפתורים
+        // הגדרת מאזיני לחיצה
         btnAddItem.setOnClickListener(this);
         btnItems.setOnClickListener(this);
         btnUsers.setOnClickListener(this);
         btnAllShakes.setOnClickListener(this);
         btnLogout.setOnClickListener(this);
+        btnHamburgerMenu.setOnClickListener(this); // מאזין לתפריט
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        // אבטחה: מוודא שהמשתמש מחובר; אם לא, מחזיר אותו למסך הראשי
         if (mAuth.getCurrentUser() == null) {
             Intent intent = new Intent(AdminPage.this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -116,9 +110,6 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
         }
     }
 
-    /**
-     * ניהול ניווט בין המסכים השונים בהתאם לכפתור שנלחץ.
-     */
     @Override
     public void onClick(View v) {
         int id = v.getId();
@@ -132,18 +123,51 @@ public class AdminPage extends AppCompatActivity implements View.OnClickListener
         } else if (id == R.id.btnAllShakes) {
             startActivity(new Intent(AdminPage.this, AdminAllShakes.class));
         } else if (id == R.id.btnLogout) {
-            handleLogout(); // ביצוע התנתקות
+            handleLogout();
+        } else if (id == R.id.btnHamburgerMenu) {
+            showPopupMenu(v); // פתיחת התפריט בלחיצה
         }
     }
 
     /**
-     * פונקציה לביצוע התנתקות מהמערכת (Sign Out) וניקוי המחסנית.
+     * פונקציה: מציגה ומנהלת את תפריט הפופ-אפ של המנהל
      */
+    private void showPopupMenu(View view) {
+        PopupMenu popupMenu = new PopupMenu(this, view);
+        popupMenu.getMenuInflater().inflate(R.menu.admin_menu, popupMenu.getMenu());
+
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                int id = item.getItemId();
+
+                if (id == R.id.nav_add_item) {
+                    startActivity(new Intent(AdminPage.this, AddItem.class));
+                    return true;
+                } else if (id == R.id.nav_items) {
+                    startActivity(new Intent(AdminPage.this, Items.class));
+                    return true;
+                } else if (id == R.id.nav_users) {
+                    startActivity(new Intent(AdminPage.this, users.class));
+                    return true;
+                } else if (id == R.id.nav_all_shakes) {
+                    startActivity(new Intent(AdminPage.this, AdminAllShakes.class));
+                    return true;
+                } else if (id == R.id.nav_logout) {
+                    handleLogout();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        popupMenu.show();
+    }
+
     private void handleLogout() {
         mAuth.signOut();
         Log.d(TAG, "Admin logged out.");
 
-        // חזרה למסך הראשי וניקוי פעילויות פתוחות
         Intent intent = new Intent(AdminPage.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

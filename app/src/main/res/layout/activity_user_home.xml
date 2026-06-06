@@ -9,7 +9,6 @@
     android:background="#F2F2F2"
     tools:context=".UserHome">
 
-    <!-- תמונת רקע שקופה לאחידות בכל האפליקציה -->
     <ImageView
         android:id="@+id/backgroundImage"
         android:layout_width="match_parent"
@@ -24,7 +23,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- טקסט עליון עדין -->
+    <TextView
+        android:id="@+id/btnHamburgerMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:padding="8dp"
+        android:text="☰"
+        android:textColor="#2C3E50"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <TextView
         android:id="@+id/tvHello"
         android:layout_width="wrap_content"
@@ -37,7 +48,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- כותרת ראשית כהה -->
     <TextView
         android:id="@+id/tvWelcome"
         android:layout_width="0dp"
@@ -54,7 +64,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- תת-כותרת -->
     <TextView
         android:id="@+id/tvSubtitle"
         android:layout_width="0dp"
@@ -70,7 +79,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- כרטיסיית הפעולות לבנה וצפה -->
     <androidx.cardview.widget.CardView
         android:id="@+id/mainCard"
         android:layout_width="0dp"
@@ -111,7 +119,6 @@
                 android:textColor="#7F8C8D"
                 android:textSize="15sp" />
 
-            <!-- כפתור פעולה ראשי - תכלת מודגש -->
             <Button
                 android:id="@+id/btnStartShake"
                 android:layout_width="match_parent"
@@ -124,7 +131,6 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- כפתור פעולה משני - תכלת בהיר יותר -->
             <Button
                 android:id="@+id/btnMyShakes"
                 android:layout_width="match_parent"
@@ -137,7 +143,6 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <!-- כפתור התנתקות - תכלת ממש עדין (שיראה שונה מכפתורי פעולה) -->
             <Button
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
@@ -153,7 +158,6 @@
 
     </androidx.cardview.widget.CardView>
 
-    <!-- טקסט תחתון -->
     <TextView
         android:id="@+id/tvBottomNote"
         android:layout_width="0dp"

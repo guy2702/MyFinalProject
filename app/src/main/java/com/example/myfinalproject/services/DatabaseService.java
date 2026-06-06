@@ -1,82 +1,52 @@
 package com.example.myfinalproject.services;
 
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.myfinalproject.model.AdminShakeItem;
-import com.example.myfinalproject.model.User;
 import com.example.myfinalproject.model.Item;
 import com.example.myfinalproject.model.Shake;
-
+import com.example.myfinalproject.model.User;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.MutableData;
-import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.UnaryOperator;
 
-/// a service to interact with the Firebase Realtime Database.
-/// this class is a singleton, use getInstance() to get an instance of this class
-/// @see #getInstance()
-/// @see FirebaseDatabase
+/**
+ * מחלקה זו היא ה-Service המרכזי של האפליקציה.
+ * עיצוב: Singleton - מבטיח שיש רק מופע אחד של השירות באפליקציה כדי למנוע יצירת עומס על בסיס הנתונים.
+ */
 public class DatabaseService {
 
-    /// tag for logging
-    /// @see Log
     private static final String TAG = "DatabaseService";
-
-    /// paths for different data types in the database
-    /// @see DatabaseService#readData(String)
+    // ניהול נתיבים במקום אחד מרכזי מאפשר שינוי קל אם מבנה ה-DB משתנה
     private static final String USERS_PATH = "users",
-
-    USERS_PATH_SHAKE = "userShake",
+            USERS_PATH_SHAKE = "userShake",
             ITEMS_PATH = "item",
             SHAKES_PATH = "shake";
 
-    /// callback interface for database operations
-    /// @param <T> the type of the object to return
-    /// @see DatabaseCallback#onCompleted(Object)
-    /// @see DatabaseCallback#onFailed(Exception)
+    // ממשק Callback - משמש לטיפול באסינכרוניות.
+    // בגלל שפעולות מול שרת לוקחות זמן, אנחנו לא רוצים לתקוע את מסך המשתמש.
     public interface DatabaseCallback<T> {
-        /// called when the operation is completed successfully
-        public void onCompleted(T object);
-
-        /// called when the operation fails with an exception
-        public void onFailed(Exception e);
+        void onCompleted(T object);
+        void onFailed(Exception e);
     }
 
-    /// the instance of this class
-    /// @see #getInstance()
     private static DatabaseService instance;
-
-    /// the reference to the database
-    /// @see DatabaseReference
-    /// @see FirebaseDatabase#getReference()
     private final DatabaseReference databaseReference;
 
-    /// use getInstance() to get an instance of this class
-    /// @see DatabaseService#getInstance()
     private DatabaseService() {
-        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-        databaseReference = firebaseDatabase.getReference();
+        databaseReference = FirebaseDatabase.getInstance().getReference();
     }
 
-    /// get an instance of this class
-    /// @return an instance of this class
-    /// @see DatabaseService
     public static DatabaseService getInstance() {
         if (instance == null) {
             instance = new DatabaseService();
@@ -84,60 +54,35 @@ public class DatabaseService {
         return instance;
     }
 
-    // region private generic methods
-    // to write and read data from the database
+    // --- Private Helper Methods (Abstraction) ---
+    // אלו מתודות הפשטה (Abstraction) - מונעות כפילות קוד (DRY - Don't Repeat Yourself).
+    // במקום לכתוב קוד Firebase בכל מסך, הכל עובר דרך מתודות אלו.
 
-    /// write data to the database at a specific path
-    /// @param path the path to write the data to
-    /// @param data the data to write (can be any object, but must be serializable, i.e. must have a default constructor and all fields must have getters and setters)
-    /// @param callback the callback to call when the operation is completed
-    /// @see DatabaseCallback
     private void writeData(@NotNull final String path, @NotNull final Object data, final @Nullable DatabaseCallback<Void> callback) {
-        // מתודה גנרית לכתיבת אובייקטים לכל נתיב ב-Firebase
         readData(path).setValue(data, (error, ref) -> {
             if (error != null) {
-                if (callback == null) return;
-                callback.onFailed(error.toException());
+                if (callback != null) callback.onFailed(error.toException());
             } else {
-                if (callback == null) return;
-                callback.onCompleted(null);
+                if (callback != null) callback.onCompleted(null);
             }
         });
     }
 
-    /// remove data from the database at a specific path
-    /// @param path the path to remove the data from
-    /// @param callback the callback to call when the operation is completed
-    /// @see DatabaseCallback
     private void deleteData(@NotNull final String path, @Nullable final DatabaseCallback<Void> callback) {
-        // מחיקת נתונים מנתיב ספציפי ודיווח על התוצאה דרך ה-Callback
         readData(path).removeValue((error, ref) -> {
             if (error != null) {
-                if (callback == null) return;
-                callback.onFailed(error.toException());
+                if (callback != null) callback.onFailed(error.toException());
             } else {
-                if (callback == null) return;
-                callback.onCompleted(null);
+                if (callback != null) callback.onCompleted(null);
             }
         });
     }
 
-    /// read data from the database at a specific path
-    /// @param path the path to read the data from
-    /// @return a DatabaseReference object to read the data from
-    /// @see DatabaseReference
     private DatabaseReference readData(@NotNull final String path) {
         return databaseReference.child(path);
     }
 
-    /// get data from the database at a specific path
-    /// @param path the path to get the data from
-    /// @param clazz the class of the object to return
-    /// @param callback the callback to call when the operation is completed
-    /// @see DatabaseCallback
-    /// @see Class
     private <T> void getData(@NotNull final String path, @NotNull final Class<T> clazz, @NotNull final DatabaseCallback<T> callback) {
-        // שליפת אובייקט יחיד לפי מחלקה (POJO)
         readData(path).get().addOnCompleteListener(task -> {
             if (!task.isSuccessful()) {
                 Log.e(TAG, "Error getting data", task.getException());
@@ -149,12 +94,7 @@ public class DatabaseService {
         });
     }
 
-    /// get a list of data from the database at a specific path
-    /// @param path the path to get the data from
-    /// @param clazz the class of the objects to return
-    /// @param callback the callback to call when the operation is completed
     private <T> void getDataList(@NotNull final String path, @NotNull final Class<T> clazz, @NotNull final DatabaseCallback<List<T>> callback) {
-        // המרה של צומת בסיס הנתונים לרשימה של אובייקטים
         readData(path).get().addOnCompleteListener(task -> {
             if (!task.isSuccessful()) {
                 Log.e(TAG, "Error getting data", task.getException());
@@ -162,107 +102,35 @@ public class DatabaseService {
                 return;
             }
             List<T> tList = new ArrayList<>();
-            task.getResult().getChildren().forEach(dataSnapshot -> {
-                T t = dataSnapshot.getValue(clazz);
-                tList.add(t);
-            });
-
+            for (DataSnapshot ds : task.getResult().getChildren()) {
+                T t = ds.getValue(clazz);
+                if (t != null) tList.add(t);
+            }
             callback.onCompleted(tList);
         });
     }
 
-    /// generate a new id for a new object in the database
-    /// @param path the path to generate the id for
-    /// @return a new id for the object
-    /// @see String
-    /// @see DatabaseReference#push()
     private String generateNewId(@NotNull final String path) {
         return databaseReference.child(path).push().getKey();
     }
 
-    /// run a transaction on the data at a specific path
-    /// good for incrementing a value or modifying an object in the database
-    /// @param path the path to run the transaction on
-    /// @param clazz the class of the object to return
-    /// @param function the function to apply to the current value of the data
-    /// @param callback the callback to call when the operation is completed
-    /// @see DatabaseReference#runTransaction(Transaction.Handler)
-    private <T> void runTransaction(@NotNull final String path, @NotNull final Class<T> clazz, @NotNull UnaryOperator<T> function, @NotNull final DatabaseCallback<T> callback) {
-        // ביצוע שינוי אטומי במסד הנתונים למניעת התנגשויות (Race Conditions)
-        readData(path).runTransaction(new Transaction.Handler() {
-            @NonNull
-            @Override
-            public Transaction.Result doTransaction(@NonNull MutableData currentData) {
-                T currentValue = currentData.getValue(clazz);
-                if (currentValue == null) {
-                    currentValue = function.apply(null);
-                } else {
-                    currentValue = function.apply(currentValue);
-                }
-                currentData.setValue(currentValue);
-                return Transaction.success(currentData);
-            }
+    // --- User Section ---
 
-            @Override
-            public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) {
-                if (error != null) {
-                    Log.e(TAG, "Transaction failed", error.toException());
-                    callback.onFailed(error.toException());
-                    return;
-                }
-                T result = currentData != null ? currentData.getValue(clazz) : null;
-                callback.onCompleted(result);
-            }
-        });
-
-    }
-
-    // endregion of private methods for reading and writing data
-
-    // public methods to interact with the database
-
-    // region User Section
-
-    /// generate a new id for a new user in the database
-    /// @return a new id for the user
-    /// @see #generateNewId(String)
-    /// @see User
-    public String generateUserId() {
-        return generateNewId(USERS_PATH);
-    }
-
-    /// create a new user in the database
-    /// @param user the user object to create
-    /// @param callback the callback to call when the operation is completed
-    ///              the callback will receive void
-    ///            if the operation fails, the callback will receive an exception
-    /// @see DatabaseCallback
-    /// @see User
-    public void createNewUser(@NotNull final User user,
-                              @Nullable final DatabaseCallback<String> callback) {
-        // יצירת משתמש ב-Firebase Auth ושמירת הנתונים ב-Realtime Database
+    // הרשמה משולבת: יצירת משתמש ב-Auth (אימות) ושמירת נתונים ב-Realtime DB (מסד נתונים)
+    public void createNewUser(@NotNull final User user, @Nullable final DatabaseCallback<String> callback) {
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         mAuth.createUserWithEmailAndPassword(user.getEmail(), user.getPassword())
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Log.d("TAG", "createUserWithEmail:success");
                         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                         user.setId(uid);
+                        // שמירת המשתמש תחת ה-UID שלו כ-Key ייחודי
                         writeData(USERS_PATH + "/" + uid, user, new DatabaseCallback<Void>() {
-                            @Override
-                            public void onCompleted(Void v) {
-                                if (callback != null) callback.onCompleted(uid);
-                            }
-
-                            @Override
-                            public void onFailed(Exception e) {
-                                if (callback != null) callback.onFailed(e);
-                            }
+                            @Override public void onCompleted(Void v) { if (callback != null) callback.onCompleted(uid); }
+                            @Override public void onFailed(Exception e) { if (callback != null) callback.onFailed(e); }
                         });
                     } else {
-                        Log.w("TAG", "createUserWithEmail:failure", task.getException());
-                        if (callback != null)
-                            callback.onFailed(task.getException());
+                        if (callback != null) callback.onFailed(task.getException());
                     }
                 });
     }
@@ -279,118 +147,70 @@ public class DatabaseService {
         deleteData(USERS_PATH + "/" + uid, callback);
     }
 
-
-
-
     public void updateUser(@NotNull final User user, @Nullable final DatabaseCallback<Void> callback) {
-        // עדכון פרטי משתמש באמצעות טרנזקציה לשמירה על אמינות המידע
-        runTransaction(USERS_PATH + "/" + user.getId(), User.class, currentUser -> user, new DatabaseCallback<User>() {
-            @Override
-            public void onCompleted(User object) {
-                if (callback != null) {
-                    callback.onCompleted(null);
-                }
-            }
-
-            @Override
-            public void onFailed(Exception e) {
-                if (callback != null) {
-                    callback.onFailed(e);
-                }
-            }
-        });
+        writeData(USERS_PATH + "/" + user.getId(), user, callback);
     }
 
-    // endregion User Section
+    // --- Item Section ---
 
-    // region item section
-
+    // פעולה מורכבת: כתיבה בשני מקומות (SHAKES_PATH ו-USERS_PATH_SHAKE)
+    // זו דוגמה לשימוש ב-Referential Integrity (שלמות התייחסותית) ברמה בסיסית.
     public void createNewShake(@NotNull final Shake shake, @Nullable final DatabaseCallback<Void> callback) {
-        // יצירת שייק חדש, כולל שליפת שם המשתמש מה-DB כדי להציגו בצורה ברורה במערכת הניהול
         String uid = FirebaseAuth.getInstance().getUid();
-
         if (uid == null) {
-            if (callback != null) {
-                callback.onFailed(new Exception("המשתמש לא מחובר"));
-            }
+            if (callback != null) callback.onFailed(new Exception("המשתמש לא מחובר"));
             return;
         }
-
         shake.setUserId(uid);
 
         getUser(uid, new DatabaseCallback<User>() {
-            @Override
-            public void onCompleted(User user) {
-                if (user != null) {
-                    String fullName = user.getFname() + " " + user.getLname();
-                    shake.setUserName(fullName.trim());
-                } else {
-                    shake.setUserName("לא ידוע");
-                }
-
+            @Override public void onCompleted(User user) {
+                shake.setUserName(user != null ? (user.getFname() + " " + user.getLname()).trim() : "לא ידוע");
                 writeData(SHAKES_PATH + "/" + shake.getShakeId(), shake, new DatabaseCallback<Void>() {
-                    @Override
-                    public void onCompleted(Void object) {
+                    @Override public void onCompleted(Void object) {
+                        // כתיבה כפולה כדי לאפשר שליפה מהירה גם לפי משתמש וגם כללית
                         writeData(USERS_PATH_SHAKE + "/" + uid + "/" + shake.getShakeId(), shake, callback);
                     }
-
-                    @Override
-                    public void onFailed(Exception e) {
-                        if (callback != null) callback.onFailed(e);
-                    }
+                    @Override public void onFailed(Exception e) { if (callback != null) callback.onFailed(e); }
                 });
             }
-
-            @Override
-            public void onFailed(Exception e) {
+            @Override public void onFailed(Exception e) {
+                // טיפול בשגיאות בצורה אלגנטית
                 shake.setUserName("לא ידוע");
-
                 writeData(SHAKES_PATH + "/" + shake.getShakeId(), shake, new DatabaseCallback<Void>() {
-                    @Override
-                    public void onCompleted(Void object) {
+                    @Override public void onCompleted(Void object) {
                         writeData(USERS_PATH_SHAKE + "/" + uid + "/" + shake.getShakeId(), shake, callback);
                     }
-
-                    @Override
-                    public void onFailed(Exception ex) {
-                        if (callback != null) callback.onFailed(ex);
-                    }
+                    @Override public void onFailed(Exception ex) { if (callback != null) callback.onFailed(ex); }
                 });
             }
         });
     }
-    public void updateItem(@NotNull final Item item,
-                           @Nullable final DatabaseCallback<Void> callback) {
+
+    public void updateItem(@NotNull final Item item, @Nullable final DatabaseCallback<Void> callback) {
         writeData(ITEMS_PATH + "/" + item.getId(), item, callback);
     }
 
     public void getItem(@NotNull final String itemId, @NotNull final DatabaseCallback<Item> callback) {
         getData(ITEMS_PATH + "/" + itemId, Item.class, callback);
     }
-    public void createNewItem(@NotNull final Item item,
-                              @Nullable final DatabaseCallback<Void> callback) {
 
+    public void createNewItem(@NotNull final Item item, @Nullable final DatabaseCallback<Void> callback) {
         writeData(ITEMS_PATH + "/" + item.getId(), item, callback);
     }
 
-    public void getItemList(@NotNull final DatabaseCallback<List<Item>> callback) {
-        getDataList(ITEMS_PATH, Item.class, callback);
-    }
-
     public String generateItemId() {
-        return generateNewId(ITEMS_PATH); // ← String עכשיו
+        return generateNewId(ITEMS_PATH);
     }
 
     public void deleteItem(@NotNull final String itemId, @Nullable final DatabaseCallback<Void> callback) {
         deleteData(ITEMS_PATH + "/" + itemId, callback);
     }
 
-    /// --- הוספת תמיכה ב-Realtime Listener --- ///
+    // Real-time listener: הופך את המסך ל"חי" ומעדכן את הממשק אוטומטית בכל שינוי ב-DB.
     public void listenToItemsRealtime(@NotNull final DatabaseCallback<List<Item>> callback) {
-        // האזנה אקטיבית לשינויים בבסיס הנתונים (Real-time updates)
         readData(ITEMS_PATH).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+            @Override public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Item> items = new ArrayList<>();
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     Item item = ds.getValue(Item.class);
@@ -398,98 +218,45 @@ public class DatabaseService {
                 }
                 callback.onCompleted(items);
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                callback.onFailed(error.toException());
-            }
+            @Override public void onCancelled(@NonNull DatabaseError error) { callback.onFailed(error.toException()); }
         });
     }
 
-    // endregion item section
-
-    // region shake section
-
+    // --- Shake Section ---
 
     public void listenToAllShakesForAdmin(@NotNull final DatabaseCallback<List<AdminShakeItem>> callback) {
-        // מתודה ייעודית למנהל המערכת לשליפת כל השייקים מכל המשתמשים בתצוגה אחידה
         readData(SHAKES_PATH).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-
+            @Override public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<AdminShakeItem> list = new ArrayList<>();
-
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     Shake shake = ds.getValue(Shake.class);
-
                     if (shake != null) {
-
                         String userName = shake.getUserName() != null ? shake.getUserName() : "לא ידוע";
-
                         int itemsCount = shake.getItems() != null ? shake.getItems().size() : 0;
-
-                        list.add(new AdminShakeItem(
-                                shake.getShakeId(),
-                                shake.getUserId(),
-                                userName,
-                                itemsCount
-                        ));
+                        list.add(new AdminShakeItem(shake.getShakeId(), shake.getUserId(), userName, itemsCount));
                     }
                 }
-
                 callback.onCompleted(list);
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                callback.onFailed(error.toException());
-            }
+            @Override public void onCancelled(@NonNull DatabaseError error) { callback.onFailed(error.toException()); }
         });
-    }
-
-    public void getShake(@NotNull final String shakeId, @NotNull final DatabaseCallback<Shake> callback) {
-        getData(SHAKES_PATH + "/" + shakeId, Shake.class, callback);
     }
 
     public void getShakeList(@NotNull final DatabaseCallback<List<Shake>> callback) {
         getDataList(SHAKES_PATH, Shake.class, callback);
     }
 
-    public void listenToUserShakesRealtime(@NotNull final String uid,
-                                           @NotNull final DatabaseCallback<List<Shake>> callback) {
-        // האזנה לשייקים של משתמש ספציפי בלבד (מסונן לפי UID)
+    public void listenToUserShakesRealtime(@NotNull final String uid, @NotNull final DatabaseCallback<List<Shake>> callback) {
         readData(USERS_PATH_SHAKE + "/" + uid).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+            @Override public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Shake> shakes = new ArrayList<>();
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     Shake shake = ds.getValue(Shake.class);
-                    if (shake != null) {
-                        shakes.add(shake);
-                    }
+                    if (shake != null) shakes.add(shake);
                 }
                 callback.onCompleted(shakes);
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                callback.onFailed(error.toException());
-            }
-        });
-    }
-
-    public void getUserShakeList(@NotNull String uid, @NotNull final DatabaseCallback<List<Shake>> callback) {
-        getShakeList(new DatabaseCallback<>() {
-            @Override
-            public void onCompleted(List<Shake> shakes) {
-                shakes.removeIf(shake -> !Objects.equals(shake.getUserId(), uid));
-                callback.onCompleted(shakes);
-            }
-
-            @Override
-            public void onFailed(Exception e) {
-                callback.onFailed(e);
-            }
+            @Override public void onCancelled(@NonNull DatabaseError error) { callback.onFailed(error.toException()); }
         });
     }
 
@@ -498,20 +265,11 @@ public class DatabaseService {
     }
 
     public void deleteShake(@NotNull final String shakeId, @NotNull final String userId, @Nullable final DatabaseCallback<Void> callback) {
-        // מחיקה מפוצלת: גם מהרשימה הכללית וגם מהרשימה האישית של המשתמש
         deleteData(SHAKES_PATH + "/" + shakeId, new DatabaseCallback<Void>() {
-            @Override
-            public void onCompleted(Void object) {
-                // מחיקה גם מרשימת השייקים האישית של המשתמש
+            @Override public void onCompleted(Void object) {
                 deleteData(USERS_PATH_SHAKE + "/" + userId + "/" + shakeId, callback);
             }
-
-            @Override
-            public void onFailed(Exception e) {
-                if (callback != null) {
-                    callback.onFailed(e);
-                }
-            }
+            @Override public void onFailed(Exception e) { if (callback != null) callback.onFailed(e); }
         });
     }
 }
