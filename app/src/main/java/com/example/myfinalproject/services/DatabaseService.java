@@ -4,7 +4,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.example.myfinalproject.model.AdminShakeItem;
 import com.example.myfinalproject.model.Item;
 import com.example.myfinalproject.model.Shake;
 import com.example.myfinalproject.model.User;
@@ -43,10 +42,19 @@ public class DatabaseService {
     private static DatabaseService instance;
     private final DatabaseReference databaseReference;
 
+    /**
+     * הבנאי (Constructor) של המחלקה.
+     * מוגדר כ-private (פרטי) בגלל תבנית ה-Singleton.
+     * הוא מתחבר ל-Firebase ומייצר את החיבור הראשוני למסד הנתונים.
+     */
     private DatabaseService() {
         databaseReference = FirebaseDatabase.getInstance().getReference();
     }
 
+    /**
+     * הפעולה שמחזירה את המופע היחיד של המחלקה (Singleton).
+     * אם השירות עדיין לא נוצר, היא יוצרת אותו. אם הוא קיים, היא מחזירה אותו.
+     */
     public static DatabaseService getInstance() {
         if (instance == null) {
             instance = new DatabaseService();
@@ -58,6 +66,15 @@ public class DatabaseService {
     // אלו מתודות הפשטה (Abstraction) - מונעות כפילות קוד (DRY - Don't Repeat Yourself).
     // במקום לכתוב קוד Firebase בכל מסך, הכל עובר דרך מתודות אלו.
 
+    /**
+     * הפונקציה writeData היא פונקציית עזר גנרית (Helper Method) שנועדה לרכז
+     * את כל פעולות השמירה והעדכון מול Firebase במקום אחד, כדי למנוע כפילות קוד (עיקרון DRY).
+     * * היא מקבלת:
+     * 1. path - נתיב (לאיזו תיקייה ב-Firebase לשמור).
+     * 2. data - אובייקט (מה לשמור, מוגדר כ-Object ולכן יכול לקבל כל סוג של נתון).
+     * 3. callback - "מכשיר קשר" כדי לדווח חזרה למסך.
+     * * היא משתמשת בפקודת setValue כדי לכתוב או לדרוס את הנתונים בענן.
+     */
     private void writeData(@NotNull final String path, @NotNull final Object data, final @Nullable DatabaseCallback<Void> callback) {
         readData(path).setValue(data, (error, ref) -> {
             if (error != null) {
@@ -68,6 +85,10 @@ public class DatabaseService {
         });
     }
 
+    /**
+     * פונקציית עזר גנרית למחיקת נתונים.
+     * מקבלת נתיב (Path) ומוחקת את כל מה שנמצא בו מתוך ה-Firebase.
+     */
     private void deleteData(@NotNull final String path, @Nullable final DatabaseCallback<Void> callback) {
         readData(path).removeValue((error, ref) -> {
             if (error != null) {
@@ -78,10 +99,17 @@ public class DatabaseService {
         });
     }
 
+    /**
+     * פונקציית עזר המייצרת "הצבעה" (Reference) לתיקייה ספציפית בעץ הנתונים.
+     */
     private DatabaseReference readData(@NotNull final String path) {
         return databaseReference.child(path);
     }
 
+    /**
+     * פונקציית עזר גנרית לשליפת אובייקט בודד (למשל משתמש אחד או פריט אחד).
+     * מבצעת קריאה חד-פעמית (get) ולא מאזינה לשינויים.
+     */
     private <T> void getData(@NotNull final String path, @NotNull final Class<T> clazz, @NotNull final DatabaseCallback<T> callback) {
         readData(path).get().addOnCompleteListener(task -> {
             if (!task.isSuccessful()) {
@@ -94,6 +122,10 @@ public class DatabaseService {
         });
     }
 
+    /**
+     * פונקציית עזר גנרית לשליפת רשימת אובייקטים (למשל רשימת משתמשים).
+     * קוראת את הנתונים פעם אחת, רצה בלולאה על הילדים בעץ, וממירה אותם לרשימה ב-Java.
+     */
     private <T> void getDataList(@NotNull final String path, @NotNull final Class<T> clazz, @NotNull final DatabaseCallback<List<T>> callback) {
         readData(path).get().addOnCompleteListener(task -> {
             if (!task.isSuccessful()) {
@@ -110,13 +142,21 @@ public class DatabaseService {
         });
     }
 
+    /**
+     * פונקציית עזר שמחוללת מזהה (ID) אקראי וייחודי ב-Firebase.
+     * משתמשת בפקודה push().getKey() שמייצרת מחרוזת ייחודית שמבוססת על זמן (Timestamp).
+     */
     private String generateNewId(@NotNull final String path) {
         return databaseReference.child(path).push().getKey();
     }
 
     // --- User Section ---
 
-    // הרשמה משולבת: יצירת משתמש ב-Auth (אימות) ושמירת נתונים ב-Realtime DB (מסד נתונים)
+    /**
+     * הרשמה משולבת:
+     * 1. יוצרת משתמש חדש במערכת האימות (FirebaseAuth) עם אימייל וסיסמה.
+     * 2. אם ההרשמה הצליחה, שומרת את שאר פרטי המשתמש (שם, טלפון וכו') ב-Realtime Database תחת ה-UID שנוצר.
+     */
     public void createNewUser(@NotNull final User user, @Nullable final DatabaseCallback<String> callback) {
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         mAuth.createUserWithEmailAndPassword(user.getEmail(), user.getPassword())
@@ -135,26 +175,42 @@ public class DatabaseService {
                 });
     }
 
+    /**
+     * שולפת פרטים של משתמש בודד לפי ה-UID (המזהה הייחודי) שלו.
+     */
     public void getUser(@NotNull final String uid, @NotNull final DatabaseCallback<User> callback) {
         getData(USERS_PATH + "/" + uid, User.class, callback);
     }
 
+    /**
+     * שולפת את כל המשתמשים שרשומים באפליקציה. (שימושי למסך ניהול משתמשים של ה-Admin).
+     */
     public void getUserList(@NotNull final DatabaseCallback<List<User>> callback) {
         getDataList(USERS_PATH, User.class, callback);
     }
 
+    /**
+     * מוחקת משתמש ספציפי ממסד הנתונים לפי ה-UID שלו.
+     */
     public void deleteUser(@NotNull final String uid, @Nullable final DatabaseCallback<Void> callback) {
         deleteData(USERS_PATH + "/" + uid, callback);
     }
 
+    /**
+     * מעדכנת את פרטי המשתמש (כגון שינוי שם או מספר טלפון). דורסת את המידע הישן עם החדש.
+     */
     public void updateUser(@NotNull final User user, @Nullable final DatabaseCallback<Void> callback) {
         writeData(USERS_PATH + "/" + user.getId(), user, callback);
     }
 
     // --- Item Section ---
 
-    // פעולה מורכבת: כתיבה בשני מקומות (SHAKES_PATH ו-USERS_PATH_SHAKE)
-    // זו דוגמה לשימוש ב-Referential Integrity (שלמות התייחסותית) ברמה בסיסית.
+    /**
+     * יצירת הזמנת שייק חדשה.
+     * מציגה קשרים (Referential Integrity): הפונקציה שומרת את השייק ב-2 מקומות במקביל:
+     * 1. בתיקיית השייקים הכללית (לשימוש המנהל).
+     * 2. בתיקיית השייקים הפרטית של המשתמש שהזמין (כדי שיוכל לראות את ההיסטוריה שלו).
+     */
     public void createNewShake(@NotNull final Shake shake, @Nullable final DatabaseCallback<Void> callback) {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) {
@@ -187,30 +243,57 @@ public class DatabaseService {
         });
     }
 
+    /**
+     * מעדכנת נתונים של פריט/חומר גלם קיים (למשל, עדכון שם או ערך תזונתי של פרי).
+     */
     public void updateItem(@NotNull final Item item, @Nullable final DatabaseCallback<Void> callback) {
         writeData(ITEMS_PATH + "/" + item.getId(), item, callback);
     }
 
+    /**
+     * שולפת פריט (Item) בודד לפי המזהה שלו.
+     */
     public void getItem(@NotNull final String itemId, @NotNull final DatabaseCallback<Item> callback) {
         getData(ITEMS_PATH + "/" + itemId, Item.class, callback);
     }
 
+    /**
+     * מוסיפה פריט/חומר גלם חדש למלאי החנות.
+     */
     public void createNewItem(@NotNull final Item item, @Nullable final DatabaseCallback<Void> callback) {
         writeData(ITEMS_PATH + "/" + item.getId(), item, callback);
     }
 
+    /**
+     * מחוללת ID ייחודי לפריט חדש (מופעלת לפני שיוצרים פריט חדש כדי לתת לו מזהה).
+     */
     public String generateItemId() {
         return generateNewId(ITEMS_PATH);
     }
 
+    /**
+     * מוחקת פריט מרשימת הפריטים שבמערכת.
+     */
     public void deleteItem(@NotNull final String itemId, @Nullable final DatabaseCallback<Void> callback) {
         deleteData(ITEMS_PATH + "/" + itemId, callback);
     }
 
-    // Real-time listener: הופך את המסך ל"חי" ומעדכן את הממשק אוטומטית בכל שינוי ב-DB.
+    /**
+     *
+     * הפונקציה listenToItemsRealtime אחראית על שאיבת כל הפריטים מ-Firebase, והאזנה לשינויים בזמן אמת.
+     * * איך היא עובדת?
+     * 1. מאזין חי (addValueEventListener): בניגוד לשליפה חד-פעמית, הפקודה הזו יוצרת חיבור קבוע לשרת.
+     * זה אומר שאם מנהל מוסיף, מעדכן או מוחק מוצר בפיירבייס - הפונקציה תופעל אוטומטית שוב,
+     * והמסך של המשתמש יתעדכן באותו רגע בלי שהוא יצטרך לרענן את האפליקציה!
+     * 2. סריקה והמרה: הפונקציה מקבלת מהשרת את הנתונים בצורה של עץ (DataSnapshot). היא עוברת על כל
+     * הילדים בעץ (getChildren), וממירה אוטומטית כל רשומה לאובייקט ג'אווה מסוג Item בעזרת getValue.
+     * 3. העברה למסך (Callback): הפונקציה אורזת את כל הפריטים שהיא מצאה לתוך רשימה (ArrayList),
+     * ומחזירה אותה למסך שביקש אותה דרך הפונקציה callback.onCompleted(items).
+     */
     public void listenToItemsRealtime(@NotNull final DatabaseCallback<List<Item>> callback) {
         readData(ITEMS_PATH).addValueEventListener(new ValueEventListener() {
-            @Override public void onDataChange(@NonNull DataSnapshot snapshot) {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Item> items = new ArrayList<>();
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     Item item = ds.getValue(Item.class);
@@ -218,52 +301,82 @@ public class DatabaseService {
                 }
                 callback.onCompleted(items);
             }
-            @Override public void onCancelled(@NonNull DatabaseError error) { callback.onFailed(error.toException()); }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                callback.onFailed(error.toException());
+            }
         });
     }
 
     // --- Shake Section ---
 
-    public void listenToAllShakesForAdmin(@NotNull final DatabaseCallback<List<AdminShakeItem>> callback) {
-        readData(SHAKES_PATH).addValueEventListener(new ValueEventListener() {
-            @Override public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<AdminShakeItem> list = new ArrayList<>();
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    Shake shake = ds.getValue(Shake.class);
-                    if (shake != null) {
-                        String userName = shake.getUserName() != null ? shake.getUserName() : "לא ידוע";
-                        int itemsCount = shake.getItems() != null ? shake.getItems().size() : 0;
-                        list.add(new AdminShakeItem(shake.getShakeId(), shake.getUserId(), userName, itemsCount));
-                    }
-                }
-                callback.onCompleted(list);
-            }
-            @Override public void onCancelled(@NonNull DatabaseError error) { callback.onFailed(error.toException()); }
-        });
-    }
-
+    /**
+     * שולפת את הרשימה המלאה של כל הזמנות השייקים במערכת (בלי פילטר).
+     * פונקציה זו משמשת את מסך המנהל (AdminAllShakes) כדי לראות את כל ההזמנות.
+     */
     public void getShakeList(@NotNull final DatabaseCallback<List<Shake>> callback) {
         getDataList(SHAKES_PATH, Shake.class, callback);
     }
 
+    /**
+     *
+     * תפקיד הפעולה: הפעולה מיועדת למסך הבית (האישי) של הלקוח.
+     * היא ניגשת למסד הנתונים, מאתרת את התיקייה הפרטית של המשתמש (לפי ה-UID שלו),
+     * ושולפת את כל היסטוריית השייקים שהוא הזמין.
+     * בנוסף, היא משאירה "מאזין חי" פתוח, כך שאם יתווסף שייק חדש - הרשימה תתעדכן אוטומטית במסך.
+     */
     public void listenToUserShakesRealtime(@NotNull final String uid, @NotNull final DatabaseCallback<List<Shake>> callback) {
+
+        // 1. ניגשים לנתיב הספציפי של המשתמש (לדוגמה: "userShake/12345") ומוסיפים מאזין שפועל בזמן אמת.
         readData(USERS_PATH_SHAKE + "/" + uid).addValueEventListener(new ValueEventListener() {
-            @Override public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+            // 2. הפונקציה הזו מופעלת אוטומטית ברגע שהנתונים ירדו בהצלחה מהשרת, או כשיש שינוי בנתונים.
+            // המשתנה snapshot (תמונת מצב) מכיל את כל עץ הנתונים שחזר מ-Firebase.
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                // 3. יוצרים רשימה חדשה וריקה, אליה "נאסוף" את כל השייקים שקיבלנו.
                 List<Shake> shakes = new ArrayList<>();
+
+                // 4. לולאת for שעוברת על כל ה"ילדים" (כלומר, כל הזמנות השייקים) שנמצאים בתוך התיקייה של המשתמש.
                 for (DataSnapshot ds : snapshot.getChildren()) {
+
+                    // 5. פעולת ההמרה (Deserialization): לוקחים את המידע הגולמי מפיירבייס (JSON)
+                    // ומתרגמים אותו אוטומטית לאובייקט ג'אווה מסוג Shake.
                     Shake shake = ds.getValue(Shake.class);
+
+                    // 6. בדיקת הגנה (Validation): מוודאים שההמרה הצליחה והאובייקט לא ריק,
+                    // ורק אז מכניסים אותו לרשימה שלנו.
                     if (shake != null) shakes.add(shake);
                 }
+
+                // 7. קוראים ל"מכשיר הקשר" (callback) ומשדרים את הרשימה המלאה והמוכנה בחזרה למסך (Activity) שביקש אותה.
                 callback.onCompleted(shakes);
             }
-            @Override public void onCancelled(@NonNull DatabaseError error) { callback.onFailed(error.toException()); }
+
+            // 8. הפונקציה הזו מופעלת רק במקרה של תקלה (למשל: אין אינטרנט או שאין למשתמש הרשאות קריאה).
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+                // 9. משדרים למסך הודעת כישלון עם פירוט השגיאה, כדי שהמסך יוכל להציג Toast למשתמש.
+                callback.onFailed(error.toException());
+            }
         });
     }
 
+    /**
+     * מחוללת ID ייחודי עבור הזמנת שייק חדשה.
+     */
     public String generateShakeId() {
         return generateNewId(SHAKES_PATH);
     }
 
+    /**
+     * מוחקת שייק מהמערכת.
+     * מכיוון שהשייק נשמר ב-2 מקומות (בכללי ובפרטי), הפונקציה מוחקת אותו קודם מהרשימה הכללית,
+     * ורק כשהיא מסיימת בהצלחה, היא מוחקת אותו גם מההיסטוריה האישית של הלקוח.
+     */
     public void deleteShake(@NotNull final String shakeId, @NotNull final String userId, @Nullable final DatabaseCallback<Void> callback) {
         deleteData(SHAKES_PATH + "/" + shakeId, new DatabaseCallback<Void>() {
             @Override public void onCompleted(Void object) {
