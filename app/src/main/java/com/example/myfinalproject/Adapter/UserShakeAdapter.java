@@ -5,6 +5,16 @@ package com.example.myfinalproject.Adapter;
  * היא מבצעת את ההתאמה (Binding) בין אובייקט ה-Shake לבין תצוגת הפריט הבודד במסך.
  */
 
+/**
+ * סיכום תהליך עבודה עם אובייקט Shake:
+ * * * מבנה הנתונים: השייק מוגדר כאובייקט (Shake) המכיל "מזוודה" (רשימת מרכיבים - ArrayList<Item>).
+ * * שליפה מהשרת: האפליקציה שולפת מהדאטה-בייס את רשימת השייקים ומציגה אותם ב-RecyclerView באמצעות Adapter.
+ * * פעולת הלחיצה: בלחיצה על שייק, ה-Adapter מזהה את האובייקט ושומר אותו ב"תיבת אחסון" גלובלית (ShakeSelectionManager).
+ * * מעבר מסך: האפליקציה עוברת למסך הפרטים (ShakeDetails) באמצעות Intent.
+ * * שליפת הנתונים: מסך הפרטים פונה ל-ShakeSelectionManager, שולף את אובייקט השייק ומשתמש ב-Getters כדי לגשת למידע.
+ * * חישוב בזמן אמת: המסך עובר בלולאה על רשימת המרכיבים ששלף, מחשב את הערכים התזונתיים (קלוריות/חלבונים) מחדש, ומציג אותם למשתמש.
+ */
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
