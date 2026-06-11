@@ -45,7 +45,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
 
     /**
      * בנאי (Constructor) - מופעל בזמן יצירת האדפטר (new ItemAdapter).
-     * כאן אנחנו מכניסים לאדפטר את הרשימה המקורית מה-Activity (פעולה הנקראת Dependency Injection).
+     * כאן אנחנו מכניסים לאדפטר את הרשימה המקורית מה-Activity.
      */
     public ItemAdapter(ArrayList<Item> items, OnItemClickListener listener) {
         this.items = items;

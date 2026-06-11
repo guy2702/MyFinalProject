@@ -3,13 +3,20 @@ package com.example.myfinalproject;
 /**
  * --- סיכום מחלקת FruitsandVegtables (מסך בחירת פירות וירקות) ---
  * * תפקיד המסך:
- * זהו השלב הראשון בתהליך הרכבת השייק . המסך מקבל מהמסך הקודם את מטרת המתאמן
+ * זהו השלב הראשון בתהליך הרכבת השייק. המסך מקבל מהמסך הקודם את מטרת המתאמן
  * וגודל הכוס, מחשב בעזרת מחלקת לוגיקה כמה גרם פירות/ירקות עליו לצרוך, ומציג לו רשימה מסוננת.
- * * זרימת הנתונים (Data Flow):
+ * * * זרימת הנתונים (Data Flow):
  * 1. קבלה: מקבל Goal ו-CupSize דרך Intent.
  * 2. חישוב: פונה ל-SmoothieCalculator כדי לדעת כמה גרם מותר למשתמש לבחור בקטגוריה זו.
  * 3. שליפה: מוריד את כל הפריטים מ-Firebase בזמן אמת (DatabaseService).
- * 4. סינון (Filter): מסנן מתוך כל הפריטים רק את אלו שהם "פירות/ירקות" ושמתאימים ל"מטרה" של המשתמש.
+ * 4. סינון (Filter): מנגנון הסינון מתחיל כאשר ה-Activity מפעיל את הפעולה DatabaseService.getInstance().listenToItemsRealtime()
+ * כדי למשוך את כל חומרי הגלם מ-Firebase, וברגע שהרשימה הגולמית מתקבלת בתוך פעולת ה-Callback שנקראת onCompleted(),
+ * ה-Activity מפעיל מיד את הפעולה itemList.clear() כדי לרוקן את הקופסה המקומית ולמנוע כפילויות בתצוגה.
+ * משם, הקוד מריץ לולאת for שעוברת פריט-פריט ומעבירה אותו סינון קפדני באמצעות שתי פעולות תנאי:
+ * הפעולה isFruitVegetable(item) שבודקת אם המוצר שייך לקטגוריית פירות וירקות, והפעולה matchesGoal(item, goal)
+ * שמוודאת שהפריט מתאים למטרת המתאמן (חיטוב או מסה). רק מוצר שעומד בהצלחה בשני התנאים הללו מתווסף לרשימה
+ * המקורית בעזרת הפעולה itemList.add(item), ולבסוף, כדי להציג את התוצאה המסוננת למשתמש, ה-Activity מפעיל את
+ * הפעולה adapter.notifyDataSetChanged() שמקפיצה את האדפטר ומחדשת את המראה של הרשימה על המסך.
  * 5. אימות (Validation): בלחיצה על "הבא", מוודא שהמשתמש בחר פריטים, הזין כמויות תקינות,
  * ושהסכום הכולל שווה בדיוק ליעד הגרמים שחושב.
  * 6. שמירה ומעבר: שומר את הבחירות ב-ShakeSelectionManager ועובר למסך הבא (Liquids).
@@ -97,23 +104,23 @@ public class FruitsandVegtables extends AppCompatActivity {
 
             // אתחול רשימת הפריטים וה-Adapter
             // --- אתחול והגדרת ה-RecyclerView ---
-// יצירת "מיכל" (Data Model) לשמירת הנתונים בזיכרון המכשיר
+            // יצירת "מיכל" (Data Model) לשמירת הנתונים בזיכרון המכשיר
             itemList = new ArrayList<>();
 
-// יצירת ה-Adapter (הגשר בין ה-Data ל-UI). הפונקציה בתוך הסוגריים היא Callback ללחיצה.
+            // יצירת ה-Adapter (הגשר בין ה-Data ל-UI). הפונקציה בתוך הסוגריים היא Callback ללחיצה.
             adapter = new ItemAdapter(itemList, item -> {});
 
-// הגדרה ב-Adapter המאפשרת למשתמש לבחור יותר מפריט אחד ברשימה (Multiple Selection)
+            // הגדרה ב-Adapter המאפשרת למשתמש לבחור יותר מפריט אחד ברשימה (Multiple Selection)
             adapter.setSelectionMode(true);
 
-// אדריכל התצוגה - ה-LayoutManager קובע שהפריטים יסודרו בצורה אנכית (LinearLayout)
+            // אדריכל התצוגה - ה-LayoutManager קובע שהפריטים יסודרו בצורה אנכית (LinearLayout)
             rvItems.setLayoutManager(new LinearLayoutManager(this));
 
-// החיבור הסופי בין התצוגה (RecyclerView) לבין המתאם (Adapter)
+            // החיבור הסופי בין התצוגה (RecyclerView) לבין המתאם (Adapter)
             rvItems.setAdapter(adapter);
 
-// --- האזנה לבסיס הנתונים בזמן אמת (Realtime Listener) ---
-// שימוש בתכנות אסינכרוני כדי להאזין לעדכונים מבלי לתקוע את ממשק המשתמש (UI Thread)
+            // --- האזנה לבסיס הנתונים בזמן אמת (Realtime Listener) ---
+            // שימוש בתכנות אסינכרוני כדי להאזין לעדכונים מבלי לתקוע את ממשק המשתמש (UI Thread)
             DatabaseService.getInstance().listenToItemsRealtime(new DatabaseService.DatabaseCallback<List<Item>>() {
 
                 // פונקציה זו תופעל אוטומטית ברגע שהנתונים יגיעו מהשרת
